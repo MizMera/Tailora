@@ -1,0 +1,150 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Tailora</title>
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .dashboard-container {
+            min-height: 100vh;
+            background: #f5f5f5;
+            padding: 40px;
+        }
+        .dashboard-header {
+            background: #dad3c2;
+            padding: 32px;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dashboard-title {
+            font-size: 48px;
+            color: #252320;
+        }
+        .logout-btn {
+            background: #2c2c2c;
+            color: #f5f5f5;
+            padding: 12px 24px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+        .logout-btn:hover {
+            background: #1a1a1a;
+        }
+        .dashboard-content {
+            background: white;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .welcome-message {
+            font-size: 32px;
+            color: #252320;
+            margin-bottom: 24px;
+        }
+        .info-card {
+            background: #dad3c2;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Tailora</h1>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">Déconnexion</button>
+            </form>
+        </div>
+
+        <div class="dashboard-content">
+            <h2 class="welcome-message">Bienvenue, {{ user.first_name|default:user.username }}!</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="{% if message.tags == 'error' %}form-errors{% else %}success-message{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="info-card">
+                <h3>Informations du compte</h3>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Nom d'utilisateur:</strong> {{ user.username }}</p>
+                <p><strong>Membre depuis:</strong> {{ user.date_joined|date:"d F Y" }}</p>
+            </div>
+
+            <div class="info-card">
+                <h3>🎨 Votre Style Virtuel</h3>
+                <p>Bienvenue dans votre garde-robe virtuelle intelligente!</p>
+                <p>Cette plateforme vous permet de:</p>
+                <ul>
+                    <li>📷 Numériser votre garde-robe</li>
+                    <li>👔 Créer des tenues personnalisées</li>
+                    <li>📅 Planifier vos looks avec la météo</li>
+                    <li>🤖 Recevoir des suggestions IA</li>
+                    <li>🌐 Partager avec la communauté</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <h3>🚀 Prochaines étapes</h3>
+                <p>Les modules suivants seront bientôt disponibles:</p>
+                <ul>
+                    <li>Ma Garde-robe</li>
+                    <li>Mes Tenues</li>
+                    <li>Planificateur</li>
+                    <li>Hub Social</li>
+                    <li>Recommandations IA</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth page transitions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add fade transition to all links
+            const links = document.querySelectorAll('a:not([target="_blank"])');
+            
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    
+                    // Check if it's a valid internal link
+                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                        e.preventDefault();
+                        
+                        // Add fade-out class
+                        document.body.classList.add('fade-out');
+                        
+                        // Navigate after animation
+                        setTimeout(() => {
+                            window.location.href = href;
+                        }, 300);
+                    }
+                });
+            });
+
+            // Add fade transition to form submission
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    document.body.classList.add('fade-out');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

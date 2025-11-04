@@ -1,0 +1,420 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Tailora</title>
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Left Side - Wardrobe Image -->
+        <div class="auth-image-section">
+            <img src="{% static 'images/signup_pic.jpg' %}" 
+                 alt="Wardrobe"
+                 class="auth-image">
+        </div>
+
+        <!-- Right Side - Register Form -->
+        <div class="auth-form-section">
+            <div class="auth-content">
+                <!-- Header -->
+                <div class="auth-header">
+                    <h1 class="auth-title">Tailora</h1>
+                    <p class="auth-subtitle">Le style taillé pour vous</p>
+                </div>
+
+                <!-- Register Form -->
+                <form method="post" action="{% url 'register' %}" class="auth-form" id="registerForm">
+                    {% csrf_token %}
+                    
+                    <div class="auth-form-container">
+                        <!-- Step Indicator -->
+                        <div class="step-indicator">
+                            <div class="step active" data-step="1">
+                                <div class="step-number">1</div>
+                                <div class="step-label">Informations</div>
+                            </div>
+                            <div class="step-line"></div>
+                            <div class="step" data-step="2">
+                                <div class="step-number">2</div>
+                                <div class="step-label">Préférences</div>
+                            </div>
+                        </div>
+
+                        <!-- Display Errors -->
+                        {% if form.errors %}
+                        <div class="form-errors">
+                            <ul>
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="{% if message.tags == 'error' %}form-errors{% else %}success-message{% endif %}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <!-- Multi-step Form Container -->
+                        <div class="form-steps-container">
+                            <!-- Step 1: Basic Information -->
+                            <div class="form-step active" data-step="1">
+                                <div class="form-section">
+                            <h3 class="section-title">Informations de base</h3>
+                            
+                            <!-- Email Field -->
+                            <div class="input-field">
+                                <label for="email" class="input-label">Email *</label>
+                                <div class="input-wrapper">
+                                    <input 
+                                        type="email" 
+                                        id="email" 
+                                        name="email" 
+                                        class="input-control" 
+                                        placeholder="votre.email@example.com"
+                                        value="{{ form.email.value|default:'' }}"
+                                        required
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- Username Field -->
+                            <div class="input-field">
+                                <label for="username" class="input-label">Nom d'utilisateur *</label>
+                                <div class="input-wrapper">
+                                    <input 
+                                        type="text" 
+                                        id="username" 
+                                        name="username" 
+                                        class="input-control" 
+                                        placeholder="Votre nom d'utilisateur"
+                                        value="{{ form.username.value|default:'' }}"
+                                        required
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- Phone Field -->
+                            <div class="input-field">
+                                <label for="phone" class="input-label">Téléphone</label>
+                                <div class="input-wrapper">
+                                    <input 
+                                        type="tel" 
+                                        id="phone" 
+                                        name="phone" 
+                                        class="input-control" 
+                                        placeholder="+33 6 12 34 56 78"
+                                        value="{{ form.phone.value|default:'' }}"
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- Password Field -->
+                            <div class="input-field">
+                                <label for="password" class="input-label">Mot de passe *</label>
+                                <div class="input-wrapper">
+                                    <input 
+                                        type="password" 
+                                        id="password" 
+                                        name="password" 
+                                        class="input-control" 
+                                        placeholder="••••••••"
+                                        required
+                                    >
+                                </div>
+                                <small class="input-hint">Minimum 8 caractères</small>
+                            </div>
+                                </div>
+
+                                <!-- Step 1 Navigation -->
+                                <div class="step-navigation">
+                                    <a href="{% url 'login' %}" class="text-link">Vous avez déjà un compte?</a>
+                                    <button type="button" class="btn btn-primary" id="nextStep">Suivant</button>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Style Preferences -->
+                            <div class="form-step" data-step="2">
+                                <div class="form-section">
+                                    <h3 class="section-title">Préférences de style</h3>
+                                    
+                                    <!-- Preferred Styles -->
+                                    <div class="input-field">
+                                        <label class="input-label">Styles préférés</label>
+                                        <div class="checkbox-grid">
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="preferred_styles" value="casual">
+                                                <span>Casual</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="preferred_styles" value="chic">
+                                                <span>Chic</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="preferred_styles" value="boheme">
+                                                <span>Bohème</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="preferred_styles" value="sportif">
+                                                <span>Sportif</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="preferred_styles" value="elegant">
+                                                <span>Élégant</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="preferred_styles" value="classique">
+                                                <span>Classique</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="preferred_styles" value="streetwear">
+                                                <span>Streetwear</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="preferred_styles" value="vintage">
+                                                <span>Vintage</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="preferred_styles" value="minimaliste">
+                                                <span>Minimaliste</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Body Type -->
+                                    <div class="input-field">
+                                        <label for="body_type" class="input-label">Morphologie</label>
+                                        <select id="body_type" name="body_type" class="input-control">
+                                            <option value="">Sélectionnez votre morphologie</option>
+                                            <option value="rectangle">Rectangle</option>
+                                            <option value="triangle">Triangle</option>
+                                            <option value="triangle_inverse">Triangle Inversé</option>
+                                            <option value="sablier">Sablier</option>
+                                            <option value="ovale">Ovale</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Height -->
+                                    <div class="input-field">
+                                        <label for="height" class="input-label">Taille (cm)</label>
+                                        <div class="input-wrapper">
+                                            <input 
+                                                type="number" 
+                                                id="height" 
+                                                name="height" 
+                                                class="input-control" 
+                                                placeholder="170"
+                                                min="100"
+                                                max="250"
+                                                value="{{ form.height.value|default:'' }}"
+                                            >
+                                        </div>
+                                    </div>
+
+                                    <!-- Favorite Colors -->
+                                    <div class="input-field">
+                                        <label class="input-label">Couleurs préférées</label>
+                                        <div class="color-grid">
+                                            <label class="color-item">
+                                                <input type="checkbox" name="favorite_colors" value="#000000">
+                                                <span class="color-box color-black"></span>
+                                                <span class="color-name">Noir</span>
+                                            </label>
+                                            <label class="color-item">
+                                                <input type="checkbox" name="favorite_colors" value="#FFFFFF">
+                                                <span class="color-box color-white"></span>
+                                                <span class="color-name">Blanc</span>
+                                            </label>
+                                            <label class="color-item">
+                                                <input type="checkbox" name="favorite_colors" value="#808080">
+                                                <span class="color-box color-gray"></span>
+                                                <span class="color-name">Gris</span>
+                                            </label>
+                                            <label class="color-item">
+                                                <input type="checkbox" name="favorite_colors" value="#0000FF">
+                                                <span class="color-box color-blue"></span>
+                                                <span class="color-name">Bleu</span>
+                                            </label>
+                                            <label class="color-item">
+                                                <input type="checkbox" name="favorite_colors" value="#FF0000">
+                                                <span class="color-box color-red"></span>
+                                                <span class="color-name">Rouge</span>
+                                            </label>
+                                            <label class="color-item">
+                                                <input type="checkbox" name="favorite_colors" value="#008000">
+                                                <span class="color-box color-green"></span>
+                                                <span class="color-name">Vert</span>
+                                            </label>
+                                            <label class="color-item">
+                                                <input type="checkbox" name="favorite_colors" value="#FFFF00">
+                                                <span class="color-box color-yellow"></span>
+                                                <span class="color-name">Jaune</span>
+                                            </label>
+                                            <label class="color-item">
+                                                <input type="checkbox" name="favorite_colors" value="#FFC0CB">
+                                                <span class="color-box color-pink"></span>
+                                                <span class="color-name">Rose</span>
+                                            </label>
+                                            <label class="color-item">
+                                                <input type="checkbox" name="favorite_colors" value="#A52A2A">
+                                                <span class="color-box color-brown"></span>
+                                                <span class="color-name">Marron</span>
+                                            </label>
+                                            <label class="color-item">
+                                                <input type="checkbox" name="favorite_colors" value="#F5DEB3">
+                                                <span class="color-box color-beige"></span>
+                                                <span class="color-name">Beige</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Preferences -->
+                                    <div class="input-field">
+                                        <label class="input-label">Préférences shopping</label>
+                                        <div class="checkbox-list">
+                                            <label class="checkbox-item-inline">
+                                                <input type="checkbox" name="prefers_sustainable" value="true">
+                                                <span>Je préfère les marques éco-responsables</span>
+                                            </label>
+                                            <label class="checkbox-item-inline">
+                                                <input type="checkbox" name="prefers_secondhand" value="true">
+                                                <span>J'aime la seconde main</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2 Navigation -->
+                                <div class="step-navigation">
+                                    <button type="button" class="btn btn-secondary" id="prevStep">Précédent</button>
+                                    <button type="submit" class="btn btn-primary">S'inscrire</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth page transitions
+        function initPageTransitions() {
+            // Add fade transition to all links
+            const links = document.querySelectorAll('a:not([target="_blank"])');
+            
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    
+                    // Check if it's a valid internal link
+                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                        e.preventDefault();
+                        
+                        // Add fade-out class
+                        document.body.classList.add('fade-out');
+                        
+                        // Navigate after animation
+                        setTimeout(() => {
+                            window.location.href = href;
+                        }, 300);
+                    }
+                });
+            });
+        }
+
+        // Multi-step form navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize page transitions
+            initPageTransitions();
+
+            const form = document.getElementById('registerForm');
+            const steps = document.querySelectorAll('.form-step');
+            const stepIndicators = document.querySelectorAll('.step');
+            const nextBtn = document.getElementById('nextStep');
+            const prevBtn = document.getElementById('prevStep');
+            let currentStep = 1;
+
+            function showStep(stepNumber) {
+                steps.forEach(step => {
+                    step.classList.remove('active', 'slide-out-left', 'slide-out-right');
+                });
+                
+                stepIndicators.forEach(indicator => {
+                    indicator.classList.remove('active');
+                });
+
+                const targetStep = document.querySelector(`.form-step[data-step="${stepNumber}"]`);
+                const targetIndicator = document.querySelector(`.step[data-step="${stepNumber}"]`);
+                
+                if (targetStep) {
+                    targetStep.classList.add('active');
+                }
+                
+                if (targetIndicator) {
+                    targetIndicator.classList.add('active');
+                }
+
+                currentStep = stepNumber;
+            }
+
+            function validateStep1() {
+                const email = document.getElementById('email').value.trim();
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value.trim();
+
+                if (!email || !username || !password) {
+                    alert('Veuillez remplir tous les champs obligatoires.');
+                    return false;
+                }
+
+                if (password.length < 8) {
+                    alert('Le mot de passe doit contenir au moins 8 caractères.');
+                    return false;
+                }
+
+                // Basic email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    alert('Veuillez entrer une adresse email valide.');
+                    return false;
+                }
+
+                return true;
+            }
+
+            nextBtn.addEventListener('click', function() {
+                if (validateStep1()) {
+                    showStep(2);
+                }
+            });
+
+            prevBtn.addEventListener('click', function() {
+                showStep(1);
+            });
+
+            // Add fade transition to form submission
+            form.addEventListener('submit', function() {
+                document.body.classList.add('fade-out');
+            });
+
+            // Initialize
+            showStep(1);
+        });
+    </script>
+</body>
+</html>
