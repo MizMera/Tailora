@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tailora{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    {% block extra_css %}{% endblock %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Istok+Web:wght@400;700&display=swap" rel="stylesheet">
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <div class="tailora-container page-reveal {% block container_class %}{% endblock %}">
+        <!-- Header with Logo and Navigation -->
+        <header class="tailora-header">
+            <a href="{% url 'dashboard' %}" class="tailora-logo">Tailora</a>
+            <nav class="tailora-nav">
+                <div class="nav-pills">
+                    <a href="{% url 'dashboard' %}" class="nav-pill {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">User</a>
+                    <a href="{% url 'wardrobe_gallery' %}" class="nav-pill {% if 'wardrobe' in request.resolver_match.url_name %}active{% endif %}">Wardrobe</a>
+                    <a href="{% url 'outfits:outfit_gallery' %}" class="nav-pill {% if 'outfit' in request.resolver_match.url_name %}active{% endif %}">Outfits</a>
+                    <a href="{% url 'planner:calendar' %}" class="nav-pill {% if 'planner' in request.resolver_match.namespace %}active{% endif %}">Calendar & Event</a>
+                    <a href="#" class="nav-pill">Social Features</a>
+                    <a href="#" class="nav-pill">AI Recommendations</a>
+                    <a href="#" class="nav-pill">Support</a>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Content Area -->
+        <div class="tailora-content">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

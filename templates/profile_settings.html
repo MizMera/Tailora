@@ -1,291 +1,321 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paramètres du profil - Tailora</title>
-    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="dashboard-container">
-        <!-- Header -->
-        <div class="dashboard-header">
-            <h1 class="dashboard-title">Tailora</h1>
-            <div class="header-actions">
-                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Tableau de bord</a>
-                <form method="post" action="{% url 'logout' %}" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="logout-btn">Déconnexion</button>
-                </form>
+
+{% block title %}Paramètres du profil - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
+{% block container_class %}page-reveal{% endblock %}
+
+{% block content %}
+            <!-- Page Header -->
+            <div class="page-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <h1 class="page-title">Paramètres du profil</h1>
+                        <p class="page-subtitle">Gérez vos informations personnelles</p>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Retour</a>
+                        <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary" style="border: none; cursor: pointer;">Déconnexion</button>
+                        </form>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="dashboard-content">
-            <h2 class="page-title">Paramètres du profil</h2>
+            <div class="settings-wrapper">
+                <!-- Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="message {% if message.tags == 'error' %}message-error{% else %}message-success{% endif %}" style="margin: 0 0 24px 0; border-left: none; border-bottom: 1px solid #e0e0e0;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="{% if message.tags == 'error' %}form-errors{% else %}success-message{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
+                <!-- Settings Grid Layout -->
+                <div class="settings-grid">
+                <!-- Main Settings Form -->
+                <div class="settings-main">
+                    <form method="post" enctype="multipart/form-data" id="settingsForm">
+                        {% csrf_token %}
 
-            <!-- Profile Form -->
-            <form method="post" enctype="multipart/form-data" class="settings-form">
-                {% csrf_token %}
-
-                <!-- Personal Information -->
-                <div class="settings-section">
-                    <h3 class="section-title">Informations personnelles</h3>
+                        <!-- Personal Information -->
+                        <div class="settings-section">
+                            <h3 class="section-title">Informations personnelles</h3>
                     
-                    <div class="form-grid">
-                        <div class="input-field">
-                            <label for="first_name" class="input-label">Prénom</label>
-                            <input type="text" id="first_name" name="first_name" 
-                                   class="input-control" value="{{ user.first_name }}">
+                            
+                            <!-- Profile Image Upload -->
+                            <div class="profile-upload">
+                                {% if user.profile_image %}
+                                    <img src="{{ user.profile_image.url }}" alt="Profile" class="profile-preview">
+                                {% else %}
+                                    <div class="profile-placeholder">{{ user.first_name.0|default:user.username.0|upper }}</div>
+                                {% endif %}
+                                <div class="profile-upload-info">
+                                    <div class="profile-upload-title">Photo de profil</div>
+                                    <div class="profile-upload-hint">JPG, PNG ou GIF. Max 2MB</div>
+                                    <div class="file-input-wrapper">
+                                        <input type="file" id="profile_image" name="profile_image" accept="image/*">
+                                        <label for="profile_image" class="file-input-label">Choisir une image</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-grid" style="margin-top: 24px;">
+                                <div class="input-field">
+                                    <label for="first_name" class="input-label">Prénom</label>
+                                    <input type="text" id="first_name" name="first_name" 
+                                           class="input-control" value="{{ user.first_name }}">
+                                </div>
+
+                                <div class="input-field">
+                                    <label for="last_name" class="input-label">Nom</label>
+                                    <input type="text" id="last_name" name="last_name" 
+                                           class="input-control" value="{{ user.last_name }}">
+                                </div>
+
+                                <div class="input-field">
+                                    <label for="email" class="input-label">Email</label>
+                                    <input type="email" id="email" class="input-control" 
+                                           value="{{ user.email }}" disabled>
+                                    <small class="input-hint">Email ne peut pas être modifié</small>
+                                </div>
+
+                                <div class="input-field">
+                                    <label for="phone" class="input-label">Téléphone</label>
+                                    <input type="tel" id="phone" name="phone" 
+                                           class="input-control" value="{{ user.phone|default:'' }}">
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="input-field">
-                            <label for="last_name" class="input-label">Nom</label>
-                            <input type="text" id="last_name" name="last_name" 
-                                   class="input-control" value="{{ user.last_name }}">
-                        </div>
-
-                        <div class="input-field">
-                            <label for="email" class="input-label">Email</label>
-                            <input type="email" id="email" class="input-control" 
-                                   value="{{ user.email }}" disabled>
-                            <small class="input-hint">Email ne peut pas être modifié</small>
-                        </div>
-
-                        <div class="input-field">
-                            <label for="phone" class="input-label">Téléphone</label>
-                            <input type="tel" id="phone" name="phone" 
-                                   class="input-control" value="{{ user.phone|default:'' }}">
-                        </div>
-                    </div>
-
-                    <div class="input-field">
-                        <label for="profile_image" class="input-label">Photo de profil</label>
-                        {% if user.profile_image %}
-                            <img src="{{ user.profile_image.url }}" alt="Profile" class="profile-preview">
-                        {% endif %}
-                        <input type="file" id="profile_image" name="profile_image" 
-                               class="input-control" accept="image/*">
-                    </div>
-                </div>
-
-                <!-- Style Preferences -->
-                <div class="settings-section">
-                    <h3 class="section-title">Préférences de style</h3>
+                        <!-- Style Preferences -->
+                        <div class="settings-section">
+                            <h3 class="section-title">Préférences de style</h3>
                     
-                    <div class="input-field">
-                        <label class="input-label">Styles préférés</label>
-                        <div class="checkbox-grid">
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="preferred_styles" value="casual"
-                                       {% if 'casual' in style_profile.preferred_styles %}checked{% endif %}>
-                                <span>Casual</span>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="preferred_styles" value="chic"
-                                       {% if 'chic' in style_profile.preferred_styles %}checked{% endif %}>
-                                <span>Chic</span>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="preferred_styles" value="boheme"
-                                       {% if 'boheme' in style_profile.preferred_styles %}checked{% endif %}>
-                                <span>Bohème</span>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="preferred_styles" value="sportif"
-                                       {% if 'sportif' in style_profile.preferred_styles %}checked{% endif %}>
-                                <span>Sportif</span>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="preferred_styles" value="elegant"
-                                       {% if 'elegant' in style_profile.preferred_styles %}checked{% endif %}>
-                                <span>Élégant</span>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="preferred_styles" value="classique"
-                                       {% if 'classique' in style_profile.preferred_styles %}checked{% endif %}>
-                                <span>Classique</span>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="preferred_styles" value="streetwear"
-                                       {% if 'streetwear' in style_profile.preferred_styles %}checked{% endif %}>
-                                <span>Streetwear</span>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="preferred_styles" value="vintage"
-                                       {% if 'vintage' in style_profile.preferred_styles %}checked{% endif %}>
-                                <span>Vintage</span>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="preferred_styles" value="minimaliste"
-                                       {% if 'minimaliste' in style_profile.preferred_styles %}checked{% endif %}>
-                                <span>Minimaliste</span>
-                            </label>
-                        </div>
-                    </div>
+                            
+                            <div class="form-grid-full">
+                                <div class="input-field">
+                                    <label class="input-label">Styles préférés</label>
+                                    <div class="checkbox-grid">
+                                        <label class="checkbox-card">
+                                            <input type="checkbox" name="preferred_styles" value="casual"
+                                                   {% if 'casual' in style_profile.preferred_styles %}checked{% endif %}>
+                                            <span>Casual</span>
+                                        </label>
+                                        <label class="checkbox-card">
+                                            <input type="checkbox" name="preferred_styles" value="chic"
+                                                   {% if 'chic' in style_profile.preferred_styles %}checked{% endif %}>
+                                            <span>Chic</span>
+                                        </label>
+                                        <label class="checkbox-card">
+                                            <input type="checkbox" name="preferred_styles" value="boheme"
+                                                   {% if 'boheme' in style_profile.preferred_styles %}checked{% endif %}>
+                                            <span>Bohème</span>
+                                        </label>
+                                        <label class="checkbox-card">
+                                            <input type="checkbox" name="preferred_styles" value="sportif"
+                                                   {% if 'sportif' in style_profile.preferred_styles %}checked{% endif %}>
+                                            <span>Sportif</span>
+                                        </label>
+                                        <label class="checkbox-card">
+                                            <input type="checkbox" name="preferred_styles" value="elegant"
+                                                   {% if 'elegant' in style_profile.preferred_styles %}checked{% endif %}>
+                                            <span>Élégant</span>
+                                        </label>
+                                        <label class="checkbox-card">
+                                            <input type="checkbox" name="preferred_styles" value="classique"
+                                                   {% if 'classique' in style_profile.preferred_styles %}checked{% endif %}>
+                                            <span>Classique</span>
+                                        </label>
+                                        <label class="checkbox-card">
+                                            <input type="checkbox" name="preferred_styles" value="streetwear"
+                                                   {% if 'streetwear' in style_profile.preferred_styles %}checked{% endif %}>
+                                            <span>Streetwear</span>
+                                        </label>
+                                        <label class="checkbox-card">
+                                            <input type="checkbox" name="preferred_styles" value="vintage"
+                                                   {% if 'vintage' in style_profile.preferred_styles %}checked{% endif %}>
+                                            <span>Vintage</span>
+                                        </label>
+                                        <label class="checkbox-card">
+                                            <input type="checkbox" name="preferred_styles" value="minimaliste"
+                                                   {% if 'minimaliste' in style_profile.preferred_styles %}checked{% endif %}>
+                                            <span>Minimaliste</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div class="form-grid">
-                        <div class="input-field">
-                            <label for="body_type" class="input-label">Morphologie</label>
-                            <select id="body_type" name="body_type" class="input-control">
-                                <option value="">Sélectionnez...</option>
-                                <option value="rectangle" {% if style_profile.body_type == 'rectangle' %}selected{% endif %}>Rectangle</option>
-                                <option value="triangle" {% if style_profile.body_type == 'triangle' %}selected{% endif %}>Triangle</option>
-                                <option value="triangle_inverse" {% if style_profile.body_type == 'triangle_inverse' %}selected{% endif %}>Triangle Inversé</option>
-                                <option value="sablier" {% if style_profile.body_type == 'sablier' %}selected{% endif %}>Sablier</option>
-                                <option value="ovale" {% if style_profile.body_type == 'ovale' %}selected{% endif %}>Ovale</option>
-                            </select>
+                            
+                            <div class="form-grid">
+                                <div class="input-field">
+                                    <label for="body_type" class="input-label">Morphologie</label>
+                                    <select id="body_type" name="body_type" class="input-control">
+                                        <option value="">Sélectionnez...</option>
+                                        <option value="rectangle" {% if style_profile.body_type == 'rectangle' %}selected{% endif %}>Rectangle</option>
+                                        <option value="triangle" {% if style_profile.body_type == 'triangle' %}selected{% endif %}>Triangle</option>
+                                        <option value="triangle_inverse" {% if style_profile.body_type == 'triangle_inverse' %}selected{% endif %}>Triangle Inversé</option>
+                                        <option value="sablier" {% if style_profile.body_type == 'sablier' %}selected{% endif %}>Sablier</option>
+                                        <option value="ovale" {% if style_profile.body_type == 'ovale' %}selected{% endif %}>Ovale</option>
+                                    </select>
+                                </div>
+
+                                <div class="input-field">
+                                    <label for="height" class="input-label">Taille (cm)</label>
+                                    <input type="number" id="height" name="height" 
+                                           class="input-control" min="100" max="250" 
+                                           value="{{ style_profile.height|default:'' }}">
+                                </div>
+                            </div>
+
+                            <div class="form-grid-full">
+                                <div class="input-field">
+                                    <label class="input-label">Couleurs préférées</label>
+                                    <div class="color-grid">
+                                        <label class="color-option">
+                                            <input type="checkbox" name="favorite_colors" value="#000000"
+                                                   {% if '#000000' in style_profile.favorite_colors %}checked{% endif %}>
+                                            <span class="color-box color-black"></span>
+                                            <span class="color-name">Noir</span>
+                                        </label>
+                                        <label class="color-option">
+                                            <input type="checkbox" name="favorite_colors" value="#FFFFFF"
+                                                   {% if '#FFFFFF' in style_profile.favorite_colors %}checked{% endif %}>
+                                            <span class="color-box color-white"></span>
+                                            <span class="color-name">Blanc</span>
+                                        </label>
+                                        <label class="color-option">
+                                            <input type="checkbox" name="favorite_colors" value="#808080"
+                                                   {% if '#808080' in style_profile.favorite_colors %}checked{% endif %}>
+                                            <span class="color-box color-gray"></span>
+                                            <span class="color-name">Gris</span>
+                                        </label>
+                                        <label class="color-option">
+                                            <input type="checkbox" name="favorite_colors" value="#0000FF"
+                                                   {% if '#0000FF' in style_profile.favorite_colors %}checked{% endif %}>
+                                            <span class="color-box color-blue"></span>
+                                            <span class="color-name">Bleu</span>
+                                        </label>
+                                        <label class="color-option">
+                                            <input type="checkbox" name="favorite_colors" value="#FF0000"
+                                                   {% if '#FF0000' in style_profile.favorite_colors %}checked{% endif %}>
+                                            <span class="color-box color-red"></span>
+                                            <span class="color-name">Rouge</span>
+                                        </label>
+                                        <label class="color-option">
+                                            <input type="checkbox" name="favorite_colors" value="#008000"
+                                                   {% if '#008000' in style_profile.favorite_colors %}checked{% endif %}>
+                                            <span class="color-box color-green"></span>
+                                            <span class="color-name">Vert</span>
+                                        </label>
+                                        <label class="color-option">
+                                            <input type="checkbox" name="favorite_colors" value="#FFFF00"
+                                                   {% if '#FFFF00' in style_profile.favorite_colors %}checked{% endif %}>
+                                            <span class="color-box color-yellow"></span>
+                                            <span class="color-name">Jaune</span>
+                                        </label>
+                                        <label class="color-option">
+                                            <input type="checkbox" name="favorite_colors" value="#FFC0CB"
+                                                   {% if '#FFC0CB' in style_profile.favorite_colors %}checked{% endif %}>
+                                            <span class="color-box color-pink"></span>
+                                            <span class="color-name">Rose</span>
+                                        </label>
+                                        <label class="color-option">
+                                            <input type="checkbox" name="favorite_colors" value="#A52A2A"
+                                                   {% if '#A52A2A' in style_profile.favorite_colors %}checked{% endif %}>
+                                            <span class="color-box color-brown"></span>
+                                            <span class="color-name">Marron</span>
+                                        </label>
+                                        <label class="color-option">
+                                            <input type="checkbox" name="favorite_colors" value="#F5DEB3"
+                                                   {% if '#F5DEB3' in style_profile.favorite_colors %}checked{% endif %}>
+                                            <span class="color-box color-beige"></span>
+                                            <span class="color-name">Beige</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+                            <div class="form-grid-full">
+                                <div class="input-field">
+                                    <label class="input-label">Préférences shopping</label>
+                                    <div class="checkbox-grid" style="grid-template-columns: repeat(2, 1fr);">
+                                        <label class="checkbox-card">
+                                            <input type="checkbox" name="prefers_sustainable" value="true"
+                                                   {% if style_profile.prefers_sustainable %}checked{% endif %}>
+                                            <span>Éco-responsable</span>
+                                        </label>
+                                        <label class="checkbox-card">
+                                            <input type="checkbox" name="prefers_secondhand" value="true"
+                                                   {% if style_profile.prefers_secondhand %}checked{% endif %}>
+                                            <span>Seconde main</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="input-field">
-                            <label for="height" class="input-label">Taille (cm)</label>
-                            <input type="number" id="height" name="height" 
-                                   class="input-control" min="100" max="250" 
-                                   value="{{ style_profile.height|default:'' }}">
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
                         </div>
-                    </div>
-
-                    <div class="input-field">
-                        <label class="input-label">Couleurs préférées</label>
-                        <div class="color-grid">
-                            <label class="color-item">
-                                <input type="checkbox" name="favorite_colors" value="#000000"
-                                       {% if '#000000' in style_profile.favorite_colors %}checked{% endif %}>
-                                <span class="color-box color-black"></span>
-                                <span class="color-name">Noir</span>
-                            </label>
-                            <label class="color-item">
-                                <input type="checkbox" name="favorite_colors" value="#FFFFFF"
-                                       {% if '#FFFFFF' in style_profile.favorite_colors %}checked{% endif %}>
-                                <span class="color-box color-white"></span>
-                                <span class="color-name">Blanc</span>
-                            </label>
-                            <label class="color-item">
-                                <input type="checkbox" name="favorite_colors" value="#808080"
-                                       {% if '#808080' in style_profile.favorite_colors %}checked{% endif %}>
-                                <span class="color-box color-gray"></span>
-                                <span class="color-name">Gris</span>
-                            </label>
-                            <label class="color-item">
-                                <input type="checkbox" name="favorite_colors" value="#0000FF"
-                                       {% if '#0000FF' in style_profile.favorite_colors %}checked{% endif %}>
-                                <span class="color-box color-blue"></span>
-                                <span class="color-name">Bleu</span>
-                            </label>
-                            <label class="color-item">
-                                <input type="checkbox" name="favorite_colors" value="#FF0000"
-                                       {% if '#FF0000' in style_profile.favorite_colors %}checked{% endif %}>
-                                <span class="color-box color-red"></span>
-                                <span class="color-name">Rouge</span>
-                            </label>
-                            <label class="color-item">
-                                <input type="checkbox" name="favorite_colors" value="#008000"
-                                       {% if '#008000' in style_profile.favorite_colors %}checked{% endif %}>
-                                <span class="color-box color-green"></span>
-                                <span class="color-name">Vert</span>
-                            </label>
-                            <label class="color-item">
-                                <input type="checkbox" name="favorite_colors" value="#FFFF00"
-                                       {% if '#FFFF00' in style_profile.favorite_colors %}checked{% endif %}>
-                                <span class="color-box color-yellow"></span>
-                                <span class="color-name">Jaune</span>
-                            </label>
-                            <label class="color-item">
-                                <input type="checkbox" name="favorite_colors" value="#FFC0CB"
-                                       {% if '#FFC0CB' in style_profile.favorite_colors %}checked{% endif %}>
-                                <span class="color-box color-pink"></span>
-                                <span class="color-name">Rose</span>
-                            </label>
-                            <label class="color-item">
-                                <input type="checkbox" name="favorite_colors" value="#A52A2A"
-                                       {% if '#A52A2A' in style_profile.favorite_colors %}checked{% endif %}>
-                                <span class="color-box color-brown"></span>
-                                <span class="color-name">Marron</span>
-                            </label>
-                            <label class="color-item">
-                                <input type="checkbox" name="favorite_colors" value="#F5DEB3"
-                                       {% if '#F5DEB3' in style_profile.favorite_colors %}checked{% endif %}>
-                                <span class="color-box color-beige"></span>
-                                <span class="color-name">Beige</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="input-field">
-                        <label class="input-label">Préférences shopping</label>
-                        <div class="checkbox-list">
-                            <label class="checkbox-item-inline">
-                                <input type="checkbox" name="prefers_sustainable" value="true"
-                                       {% if style_profile.prefers_sustainable %}checked{% endif %}>
-                                <span>Je préfère les marques éco-responsables</span>
-                            </label>
-                            <label class="checkbox-item-inline">
-                                <input type="checkbox" name="prefers_secondhand" value="true"
-                                       {% if style_profile.prefers_secondhand %}checked{% endif %}>
-                                <span>J'aime la seconde main</span>
-                            </label>
-                        </div>
-                    </div>
+                    </form>
                 </div>
 
-                <!-- Save Button -->
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-lg">Enregistrer les modifications</button>
-                </div>
-            </form>
+                <!-- Sidebar -->
+                <div class="settings-sidebar">
+                    <!-- Account Status -->
+                    <div class="security-card">
+                        <h3 class="security-title">Statut du compte</h3>
+                        <div class="security-info">
+                            <div class="security-label">Email</div>
+                            <div class="security-value">
+                                {{ user.email }}
+                                {% if user.is_verified %}
+                                    <span class="security-status status-verified">Vérifié</span>
+                                {% else %}
+                                    <span class="security-status status-unverified">Non vérifié</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="security-info">
+                            <div class="security-label">Membre depuis</div>
+                            <div class="security-value">{{ user.date_joined|date:"F Y" }}</div>
+                        </div>
+                        <div class="security-info">
+                            <div class="security-label">Rôle</div>
+                            <div class="security-value">{{ user.get_role_display|default:"User" }}</div>
+                        </div>
+                    </div>
 
-            <!-- Additional Actions -->
-            <div class="settings-section danger-zone">
-                <h3 class="section-title">Sécurité et compte</h3>
-                <div class="action-list">
-                    <a href="{% url 'change_password' %}" class="action-btn">Changer le mot de passe</a>
-                    {% if not user.is_verified %}
-                    <a href="{% url 'resend_verification' %}" class="action-btn">Renvoyer l'email de vérification</a>
-                    {% endif %}
-                    <a href="{% url 'delete_account' %}" class="action-btn danger">Supprimer mon compte</a>
+                    <!-- Security Actions -->
+                    <div class="security-card">
+                        <h3 class="security-title">Sécurité</h3>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <a href="{% url 'change_password' %}" class="btn btn-secondary" style="width: 100%; text-align: center;">Changer le mot de passe</a>
+                            {% if not user.is_verified %}
+                            <a href="{% url 'resend_verification' %}" class="btn btn-secondary" style="width: 100%; text-align: center;">Renvoyer l'email</a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Danger Zone -->
+                    <div class="security-card" style="border-color: #c62828;">
+                        <h3 class="security-title" style="color: #c62828;">Zone dangereuse</h3>
+                        <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin-bottom: 16px;">
+                            La suppression de votre compte est irréversible.
+                        </p>
+                        <a href="{% url 'delete_account' %}" class="btn btn-primary" style="width: 100%; text-align: center; background: #c62828; border-color: #c62828;">Supprimer mon compte</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <script>
-        // Smooth page transitions
-        document.addEventListener('DOMContentLoaded', function() {
-            const links = document.querySelectorAll('a:not([target="_blank"])');
-            
-            links.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const href = this.getAttribute('href');
-                    
-                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
-                        e.preventDefault();
-                        document.body.classList.add('fade-out');
-                        setTimeout(() => {
-                            window.location.href = href;
-                        }, 300);
-                    }
-                });
-            });
-
-            const forms = document.querySelectorAll('form');
-            forms.forEach(form => {
-                form.addEventListener('submit', function() {
-                    document.body.classList.add('fade-out');
-                });
-            });
-        });
-    </script>
-</body>
-</html>
+{% endblock %}

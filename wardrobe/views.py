@@ -140,9 +140,18 @@ def wardrobe_upload_view(request):
         tags = request.POST.get('tags', '').split(',')
         tags = [tag.strip() for tag in tags if tag.strip()]
         
+        # Debug logging
+        print(f"DEBUG: Received POST data:")
+        print(f"  - name: {name}")
+        print(f"  - image: {image}")
+        print(f"  - color: {color}")
+        print(f"  - category_id: {category_id}")
+        
         # Validation
         if not name or not image or not color:
-            messages.error(request, 'Nom, image et couleur sont requis.')
+            error_msg = f'Nom, image et couleur sont requis. (Received: name={name}, image={image}, color={color})'
+            messages.error(request, error_msg)
+            print(f"DEBUG: Validation failed - {error_msg}")
             return render(request, 'wardrobe_upload.html', {'categories': get_categories(user)})
         
         # Validate image

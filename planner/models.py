@@ -5,6 +5,55 @@ from wardrobe.models import ClothingItem
 import uuid
 
 
+class Event(models.Model):
+    """
+    Simple event/occasion model for calendar planning
+    """
+    OCCASION_CHOICES = [
+        ('work', 'Work/Professional'),
+        ('casual', 'Casual Outing'),
+        ('formal', 'Formal Event'),
+        ('party', 'Party/Celebration'),
+        ('date', 'Date/Romance'),
+        ('sports', 'Sports/Fitness'),
+        ('travel', 'Travel'),
+        ('other', 'Other'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
+    
+    # Basic information
+    title = models.CharField(max_length=200)
+    date = models.DateField()
+    time = models.TimeField(null=True, blank=True)
+    occasion_type = models.CharField(max_length=50, choices=OCCASION_CHOICES, default='casual')
+    location = models.CharField(max_length=200, blank=True)
+    notes = models.TextField(blank=True)
+    
+    # Outfit planning
+    outfit = models.ForeignKey(Outfit, on_delete=models.SET_NULL, null=True, blank=True, related_name='events')
+    
+    # Status
+    is_completed = models.BooleanField(default=False)
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'events'
+        ordering = ['date', 'time']
+        verbose_name = 'Event'
+        verbose_name_plural = 'Events'
+        indexes = [
+            models.Index(fields=['user', 'date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} - {self.date}"
+
+
 class OutfitPlanning(models.Model):
     """
     Module 4: Style Planner & Calendar

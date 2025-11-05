@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mes Tenues - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+            <!-- Page Header -->
+            <div class="page-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <h1 class="page-title">MES TENUES</h1>
+                        <p class="page-subtitle">{{ total_outfits }} tenue{{ total_outfits|pluralize }} • {{ favorite_count }} favori{{ favorite_count|pluralize }}</p>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <a href="{% url 'outfits:outfit_stats' %}" class="btn btn-secondary">STATISTIQUES</a>
+                        <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">CRÉER UNE TENUE</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div style="margin-bottom: 24px;">
+                {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <form method="get" action="{% url 'outfits:outfit_gallery' %}">
+                    <!-- Search Bar -->
+                    <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+                        <input type="text" name="search" value="{{ search_query }}" placeholder="Rechercher par nom, description, tags..." class="input-control" style="flex: 1;">
+                        <button type="submit" class="btn btn-primary">RECHERCHER</button>
+                    </div>
+
+                    <!-- Filter Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <!-- Occasion Filter -->
+                        <div class="input-field">
+                            <label for="occasion" class="input-label">OCCASION</label>
+                            <select name="occasion" id="occasion" class="input-control" onchange="this.form.submit()">
+                                <option value="">Toutes les occasions</option>
+                                {% for value, label in occasions %}
+                                <option value="{{ value }}" {% if selected_occasion == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Favorites Filter -->
+                        <div class="input-field">
+                            <label class="checkbox-item-inline" style="display: flex; align-items: center; gap: 8px; margin-top: 32px;">
+                                <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %} onchange="this.form.submit()">
+                                <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.5px;">★ Favoris uniquement</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+                        <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">RÉINITIALISER</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Outfits Grid -->
+            <div class="content-section">
+                {% if outfits %}
+                <div class="wardrobe-grid">
+                    {% for outfit in outfits %}
+                    <div class="wardrobe-item">
+                        <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="item-link">
+                            <div class="item-image">
+                                {% if outfit.outfit_image %}
+                                <img src="{{ outfit.outfit_image.url }}" alt="{{ outfit.name }}">
+                                {% else %}
+                                <!-- Placeholder for outfit without image - show first item or placeholder -->
+                                {% with outfit.items.first as first_item %}
+                                    {% if first_item %}
+                                    <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}">
+                                    {% else %}
+                                    <div class="item-placeholder">👔 Tenue</div>
+                                    {% endif %}
+                                {% endwith %}
+                                {% endif %}
+                            </div>
+                            <div class="item-info">
+                                <h3 class="item-name">{{ outfit.name|upper }}</h3>
+                                <p class="item-category">{{ outfit.get_occasion_display }}</p>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">{{ outfit.items.count }} article{{ outfit.items.count|pluralize }}</span>
+                                    {% if outfit.favorite %}
+                                    <span style="color: #2c2c2c; font-size: 16px;">★</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                        <div class="item-actions">
+                            <form method="post" action="{% url 'outfits:outfit_toggle_favorite' outfit.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-icon" title="{% if outfit.favorite %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}">
+                                    {% if outfit.favorite %}★{% else %}☆{% endif %}
+                                </button>
+                            </form>
+                            <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn-icon" title="Voir">👁️</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if outfits.has_other_pages %}
+                <div class="pagination">
+                    {% if outfits.has_previous %}
+                    <a href="?page={{ outfits.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">← PRÉCÉDENT</a>
+                    {% endif %}
+                    
+                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Page {{ outfits.number }} sur {{ outfits.paginator.num_pages }}
+                    </span>
+                    
+                    {% if outfits.has_next %}
+                    <a href="?page={{ outfits.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">SUIVANT →</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% else %}
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <div style="font-size: 64px; margin-bottom: 24px; opacity: 0.3;">👔</div>
+                    <h3 style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; color: #2c2c2c; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px;">
+                        {% if search_query or selected_occasion or show_favorites %}
+                        Aucune tenue trouvée
+                        {% else %}
+                        Vous n'avez pas encore de tenues
+                        {% endif %}
+                    </h3>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: 0 0 32px 0;">
+                        {% if search_query or selected_occasion or show_favorites %}
+                        Essayez de modifier vos filtres de recherche.
+                        {% else %}
+                        Créez votre première tenue en combinant vos articles de garde-robe!
+                        {% endif %}
+                    </p>
+                    {% if not search_query and not selected_occasion and not show_favorites %}
+                    <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">CRÉER MA PREMIÈRE TENUE</a>
+                    {% else %}
+                    <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">RÉINITIALISER LES FILTRES</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,268 +1,177 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Tailora</title>
-    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        .info-card {
-            background: #f9f8f6;
-            padding: 24px;
-            margin-bottom: 16px;
-            border-radius: 8px;
-        }
-        .info-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #252320;
-            margin-bottom: 12px;
-        }
-        .info-item {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-        .info-label {
-            font-weight: 500;
-            color: #252320;
-        }
-        .verification-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-left: 8px;
-        }
-        .badge-verified {
-            background: #d4edda;
-            color: #155724;
-        }
-        .badge-unverified {
-            background: #fff3cd;
-            color: #856404;
-        }
-        .role-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-            background: #e3d5c8;
-            color: #7b513b;
-        }
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
-            margin-top: 32px;
-        }
-        .quick-action-card {
-            background: #dad3c2;
-            padding: 24px;
-            border-radius: 8px;
-            text-align: center;
-            text-decoration: none;
-            color: #252320;
-            transition: transform 0.2s;
-        }
-        .quick-action-card:hover {
-            transform: translateY(-4px);
-        }
-        .action-icon {
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .action-icon svg {
-            transition: transform 0.2s;
-        }
-        .quick-action-card:hover .action-icon svg {
-            transform: scale(1.1);
-        }
-        .action-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        .action-desc {
-            font-size: 12px;
-            color: #666;
-        }
-    </style>
-</head>
-<body>
-    <div class="dashboard-container">
-        <div class="dashboard-header">
-            <h1 class="dashboard-title">Tailora</h1>
-            <div class="header-actions">
-                <a href="{% url 'profile_settings' %}" class="btn btn-secondary">Paramètres</a>
-                <form method="post" action="{% url 'logout' %}" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="logout-btn">Déconnexion</button>
-                </form>
-            </div>
-        </div>
 
-        <div class="dashboard-content">
-            <h2 class="welcome-message">Bienvenue, {{ user.first_name|default:user.username }}!</h2>
-            
+{% block title %}Dashboard - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block container_class %}page-reveal{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+            <div class="page-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <h1 class="page-title">Le style taillé pour vous</h1>
+                        <p class="page-subtitle">Bienvenue, {{ user.first_name|default:user.username }}!</p>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <a href="{% url 'profile_settings' %}" class="btn btn-secondary">Paramètres</a>
+                        <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary" style="border: none; cursor: pointer;">Déconnexion</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
             {% if messages %}
                 {% for message in messages %}
-                    <div class="{% if message.tags == 'error' %}form-errors{% else %}success-message{% endif %}">
+                    <div style="padding: 24px 40px; background: {% if message.tags == 'error' %}#c62828{% else %}#2e7d32{% endif %}; color: #ffffff; border-bottom: 1px solid #e0e0e0;">
                         {{ message }}
                     </div>
                 {% endfor %}
             {% endif %}
 
             {% if not user.is_verified %}
-            <div class="warning-box">
-                <h3 class="warning-title">Email non vérifié</h3>
+            <div class="warning-banner">
+                <h3 class="warning-title">⚠ Email Non Vérifié</h3>
                 <p class="warning-text">
                     Votre adresse email n'a pas encore été vérifiée. 
                     Veuillez vérifier votre boîte de réception et cliquer sur le lien de vérification.
                 </p>
-                <a href="{% url 'resend_verification' %}" class="action-btn">Renvoyer l'email de vérification</a>
+                <a href="{% url 'resend_verification' %}" class="warning-btn">Renvoyer l'email</a>
             </div>
             {% endif %}
 
-            <div class="info-card">
-                <h3 class="info-title">Informations du compte</h3>
-                <div class="info-item">
-                    <span class="info-label">Email:</span> {{ user.email }}
-                    {% if user.is_verified %}
-                        <span class="verification-badge badge-verified">✓ Vérifié</span>
-                    {% else %}
-                        <span class="verification-badge badge-unverified">Non vérifié</span>
-                    {% endif %}
+            <div class="dashboard-grid">
+                <!-- Statistics Section -->
+                <div class="stats-section">
+                    <div class="stat-card">
+                        <div class="stat-label">Articles</div>
+                        <div class="stat-value">{{ user.wardrobe_items_count|default:"0" }}</div>
+                        <div class="stat-description">Total wardrobe items</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Tenues</div>
+                        <div class="stat-value">{{ user.outfits_created_count|default:"0" }}</div>
+                        <div class="stat-description">Outfits created</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Abonnés</div>
+                        <div class="stat-value">{{ user.followers_count|default:"0" }}</div>
+                        <div class="stat-description">Total followers</div>
+                    </div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">Nom d'utilisateur:</span> {{ user.username }}
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Rôle:</span> 
-                    <span class="role-badge">{{ user.get_role_display }} {{ user.get_role_display_badge }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Membre depuis:</span> {{ user.date_joined|date:"d F Y" }}
-                </div>
-            </div>
 
-            <div class="quick-actions">
-                <a href="{% url 'profile_settings' %}" class="quick-action-card">
-                    <div class="action-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7b513b" stroke-width="2">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M12 1v6m0 6v6m-9-7h6m6 0h6M4.22 4.22l4.24 4.24m7.07 0l4.24-4.24M4.22 19.78l4.24-4.24m7.07 0l4.24 4.24"></path>
-                        </svg>
+                <!-- Account Information Section -->
+                <div class="account-section">
+                    <h3 class="section-title">Account Information</h3>
+                    <div class="info-row">
+                        <span class="info-label">Email</span>
+                        <span class="info-value">
+                            {{ user.email }}
+                            {% if user.is_verified %}
+                                <span class="verification-badge badge-verified">Verified</span>
+                            {% else %}
+                                <span class="verification-badge badge-unverified">Unverified</span>
+                            {% endif %}
+                        </span>
                     </div>
-                    <div class="action-title">Paramètres</div>
-                    <div class="action-desc">Modifier vos informations et préférences</div>
-                </a>
-                
-                <a href="#" class="quick-action-card">
-                    <div class="action-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7b513b" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
+                    <div class="info-row">
+                        <span class="info-label">Username</span>
+                        <span class="info-value">{{ user.username }}</span>
                     </div>
-                    <div class="action-title">Ma Garde-robe</div>
-                    <div class="action-desc">{{ user.wardrobe_items_count }} vêtements</div>
-                </a>
-                
-                <a href="#" class="quick-action-card">
-                    <div class="action-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7b513b" stroke-width="2">
-                            <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
-                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                        </svg>
+                    <div class="info-row">
+                        <span class="info-label">Role</span>
+                        <span class="info-value">{{ user.get_role_display|default:"User" }}</span>
                     </div>
-                    <div class="action-title">Mes Tenues</div>
-                    <div class="action-desc">{{ user.outfits_created_count }} tenues créées</div>
-                </a>
-                
-                <a href="#" class="quick-action-card">
-                    <div class="action-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7b513b" stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
+                    <div class="info-row">
+                        <span class="info-label">Member Since</span>
+                        <span class="info-value">{{ user.date_joined|date:"F Y" }}</span>
                     </div>
-                    <div class="action-title">Planificateur</div>
-                    <div class="action-desc">Planifier vos looks</div>
-                </a>
-                
-                <a href="#" class="quick-action-card">
-                    <div class="action-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7b513b" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                        </svg>
+                </div>
+
+                <!-- Quick Actions Section -->
+                <div class="actions-section">
+                    <h3 class="section-title">Quick Actions</h3>
+                    <div class="actions-grid">
+                        <a href="{% url 'wardrobe_gallery' %}" class="action-card">
+                            <div class="action-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#252320" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <div class="action-title">Wardrobe</div>
+                            <div class="action-count">{{ user.wardrobe_items_count|default:"0" }}</div>
+                        </a>
+                        
+                        <a href="#" class="action-card">
+                            <div class="action-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#252320" stroke-width="1.5">
+                                    <rect x="2" y="7" width="20" height="15" rx="0" ry="0"></rect>
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                </svg>
+                            </div>
+                            <div class="action-title">Outfits</div>
+                            <div class="action-count">{{ user.outfits_created_count|default:"0" }}</div>
+                        </a>
+                        
+                        <a href="#" class="action-card">
+                            <div class="action-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#252320" stroke-width="1.5">
+                                    <rect x="3" y="4" width="18" height="18" rx="0" ry="0"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                            </div>
+                            <div class="action-title">Calendar</div>
+                            <div class="action-count">—</div>
+                        </a>
+                        
+                        <a href="#" class="action-card">
+                            <div class="action-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#252320" stroke-width="1.5">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </div>
+                            <div class="action-title">AI Assist</div>
+                            <div class="action-count">—</div>
+                        </a>
+                        
+                        <a href="#" class="action-card">
+                            <div class="action-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#252320" stroke-width="1.5">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </div>
+                            <div class="action-title">Social</div>
+                            <div class="action-count">{{ user.followers_count|default:"0" }}</div>
+                        </a>
+                        
+                        <a href="{% url 'profile_settings' %}" class="action-card">
+                            <div class="action-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#252320" stroke-width="1.5">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M12 1v6m0 6v6m-9-7h6m6 0h6M4.22 4.22l4.24 4.24m7.07 0l4.24-4.24M4.22 19.78l4.24-4.24m7.07 0l4.24 4.24"></path>
+                                </svg>
+                            </div>
+                            <div class="action-title">Settings</div>
+                            <div class="action-count">—</div>
+                        </a>
                     </div>
-                    <div class="action-title">Recommandations IA</div>
-                    <div class="action-desc">Suggestions personnalisées</div>
-                </a>
-                
-                <a href="#" class="quick-action-card">
-                    <div class="action-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7b513b" stroke-width="2">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                    </div>
-                    <div class="action-title">Hub Social</div>
-                    <div class="action-desc">{{ user.followers_count }} abonnés</div>
-                </a>
+                </div>
             </div>
         </div>
     </div>
-
-    <script>
-        // Smooth page transitions
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add fade transition to all links
-            const links = document.querySelectorAll('a:not([target="_blank"])');
-            
-            links.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const href = this.getAttribute('href');
-                    
-                    // Check if it's a valid internal link
-                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
-                        e.preventDefault();
-                        
-                        // Add fade-out class
-                        document.body.classList.add('fade-out');
-                        
-                        // Navigate after animation
-                        setTimeout(() => {
-                            window.location.href = href;
-                        }, 300);
-                    }
-                });
-            });
-
-            // Add fade transition to form submission
-            const forms = document.querySelectorAll('form');
-            forms.forEach(form => {
-                form.addEventListener('submit', function() {
-                    document.body.classList.add('fade-out');
-                });
-            });
-        });
-    </script>
-</body>
-</html>
+{% endblock %}

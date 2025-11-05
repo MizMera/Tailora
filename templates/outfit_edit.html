@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier {{ outfit.name }} - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+        .item-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .selectable-item {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+        .selectable-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .selectable-item.selected {
+            border-color: #2c2c2c;
+        }
+        .selectable-item .item-image {
+            padding-bottom: 100%;
+            position: relative;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            overflow: hidden;
+        }
+        .selectable-item .item-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .selectable-item .item-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            color: #2c2c2c;
+            margin: 8px 0 0 0;
+            text-align: center;
+            font-weight: 500;
+        }
+        .selectable-item .selection-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 32px;
+            height: 32px;
+            background: #2c2c2c;
+            color: #ffffff;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .selectable-item.selected .selection-badge {
+            display: flex;
+        }
+        .selected-preview {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            background: #f4e9cf;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        .selected-preview .preview-item {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #2c2c2c;
+            position: relative;
+        }
+        .selected-preview .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .selected-preview .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: #c62828;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+            <!-- Page Header -->
+            <div class="page-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <h1 class="page-title">MODIFIER LA TENUE</h1>
+                        <p class="page-subtitle">{{ outfit.name }}</p>
+                    </div>
+                    <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary">ANNULER</a>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+            <div style="margin-bottom: 24px;">
+                {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Edit Form -->
+            <div class="content-section">
+                <form method="post" id="editForm">
+                    {% csrf_token %}
+
+                    <!-- Basic Info -->
+                    <div class="settings-section">
+                        <h3 class="section-title">INFORMATIONS DE BASE</h3>
+                        <div class="form-grid">
+                            <div class="input-field">
+                                <label for="name" class="input-label">NOM DE LA TENUE *</label>
+                                <input type="text" id="name" name="name" class="input-control" required value="{{ outfit.name }}">
+                            </div>
+                            <div class="input-field">
+                                <label for="occasion" class="input-label">OCCASION</label>
+                                <select id="occasion" name="occasion" class="input-control">
+                                    {% for value, label in occasions %}
+                                    <option value="{{ value }}" {% if outfit.occasion == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-grid-full">
+                            <div class="input-field">
+                                <label for="description" class="input-label">DESCRIPTION</label>
+                                <textarea id="description" name="description" class="input-control" rows="3">{{ outfit.description }}</textarea>
+                            </div>
+                        </div>
+                        <div class="form-grid-full">
+                            <label class="checkbox-item-inline" style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" name="favorite" value="true" {% if outfit.favorite %}checked{% endif %}>
+                                <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.5px;">★ Marquer comme favori</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Selected Items Preview -->
+                    <div class="settings-section">
+                        <h3 class="section-title">ARTICLES SÉLECTIONNÉS <span id="selectedCount" style="color: #757575; font-weight: 400;">({{ outfit.items.count }})</span></h3>
+                        <div id="selectedPreview" class="selected-preview">
+                            {% for item in outfit.items.all %}
+                            <div class="preview-item" data-item-id="{{ item.id }}">
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                <button type="button" class="remove-btn" onclick="removeItem('{{ item.id }}', '{{ item.name }}', '{{ item.image.url }}')">×</button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <p id="selectionHint" style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-top: 16px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Cliquez sur les articles ci-dessous pour les ajouter ou retirer de votre tenue (minimum 2 articles)
+                        </p>
+                    </div>
+
+                    <!-- Item Selection by Category -->
+                    {% if items_by_category %}
+                    {% for category, items in items_by_category.items %}
+                    <div class="settings-section">
+                        <h3 class="section-title">{{ category|upper }}</h3>
+                        <div class="item-selector">
+                            {% for item in items %}
+                            <div class="selectable-item {% if item.id in selected_item_ids %}selected{% endif %}" 
+                                 data-item-id="{{ item.id }}" 
+                                 data-item-name="{{ item.name }}" 
+                                 data-item-image="{{ item.image.url }}">
+                                <div class="item-image">
+                                    <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                    <div class="selection-badge">✓</div>
+                                </div>
+                                <p class="item-name">{{ item.name|upper }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <!-- Hidden inputs for selected items -->
+                    <div id="hiddenInputs">
+                        {% for item in outfit.items.all %}
+                        <input type="hidden" name="items" value="{{ item.id }}">
+                        {% endfor %}
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary">ANNULER</a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">ENREGISTRER LES MODIFICATIONS</button>
+                    </div>
+                </form>
+            </div>
+
+    <script>
+        const selectedItems = new Set([{% for item in outfit.items.all %}'{{ item.id }}'{% if not forloop.last %}, {% endif %}{% endfor %}]);
+        const selectedPreview = document.getElementById('selectedPreview');
+        const selectedCount = document.getElementById('selectedCount');
+        const hiddenInputs = document.getElementById('hiddenInputs');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Handle item selection
+        document.querySelectorAll('.selectable-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-item-id');
+                const itemName = this.getAttribute('data-item-name');
+                const itemImage = this.getAttribute('data-item-image');
+
+                if (selectedItems.has(itemId)) {
+                    removeItem(itemId, itemName, itemImage);
+                } else {
+                    addItem(itemId, itemName, itemImage);
+                }
+            });
+        });
+
+        function addItem(itemId, itemName, itemImage) {
+            selectedItems.add(itemId);
+            
+            // Update UI
+            document.querySelector(`[data-item-id="${itemId}"]`).classList.add('selected');
+            
+            // Add to preview
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            previewItem.setAttribute('data-item-id', itemId);
+            previewItem.innerHTML = `
+                <img src="${itemImage}" alt="${itemName}">
+                <button type="button" class="remove-btn" onclick="removeItem('${itemId}', '${itemName}', '${itemImage}')">×</button>
+            `;
+            selectedPreview.appendChild(previewItem);
+            
+            // Add hidden input
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'items';
+            input.value = itemId;
+            input.setAttribute('data-item-id', itemId);
+            hiddenInputs.appendChild(input);
+            
+            updateSubmitButton();
+        }
+
+        function removeItem(itemId, itemName, itemImage) {
+            selectedItems.delete(itemId);
+            
+            // Update UI
+            const selectableItem = document.querySelector(`.selectable-item[data-item-id="${itemId}"]`);
+            if (selectableItem) {
+                selectableItem.classList.remove('selected');
+            }
+            
+            // Remove from preview
+            const previewItem = selectedPreview.querySelector(`[data-item-id="${itemId}"]`);
+            if (previewItem) {
+                previewItem.remove();
+            }
+            
+            // Remove hidden input
+            const input = hiddenInputs.querySelector(`[data-item-id="${itemId}"]`);
+            if (input) {
+                input.remove();
+            }
+            
+            updateSubmitButton();
+        }
+
+        function updateSubmitButton() {
+            selectedCount.textContent = `(${selectedItems.size})`;
+            
+            if (selectedItems.size < 2) {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.style.cursor = 'not-allowed';
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+            }
+        }
+
+        // Initial state
+        updateSubmitButton();
+    </script>
+{% endblock %}

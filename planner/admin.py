@@ -1,5 +1,15 @@
 from django.contrib import admin
-from .models import OutfitPlanning, TravelPlan, WearHistory
+from .models import Event, OutfitPlanning, TravelPlan, WearHistory
+
+
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    list_display = ['title', 'user', 'date', 'time', 'occasion_type', 'outfit', 'is_completed']
+    list_filter = ['occasion_type', 'is_completed', 'date']
+    search_fields = ['title', 'location', 'user__email']
+    raw_id_fields = ['user', 'outfit']
+    date_hierarchy = 'date'
+    ordering = ['-date']
 
 
 @admin.register(OutfitPlanning)

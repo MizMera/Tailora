@@ -1,221 +1,223 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma Garde-robe - Tailora</title>
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
-</head>
-<body>
-    <div class="dashboard-container">
-        <!-- Header -->
-        <header class="dashboard-header">
-            <div class="header-left">
-                <h1>Ma Garde-robe</h1>
-                <p class="subtitle">{{ total_items }} / {{ max_items }} articles</p>
-            </div>
-            <div class="header-right">
-                <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    Ajouter un article
-                </a>
-                <a href="{% url 'dashboard' %}" class="btn btn-secondary">Retour</a>
-            </div>
-        </header>
 
-        <!-- Messages -->
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="message {{ message.tags }}">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+{% block title %}Ma Garde-robe - Tailora{% endblock %}
 
-        <!-- Filters and Search -->
-        <div class="filters-container">
-            <form method="get" action="{% url 'wardrobe_gallery' %}" class="filters-form">
-                <div class="filter-group">
-                    <input 
-                        type="text" 
-                        name="search" 
-                        placeholder="Rechercher..." 
-                        value="{{ search_query|default:'' }}"
-                        class="search-input"
-                    >
-                    <button type="submit" class="btn-search">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <circle cx="11" cy="11" r="8" stroke-width="2"/>
-                            <path d="m21 21-4.35-4.35" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </button>
-                </div>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
+{% endblock %}
 
-                <div class="filter-group">
-                    <select name="category" class="filter-select">
-                        <option value="">Toutes les catégories</option>
-                        {% for category in categories %}
-                        <option value="{{ category.name }}" {% if selected_category == category.name %}selected{% endif %}>
-                            {{ category.icon }} {{ category.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
+{% block container_class %}page-reveal{% endblock %}
 
-                    <select name="color" class="filter-select">
-                        <option value="">Toutes les couleurs</option>
-                        {% for color in colors %}
-                        <option value="{{ color }}" {% if selected_color == color %}selected{% endif %}>
-                            {{ color }}
-                        </option>
-                        {% endfor %}
-                    </select>
-
-                    <select name="season" class="filter-select">
-                        <option value="">Toutes les saisons</option>
-                        <option value="spring" {% if selected_season == 'spring' %}selected{% endif %}>Printemps</option>
-                        <option value="summer" {% if selected_season == 'summer' %}selected{% endif %}>Été</option>
-                        <option value="fall" {% if selected_season == 'fall' %}selected{% endif %}>Automne</option>
-                        <option value="winter" {% if selected_season == 'winter' %}selected{% endif %}>Hiver</option>
-                        <option value="all_seasons" {% if selected_season == 'all_seasons' %}selected{% endif %}>Toutes saisons</option>
-                    </select>
-
-                    <select name="status" class="filter-select">
-                        <option value="">Tous les statuts</option>
-                        <option value="available" {% if selected_status == 'available' %}selected{% endif %}>Disponible</option>
-                        <option value="washing" {% if selected_status == 'washing' %}selected{% endif %}>Au lavage</option>
-                        <option value="dry_cleaning" {% if selected_status == 'dry_cleaning' %}selected{% endif %}>Au pressing</option>
-                        <option value="loaned" {% if selected_status == 'loaned' %}selected{% endif %}>Prêté</option>
-                        <option value="repair" {% if selected_status == 'repair' %}selected{% endif %}>En réparation</option>
-                    </select>
-
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %}>
-                        <span>Favoris uniquement</span>
-                    </label>
-
-                    <button type="submit" class="btn btn-secondary">Filtrer</button>
-                    <a href="{% url 'wardrobe_gallery' %}" class="btn btn-secondary">Réinitialiser</a>
-                </div>
-            </form>
-
-            <div class="view-options">
-                <a href="{% url 'wardrobe_stats' %}" class="btn btn-secondary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M3 3v18h18" stroke-width="2"/>
-                        <path d="M18 17V9m-5 8V5m-5 12v-4" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    Statistiques
-                </a>
-            </div>
-        </div>
-
-        <!-- Wardrobe Grid -->
-        {% if items %}
-        <div class="wardrobe-grid">
-            {% for item in items %}
-            <div class="wardrobe-item">
-                <a href="{% url 'wardrobe_detail' item.id %}" class="item-link">
-                    <div class="item-image">
-                        <img src="{{ item.image.url }}" alt="{{ item.name }}">
-                        {% if item.favorite %}
-                        <span class="favorite-badge">★</span>
-                        {% endif %}
-                        {% if item.status != 'available' %}
-                        <span class="status-badge status-{{ item.status }}">
-                            {% if item.status == 'washing' %}Au lavage
-                            {% elif item.status == 'dry_cleaning' %}Au pressing
-                            {% elif item.status == 'loaned' %}Prêté
-                            {% elif item.status == 'repair' %}En réparation
-                            {% endif %}
-                        </span>
-                        {% endif %}
+{% block content %}
+<!-- Page Header -->
+            <div class="page-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <h1 class="page-title">Wardrobe Management</h1>
+                        <p style="font-family: 'Inter', sans-serif; font-size: 16px; color: #757575; margin-top: 8px;">{{ total_items }} / {{ max_items }} articles</p>
                     </div>
-                    <div class="item-info">
-                        <h3 class="item-name">{{ item.name }}</h3>
-                        <p class="item-details">
-                            {% if item.category %}{{ item.category.name }}{% endif %}
-                            {% if item.brand %} · {{ item.brand }}{% endif %}
-                        </p>
-                        <p class="item-meta">
-                            <span class="color-dot" style="background-color: {{ item.color_hex|default:item.color }}"></span>
-                            {{ item.color }}
-                            {% if item.times_worn > 0 %} · Porté {{ item.times_worn }}×{% endif %}
-                        </p>
+                    <div style="display: flex; gap: 12px;">
+                        <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">Ajouter un article</a>
                     </div>
-                </a>
-                <div class="item-actions">
-                    <a href="{% url 'wardrobe_toggle_favorite' item.id %}" class="btn-icon" title="Favoris">
-                        {% if item.favorite %}★{% else %}☆{% endif %}
-                    </a>
-                    <a href="{% url 'wardrobe_edit' item.id %}" class="btn-icon" title="Modifier">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-width="2"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-width="2"/>
-                        </svg>
-                    </a>
-                    <a href="{% url 'wardrobe_delete' item.id %}" class="btn-icon btn-danger" title="Supprimer">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message {% if message.tags == 'error' %}message-error{% else %}message-success{% endif %}" style="margin: 0; border-left: none; border-bottom: 1px solid #e0e0e0; padding: 16px 40px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Main Content -->
+            <div style="background: #ffffff; padding: 40px; border-bottom: 1px solid #e0e0e0;">
+                <!-- Filters and Search -->
+                <form method="get" action="{% url 'wardrobe_gallery' %}" style="display: grid; gap: 24px;">
+                    <!-- Search Bar -->
+                    <div style="display: flex; gap: 12px;">
+                        <input 
+                            type="text" 
+                            name="search" 
+                            placeholder="Rechercher dans ma garde-robe..." 
+                            value="{{ search_query|default:'' }}"
+                            style="flex: 1; padding: 12px 16px; font-family: 'Inter', sans-serif; font-size: 14px; border: 1px solid #d9d9d9; border-radius: 0;"
+                        >
+                        <button type="submit" class="btn btn-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="11" cy="11" r="8" stroke-width="2"/>
+                                <path d="m21 21-4.35-4.35" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Rechercher
+                        </button>
+                    </div>
+
+                    <!-- Filters Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                        <select name="category" class="input-control">
+                            <option value="">Toutes les catégories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.name }}" {% if selected_category == category.name %}selected{% endif %}>
+                                {{ category.icon }} {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                        <select name="color" class="input-control">
+                            <option value="">Toutes les couleurs</option>
+                            {% for color in colors %}
+                            <option value="{{ color }}" {% if selected_color == color %}selected{% endif %}>
+                                {{ color }}
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                        <select name="season" class="input-control">
+                            <option value="">Toutes les saisons</option>
+                            <option value="spring" {% if selected_season == 'spring' %}selected{% endif %}>Printemps</option>
+                            <option value="summer" {% if selected_season == 'summer' %}selected{% endif %}>Été</option>
+                            <option value="fall" {% if selected_season == 'fall' %}selected{% endif %}>Automne</option>
+                            <option value="winter" {% if selected_season == 'winter' %}selected{% endif %}>Hiver</option>
+                            <option value="all_seasons" {% if selected_season == 'all_seasons' %}selected{% endif %}>Toutes saisons</option>
+                        </select>
+
+                        <select name="status" class="input-control">
+                            <option value="">Tous les statuts</option>
+                            <option value="available" {% if selected_status == 'available' %}selected{% endif %}>Disponible</option>
+                            <option value="washing" {% if selected_status == 'washing' %}selected{% endif %}>Au lavage</option>
+                            <option value="dry_cleaning" {% if selected_status == 'dry_cleaning' %}selected{% endif %}>Au pressing</option>
+                            <option value="loaned" {% if selected_status == 'loaned' %}selected{% endif %}>Prêté</option>
+                            <option value="repair" {% if selected_status == 'repair' %}selected{% endif %}>En réparation</option>
+                        </select>
+
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 12px; background: #fafafa; border: 1px solid #d9d9d9; cursor: pointer;">
+                            <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %}>
+                            <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #252320;">Favoris uniquement</span>
+                        </label>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <a href="{% url 'wardrobe_gallery' %}" class="btn btn-secondary">Réinitialiser</a>
+                        <a href="{% url 'wardrobe_stats' %}" class="btn btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="vertical-align: middle;">
+                                <path d="M3 3v18h18" stroke-width="2"/>
+                                <path d="M18 17V9m-5 8V5m-5 12v-4" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Statistiques
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Wardrobe Grid -->
+            {% if items %}
+            <div style="background: #ffffff; padding: 40px;">
+                <div class="wardrobe-grid">
+                    {% for item in items %}
+                    <div class="wardrobe-item">
+                        <a href="{% url 'wardrobe_detail' item.id %}" class="item-link">
+                            <div class="item-image">
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                {% if item.favorite %}
+                                <span class="favorite-badge">★</span>
+                                {% endif %}
+                                {% if item.status != 'available' %}
+                                <span class="status-badge status-{{ item.status }}">
+                                    {% if item.status == 'washing' %}Au lavage
+                                    {% elif item.status == 'dry_cleaning' %}Au pressing
+                                    {% elif item.status == 'loaned' %}Prêté
+                                    {% elif item.status == 'repair' %}En réparation
+                                    {% endif %}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="item-info">
+                                <h3 class="item-name">{{ item.name }}</h3>
+                                <p class="item-details">
+                                    {% if item.category %}{{ item.category.name }}{% endif %}
+                                    {% if item.brand %} · {{ item.brand }}{% endif %}
+                                </p>
+                                <p class="item-meta">
+                                    <span class="color-dot"></span>
+                                    {{ item.color }}
+                                    {% if item.times_worn > 0 %} · Porté {{ item.times_worn }}×{% endif %}
+                                </p>
+                            </div>
+                        </a>
+                        <div class="item-actions">
+                            <a href="{% url 'wardrobe_toggle_favorite' item.id %}" class="btn-icon" title="Favoris">
+                                {% if item.favorite %}★{% else %}☆{% endif %}
+                            </a>
+                            <a href="{% url 'wardrobe_edit' item.id %}" class="btn-icon" title="Modifier">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-width="2"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-width="2"/>
+                                </svg>
+                            </a>
+                            <a href="{% url 'wardrobe_delete' item.id %}" class="btn-icon btn-danger" title="Supprimer">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke-width="2"/>
                         </svg>
                     </a>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
+
+                <!-- Pagination -->
+                {% if items.has_other_pages %}
+                <div style="display: flex; justify-content: center; align-items: center; gap: 12px; padding-top: 40px; margin-top: 40px; border-top: 1px solid #e0e0e0;">
+                    {% if items.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_color %}&color={{ selected_color }}{% endif %}{% if selected_season %}&season={{ selected_season }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">« Premier</a>
+                    <a href="?page={{ items.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_color %}&color={{ selected_color }}{% endif %}{% if selected_season %}&season={{ selected_season }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">‹ Précédent</a>
+                    {% endif %}
+
+                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #252320; font-weight: 600;">
+                        Page {{ items.number }} sur {{ items.paginator.num_pages }}
+                    </span>
+
+                    {% if items.has_next %}
+                    <a href="?page={{ items.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_color %}&color={{ selected_color }}{% endif %}{% if selected_season %}&season={{ selected_season }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">Suivant ›</a>
+                    <a href="?page={{ items.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_color %}&color={{ selected_color }}{% endif %}{% if selected_season %}&season={{ selected_season }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">Dernier »</a>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
-            {% endfor %}
-        </div>
 
-        <!-- Pagination -->
-        {% if items.has_other_pages %}
-        <div class="pagination">
-            {% if items.has_previous %}
-            <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_color %}&color={{ selected_color }}{% endif %}{% if selected_season %}&season={{ selected_season }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="page-link">« Premier</a>
-            <a href="?page={{ items.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_color %}&color={{ selected_color }}{% endif %}{% if selected_season %}&season={{ selected_season }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="page-link">‹ Précédent</a>
+            {% else %}
+            <div style="background: #ffffff; padding: 80px 40px; text-align: center;">
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#757575" style="margin: 0 auto 24px;">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke-width="2"/>
+                    <circle cx="12" cy="7" r="4" stroke-width="2"/>
+                </svg>
+                <h2 style="font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; color: #252320; margin-bottom: 16px;">Votre garde-robe est vide</h2>
+                <p style="font-family: 'Inter', sans-serif; font-size: 16px; color: #757575; margin-bottom: 32px;">Commencez par ajouter vos premiers vêtements!</p>
+                <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">Ajouter un article</a>
+            </div>
             {% endif %}
 
-            <span class="page-current">
-                Page {{ items.number }} sur {{ items.paginator.num_pages }}
-            </span>
-
-            {% if items.has_next %}
-            <a href="?page={{ items.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_color %}&color={{ selected_color }}{% endif %}{% if selected_season %}&season={{ selected_season }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="page-link">Suivant ›</a>
-            <a href="?page={{ items.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_color %}&color={{ selected_color }}{% endif %}{% if selected_season %}&season={{ selected_season }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="page-link">Dernier »</a>
-            {% endif %}
+                {% if not is_premium and remaining_slots <= 10 %}
+                <div class="upgrade-banner" style="background: #fff3e0; padding: 24px; border-radius: 0; border: 1px solid #ff9800; margin-top: 24px;">
+                    <h3 style="font-family: 'Inter', sans-serif; font-size: 20px; color: #e65100; margin: 0 0 8px 0;">⚡ Plus que {{ remaining_slots }} emplacements disponibles!</h3>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 16px; color: #252320; margin: 0 0 16px 0;">Passez à Premium pour débloquer jusqu'à 1000 articles dans votre garde-robe.</p>
+                    <a href="#" class="btn btn-primary">Passer à Premium</a>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        {% endif %}
 
-        {% else %}
-        <div class="empty-state">
-            <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke-width="2"/>
-                <circle cx="12" cy="7" r="4" stroke-width="2"/>
-            </svg>
-            <h2>Votre garde-robe est vide</h2>
-            <p>Commencez par ajouter vos premiers vêtements!</p>
-            <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">Ajouter un article</a>
         </div>
-        {% endif %}
-
-        {% if not is_premium and remaining_slots <= 10 %}
-        <div class="upgrade-banner">
-            <h3>⚡ Plus que {{ remaining_slots }} emplacements disponibles!</h3>
-            <p>Passez à Premium pour débloquer jusqu'à 1000 articles dans votre garde-robe.</p>
-            <a href="#" class="btn btn-primary">Passer à Premium</a>
-        </div>
-        {% endif %}
-    </div>
 
     <script>
-        // Auto-submit form on filter change
         document.querySelectorAll('.filter-select, input[name="favorites"]').forEach(element => {
             element.addEventListener('change', function() {
                 this.closest('form').submit();
             });
         });
     </script>
-</body>
-</html>
+{% endblock %}
+
+
