@@ -53,13 +53,15 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
+    # Module URLs
+    path('wardrobe/', include('wardrobe.urls')),  # Module 2: Wardrobe Management
+    
     # API endpoints
     path('api/', include('users.urls')),
-    # path('api/', include('wardrobe.urls')),  # To be created by Student 2
-    # path('api/', include('outfits.urls')),   # To be created by Student 3
-    # path('api/', include('planner.urls')),   # To be created by Student 4
-    # path('api/', include('social.urls')),    # To be created by Student 5
-    # path('api/', include('recommendations.urls')),  # To be created by all
+    # path('api/outfits/', include('outfits.urls')),   # To be created by Student 3
+    # path('api/planner/', include('planner.urls')),   # To be created by Student 4
+    # path('api/social/', include('social.urls')),    # To be created by Student 5
+    # path('api/recommendations/', include('recommendations.urls')),  # To be created by Student 6
 ]
 
 # Serve media files in development
