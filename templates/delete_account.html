@@ -1,0 +1,139 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supprimer le compte - Tailora</title>
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="auth-form-wrapper">
+                <div class="auth-header">
+                    <h1 class="auth-title">Tailora</h1>
+                    <p class="auth-subtitle">Supprimer mon compte</p>
+                </div>
+
+                <div class="warning-box">
+                    <h3 class="warning-title">Action irréversible</h3>
+                    <p class="warning-text">
+                        La suppression de votre compte est <strong>définitive et irréversible</strong>. 
+                        Toutes vos données seront perdues :
+                    </p>
+                    <ul class="warning-list">
+                        <li>Votre garde-robe et tous vos vêtements</li>
+                        <li>Vos tenues créées</li>
+                        <li>Votre calendrier et planification</li>
+                        <li>Vos publications et interactions sociales</li>
+                        <li>Vos préférences de style et recommandations</li>
+                    </ul>
+                </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="{% if message.tags == 'error' %}form-errors{% else %}success-message{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" class="auth-form" id="deleteForm">
+                    {% csrf_token %}
+
+                    <div class="input-field">
+                        <label for="password" class="input-label">Confirmer votre mot de passe</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="input-control" 
+                            required
+                            autocomplete="current-password">
+                    </div>
+
+                    <div class="input-field">
+                        <label for="confirmation" class="input-label">
+                            Tapez "DELETE" pour confirmer la suppression
+                        </label>
+                        <input 
+                            type="text" 
+                            id="confirmation" 
+                            name="confirmation" 
+                            class="input-control" 
+                            required
+                            placeholder="DELETE"
+                            autocomplete="off">
+                        <small class="input-hint">Cette action est irréversible</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger btn-lg">
+                        Supprimer définitivement mon compte
+                    </button>
+                </form>
+
+                <div class="form-footer">
+                    <a href="{% url 'profile_settings' %}" class="footer-link">Retour aux paramètres</a>
+                    <span class="footer-divider">•</span>
+                    <a href="{% url 'dashboard' %}" class="footer-link">Tableau de bord</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-right">
+            <img src="{% static 'images/login_pic.jpg' %}" alt="Tailora" class="auth-image">
+        </div>
+    </div>
+
+    <script>
+        // Confirmation validation
+        document.getElementById('deleteForm').addEventListener('submit', function(e) {
+            const confirmation = document.getElementById('confirmation').value;
+
+            if (confirmation !== 'DELETE') {
+                e.preventDefault();
+                alert('Vous devez taper "DELETE" exactement pour confirmer la suppression.');
+                return false;
+            }
+
+            // Final confirmation
+            const finalConfirm = confirm(
+                'Êtes-vous absolument sûr(e) de vouloir supprimer votre compte ?\n\n' +
+                'Cette action est DÉFINITIVE et IRRÉVERSIBLE.\n\n' +
+                'Cliquez sur OK pour supprimer votre compte, ou sur Annuler pour revenir en arrière.'
+            );
+
+            if (!finalConfirm) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Show fade out animation on submit
+            document.body.classList.add('fade-out');
+        });
+
+        // Smooth page transitions
+        document.addEventListener('DOMContentLoaded', function() {
+            const links = document.querySelectorAll('a:not([target="_blank"])');
+            
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    
+                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                        e.preventDefault();
+                        document.body.classList.add('fade-out');
+                        setTimeout(() => {
+                            window.location.href = href;
+                        }, 300);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

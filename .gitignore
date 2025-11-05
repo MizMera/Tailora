@@ -48,6 +48,10 @@ build/
 # Thumbnails
 Thumbs.db
 
+# Documentation (Markdown files)
+*.md
+!README.md
+
 # Celery
 celerybeat-schedule
 celerybeat.pid

@@ -19,7 +19,12 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from users.auth_views import login_view, register_view, logout_view, password_reset_view, dashboard_view
+from users.auth_views import (
+    login_view, register_view, logout_view, dashboard_view,
+    password_reset_request_view, password_reset_confirm_view,
+    verify_email_view, resend_verification_email_view,
+    profile_settings_view, change_password_view, delete_account_view
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,8 +34,20 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
-    path('password-reset/', password_reset_view, name='password_reset'),
     path('dashboard/', dashboard_view, name='dashboard'),
+    
+    # Password Reset
+    path('password-reset/', password_reset_request_view, name='password_reset'),
+    path('password-reset-confirm/<uidb64>/<token>/', password_reset_confirm_view, name='password_reset_confirm'),
+    
+    # Email Verification
+    path('verify-email/<uidb64>/<token>/', verify_email_view, name='verify_email'),
+    path('resend-verification/', resend_verification_email_view, name='resend_verification'),
+    
+    # Profile & Account Management
+    path('profile/settings/', profile_settings_view, name='profile_settings'),
+    path('profile/change-password/', change_password_view, name='change_password'),
+    path('profile/delete-account/', delete_account_view, name='delete_account'),
     
     # JWT Authentication (API)
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
