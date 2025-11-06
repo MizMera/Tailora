@@ -24,7 +24,7 @@
                     <a href="{% url 'wardrobe_gallery' %}" class="nav-pill {% if 'wardrobe' in request.resolver_match.url_name %}active{% endif %}">Wardrobe</a>
                     <a href="{% url 'outfits:outfit_gallery' %}" class="nav-pill {% if 'outfit' in request.resolver_match.url_name %}active{% endif %}">Outfits</a>
                     <a href="{% url 'planner:calendar' %}" class="nav-pill {% if 'planner' in request.resolver_match.namespace %}active{% endif %}">Calendar & Event</a>
-                    <a href="#" class="nav-pill">Social Features</a>
+                    <a href="{% url 'social:feed' %}" class="nav-pill {% if 'social' in request.resolver_match.namespace %}active{% endif %}">Social Features</a>
                     <a href="#" class="nav-pill">AI Recommendations</a>
                     <a href="#" class="nav-pill">Support</a>
                 </div>
@@ -39,5 +39,6 @@
     </div>
     
     {% block extra_js %}{% endblock %}
+    <script src="{% static 'js/confirm-modal.js' %}"></script>
 </body>
 </html>

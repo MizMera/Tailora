@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -177,22 +178,22 @@ CORS_ALLOWED_ORIGINS = [
 WEATHER_API_KEY = ''  # Add your API key here
 WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/'
 
-# Email Configuration
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
-
-# Gmail SMTP Configuration (Easy for local development)
+# Email Configuration (use coded SMTP credentials with new App Password)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'zghidamiz@gmail.com'  # Replace with your Gmail address
-EMAIL_HOST_PASSWORD = 'zsyl mqhg qplw hhae'  # Replace with Gmail App Password (NOT your regular password)
-DEFAULT_FROM_EMAIL = 'Tailora <zghidamiz@gmail.com>'  # Use same Gmail
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'zghidamiz@gmail.com'
+EMAIL_HOST_PASSWORD = 'abgi zbph raia pueh'  # Gmail App Password
+EMAIL_TIMEOUT = 10
+
+DEFAULT_FROM_EMAIL = 'Tailora <zghidamiz@gmail.com>'
 EMAIL_SUBJECT_PREFIX = '[Tailora] '
 
 # Site Configuration
 SITE_NAME = 'Tailora'
-FRONTEND_URL = 'http://127.0.0.1:8000'  # Update for production
+FRONTEND_URL = 'http://127.0.0.1:8000'  # Fallback base; request.build_absolute_uri is preferred
 
 # Password Reset Token Expiry
 PASSWORD_RESET_TIMEOUT = 3600  # 1 hour in seconds

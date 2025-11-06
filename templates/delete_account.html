@@ -71,7 +71,7 @@
                         <small class="input-hint">Cette action est irréversible</small>
                     </div>
 
-                    <button type="submit" class="btn btn-danger btn-lg">
+                    <button type="button" class="btn btn-danger btn-lg delete-trigger" data-form-id="deleteForm" data-item-name="votre compte">
                         Supprimer définitivement mon compte
                     </button>
                 </form>
@@ -89,6 +89,7 @@
         </div>
     </div>
 
+    <script src="{% static 'js/confirm-modal.js' %}"></script>
     <script>
         // Confirmation validation
         document.getElementById('deleteForm').addEventListener('submit', function(e) {
@@ -97,18 +98,6 @@
             if (confirmation !== 'DELETE') {
                 e.preventDefault();
                 alert('Vous devez taper "DELETE" exactement pour confirmer la suppression.');
-                return false;
-            }
-
-            // Final confirmation
-            const finalConfirm = confirm(
-                'Êtes-vous absolument sûr(e) de vouloir supprimer votre compte ?\n\n' +
-                'Cette action est DÉFINITIVE et IRRÉVERSIBLE.\n\n' +
-                'Cliquez sur OK pour supprimer votre compte, ou sur Annuler pour revenir en arrière.'
-            );
-
-            if (!finalConfirm) {
-                e.preventDefault();
                 return false;
             }
 

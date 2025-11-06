@@ -161,9 +161,9 @@
         <!-- Danger Zone -->
         <div class="content-section danger-zone">
             <h4 class="section-title">DANGER ZONE</h4>
-            <form method="post" action="{% url 'planner:event_delete' event.id %}" onsubmit="return confirm('Are you sure you want to delete this event?');">
+            <form id="delete-event-form-{{ event.id }}" method="post" action="{% url 'planner:event_delete' event.id %}">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-danger btn-block">Delete Event</button>
+                <button type="button" class="btn btn-danger btn-block delete-trigger" data-form-id="delete-event-form-{{ event.id }}" data-item-name="cet évènement">Delete Event</button>
             </form>
         </div>
     </div>

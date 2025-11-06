@@ -57,6 +57,7 @@ urlpatterns = [
     path('wardrobe/', include('wardrobe.urls')),  # Module 2: Wardrobe Management
     path('outfits/', include('outfits.urls')),  # Module 3: Outfit Management
     path('planner/', include('planner.urls')),  # Module 4: Calendar & Events
+    path('social/', include('social.urls')),  # Module 5: Social Features
     
     # API endpoints
     path('api/', include('users.urls')),

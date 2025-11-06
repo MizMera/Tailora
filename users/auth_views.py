@@ -28,7 +28,7 @@ def login_view(request):
         print(f"DEBUG: Login attempt with email: {email}")
         
         if not email or not password:
-            messages.error(request, 'Veuillez fournir un email et un mot de passe.')
+            messages.error(request, 'Please provide an email and password.')
             return render(request, 'login.html')
         
         # Authenticate using email (since USERNAME_FIELD is 'email')
@@ -39,7 +39,7 @@ def login_view(request):
         
         if user is None:
             print(f"DEBUG: Authentication failed")
-            messages.error(request, 'Email ou mot de passe incorrect.')
+            messages.error(request, 'Incorrect email or password.')
             return render(request, 'login.html')
         
         if user is not None:
@@ -59,7 +59,7 @@ def login_view(request):
             next_url = request.GET.get('next', 'dashboard')
             return redirect(next_url)
         else:
-            messages.error(request, 'Email ou mot de passe incorrect.')
+            messages.error(request, 'Incorrect email or password.')
     
     return render(request, 'login.html')
 
@@ -91,21 +91,21 @@ def register_view(request):
         
         # Validation
         if not email or not username or not password:
-            messages.error(request, 'Email, nom d\'utilisateur et mot de passe sont requis.')
+            messages.error(request, 'Email, username, and password are required.')
             return render(request, 'register.html')
         
         # Check if user already exists
         if User.objects.filter(email=email).exists():
-            messages.error(request, 'Un compte avec cet email existe déjà.')
+            messages.error(request, 'An account with this email already exists.')
             return render(request, 'register.html')
         
         if User.objects.filter(username=username).exists():
-            messages.error(request, 'Ce nom d\'utilisateur est déjà pris.')
+            messages.error(request, 'This username is already taken.')
             return render(request, 'register.html')
         
         # Password validation
         if len(password) < 8:
-            messages.error(request, 'Le mot de passe doit contenir au moins 8 caractères.')
+            messages.error(request, 'Password must be at least 8 characters long.')
             return render(request, 'register.html')
         
         try:
@@ -147,14 +147,14 @@ def register_view(request):
             
             # Send verification email
             try:
-                send_verification_email(user)
+                send_verification_email(user=user, request=request)
             except Exception as e:
                 print(f"Failed to send verification email: {e}")
             
             # Auto login after registration
             auth_login(request, user)
             
-            messages.success(request, 'Compte créé avec succès! Veuillez vérifier votre email pour activer votre compte.')
+            messages.success(request, 'Account created! Please check your email to verify your account.')
             return redirect('dashboard')
             
         except Exception as e:
@@ -170,7 +170,7 @@ def logout_view(request):
     Logout view - logs out the user
     """
     auth_logout(request)
-    messages.success(request, 'Vous avez été déconnecté avec succès.')
+    messages.success(request, 'You have been logged out successfully.')
     return redirect('login')
 
 
@@ -183,7 +183,7 @@ def password_reset_request_view(request):
         email = request.POST.get('email')
         
         if not email:
-            messages.error(request, 'Veuillez fournir une adresse email.')
+            messages.error(request, 'Please provide an email address.')
             return render(request, 'password_reset_request.html')
         
         try:
@@ -193,25 +193,29 @@ def password_reset_request_view(request):
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             
-            # Create reset link
-            reset_link = f"{settings.FRONTEND_URL}{reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})}"
+            # Create reset link (prefer absolute URL from request)
+            reset_path = reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+            try:
+                reset_link = request.build_absolute_uri(reset_path)
+            except Exception:
+                reset_link = f"{getattr(settings, 'FRONTEND_URL', '')}{reset_path}"
             
             # Send email
-            subject = 'Réinitialisation de votre mot de passe Tailora'
+            subject = 'Reset your Tailora password'
             message = f"""
-Bonjour {user.username},
+Hello {user.username},
 
-Vous avez demandé à réinitialiser votre mot de passe sur Tailora.
+We received a request to reset your Tailora password.
 
-Cliquez sur le lien ci-dessous pour créer un nouveau mot de passe :
+Click the link below to set a new password:
 {reset_link}
 
-Ce lien est valide pendant 1 heure.
+This link is valid for 1 hour.
 
-Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.
+If you didn't request this, you can safely ignore this email.
 
-Cordialement,
-L'équipe Tailora
+Best regards,
+The Tailora Team
             """
             
             try:
@@ -227,16 +231,16 @@ L'équipe Tailora
             except Exception as email_error:
                 print(f"Failed to send password reset email: {email_error}")
             
-            messages.success(request, 'Un email de réinitialisation a été envoyé à votre adresse.')
+            messages.success(request, 'A password reset email has been sent to your address.')
             return redirect('login')
             
         except User.DoesNotExist:
             # Don't reveal that the user doesn't exist for security
-            messages.success(request, 'Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.')
+            messages.success(request, 'If an account exists for that email, a reset link has been sent.')
             return redirect('login')
         except Exception as e:
             print(f"Password reset error: {e}")
-            messages.error(request, 'Une erreur est survenue. Veuillez réessayer.')
+            messages.error(request, 'An error occurred. Please try again.')
             return render(request, 'password_reset_request.html')
     
     return render(request, 'password_reset_request.html')
@@ -259,64 +263,83 @@ def password_reset_confirm_view(request, uidb64, token):
             password2 = request.POST.get('password2')
             
             if not password1 or not password2:
-                messages.error(request, 'Veuillez remplir tous les champs.')
+                messages.error(request, 'Please fill in all fields.')
                 return render(request, 'password_reset_confirm.html', {'validlink': True})
             
             if password1 != password2:
-                messages.error(request, 'Les mots de passe ne correspondent pas.')
+                messages.error(request, 'Passwords do not match.')
                 return render(request, 'password_reset_confirm.html', {'validlink': True})
             
             if len(password1) < 8:
-                messages.error(request, 'Le mot de passe doit contenir au moins 8 caractères.')
+                messages.error(request, 'Password must be at least 8 characters long.')
                 return render(request, 'password_reset_confirm.html', {'validlink': True})
             
             # Set new password
             user.set_password(password1)
             user.save()
             
-            messages.success(request, 'Votre mot de passe a été réinitialisé avec succès.')
+            messages.success(request, 'Your password has been reset successfully.')
             return redirect('login')
         
         return render(request, 'password_reset_confirm.html', {'validlink': True})
     else:
-        messages.error(request, 'Le lien de réinitialisation est invalide ou a expiré.')
+        messages.error(request, 'The reset link is invalid or has expired.')
         return render(request, 'password_reset_confirm.html', {'validlink': False})
 
 
-@csrf_protect
-def send_verification_email(user):
+def send_verification_email(user=None, request=None):
     """
     Send email verification link to user
     """
+    if user is None:
+        raise ValueError("User parameter is required")
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     
-    # Create verification link
-    verification_link = f"{settings.FRONTEND_URL}{reverse('verify_email', kwargs={'uidb64': uid, 'token': token})}"
+    # Create verification link (prefer absolute URL from request)
+    verify_path = reverse('verify_email', kwargs={'uidb64': uid, 'token': token})
+    if request is not None:
+        try:
+            verification_link = request.build_absolute_uri(verify_path)
+        except Exception:
+            verification_link = f"{getattr(settings, 'FRONTEND_URL', '')}{verify_path}"
+    else:
+        verification_link = f"{getattr(settings, 'FRONTEND_URL', '')}{verify_path}"
     
     # Send email
-    subject = 'Vérifiez votre adresse email - Tailora'
+    subject = 'Verify your email address - Tailora'
     message = f"""
-Bonjour {user.username},
+Hello {user.username},
 
-Merci de vous être inscrit sur Tailora !
+Thanks for signing up for Tailora!
 
-Cliquez sur le lien ci-dessous pour vérifier votre adresse email :
+Click the link below to verify your email address:
 {verification_link}
 
-Cordialement,
-L'équipe Tailora
+Best regards,
+The Tailora Team
     """
     
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-        fail_silently=False,
-    )
-    print(f"Verification email sent to {user.email}")
-    print(f"Verification link: {verification_link}")
+    print(f"[DEBUG] Attempting to send verification email to: {user.email}")
+    print(f"[DEBUG] From: {settings.DEFAULT_FROM_EMAIL}")
+    print(f"[DEBUG] Email backend: {settings.EMAIL_BACKEND}")
+    print(f"[DEBUG] SMTP host: {settings.EMAIL_HOST}:{settings.EMAIL_PORT}")
+    
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+        print(f"[SUCCESS] Verification email sent to {user.email}")
+        print(f"[SUCCESS] Verification link: {verification_link}")
+    except Exception as e:
+        print(f"[ERROR] Failed to send email: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 
 def verify_email_view(request, uidb64, token):
@@ -332,10 +355,10 @@ def verify_email_view(request, uidb64, token):
     if user is not None and default_token_generator.check_token(user, token):
         user.is_verified = True
         user.save()
-        messages.success(request, 'Votre email a été vérifié avec succès!')
+        messages.success(request, 'Your email has been verified!')
         return redirect('login')
     else:
-        messages.error(request, 'Le lien de vérification est invalide ou a expiré.')
+        messages.error(request, 'The verification link is invalid or has expired.')
         return redirect('login')
 
 
@@ -345,14 +368,15 @@ def resend_verification_email_view(request):
     Resend verification email
     """
     if request.user.is_verified:
-        messages.info(request, 'Votre email est déjà vérifié.')
+        messages.info(request, 'Your email is already verified.')
         return redirect('dashboard')
     
     try:
-        send_verification_email(request.user)
-        messages.success(request, 'Un nouvel email de vérification a été envoyé.')
+        send_verification_email(user=request.user, request=request)
+        messages.success(request, 'A new verification email has been sent.')
     except Exception as e:
-        messages.error(request, 'Une erreur est survenue. Veuillez réessayer.')
+        print(f"Failed to resend verification email: {e}")
+        messages.error(request, 'An error occurred. Please try again.')
     
     return redirect('dashboard')
 
@@ -415,7 +439,7 @@ def profile_settings_view(request):
         
         style_profile.save()
         
-        messages.success(request, 'Profil mis à jour avec succès!')
+        messages.success(request, 'Profile updated successfully!')
         return redirect('profile_settings')
     
     context = {
@@ -436,21 +460,21 @@ def change_password_view(request):
         new_password2 = request.POST.get('new_password2')
         
         if not all([current_password, new_password1, new_password2]):
-            messages.error(request, 'Veuillez remplir tous les champs.')
+            messages.error(request, 'Please fill in all fields.')
             return render(request, 'change_password.html')
         
         # Check current password
         if not request.user.check_password(current_password):
-            messages.error(request, 'Le mot de passe actuel est incorrect.')
+            messages.error(request, 'Current password is incorrect.')
             return render(request, 'change_password.html')
         
         # Validate new passwords
         if new_password1 != new_password2:
-            messages.error(request, 'Les nouveaux mots de passe ne correspondent pas.')
+            messages.error(request, 'New passwords do not match.')
             return render(request, 'change_password.html')
         
         if len(new_password1) < 8:
-            messages.error(request, 'Le nouveau mot de passe doit contenir au moins 8 caractères.')
+            messages.error(request, 'New password must be at least 8 characters long.')
             return render(request, 'change_password.html')
         
         # Change password
@@ -461,7 +485,7 @@ def change_password_view(request):
         from django.contrib.auth import update_session_auth_hash
         update_session_auth_hash(request, request.user)
         
-        messages.success(request, 'Mot de passe modifié avec succès!')
+        messages.success(request, 'Password changed successfully!')
         return redirect('profile_settings')
     
     return render(request, 'change_password.html')
@@ -477,11 +501,11 @@ def delete_account_view(request):
         confirm = request.POST.get('confirm')
         
         if confirm != 'DELETE':
-            messages.error(request, 'Veuillez taper "DELETE" pour confirmer.')
+            messages.error(request, 'Please type "DELETE" to confirm.')
             return render(request, 'delete_account.html')
         
         if not request.user.check_password(password):
-            messages.error(request, 'Mot de passe incorrect.')
+            messages.error(request, 'Incorrect password.')
             return render(request, 'delete_account.html')
         
         # Delete user account
@@ -489,7 +513,7 @@ def delete_account_view(request):
         auth_logout(request)
         user.delete()
         
-        messages.success(request, 'Votre compte a été supprimé.')
+        messages.success(request, 'Your account has been deleted.')
         return redirect('login')
     
     return render(request, 'delete_account.html')

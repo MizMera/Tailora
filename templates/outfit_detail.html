@@ -148,13 +148,59 @@
                         <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #c62828; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;">
                             Supprimer cette tenue supprimera définitivement toutes les informations associées.
                         </p>
-                        <form method="post" action="{% url 'outfits:outfit_delete' outfit.id %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette tenue ? Cette action est irréversible.');">
+                        <form id="delete-outfit-form-{{ outfit.id }}" method="post" action="{% url 'outfits:outfit_delete' outfit.id %}">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-primary" style="background: #c62828; border-color: #c62828;">
+                            <button type="button" class="btn btn-primary delete-trigger" data-form-id="delete-outfit-form-{{ outfit.id }}" data-item-name="cette tenue" style="background: #c62828; border-color: #c62828;">
                                 SUPPRIMER LA TENUE
                             </button>
                         </form>
                     </div>
                 </div>
             </div>
+            <!-- Delete Confirmation Modal -->
+            <div id="confirm-modal" class="modal-overlay" style="display:none;">
+                <div class="modal-card content-section">
+                    <div class="modal-icon">⚠️</div>
+                    <h2 class="modal-title">Confirmer la suppression</h2>
+                    <p class="modal-text">Êtes-vous sûr de vouloir supprimer <strong id="modal-item-name"></strong> ?</p>
+                    <p class="modal-subtext">Cette action est irréversible.</p>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" id="modal-cancel">Annuler</button>
+                        <button type="button" class="btn btn-primary btn-danger-strong" id="modal-confirm">Supprimer définitivement</button>
+                    </div>
+                </div>
+            </div>
+
+            {% block extra_js %}
+            {{ block.super }}
+            <script>
+            (function(){
+                const modal = document.getElementById('confirm-modal');
+                const nameSpan = document.getElementById('modal-item-name');
+                const btnCancel = document.getElementById('modal-cancel');
+                const btnConfirm = document.getElementById('modal-confirm');
+                let formToSubmit = null;
+
+                document.querySelectorAll('.delete-trigger').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const formId = btn.getAttribute('data-form-id');
+                        const itemName = btn.getAttribute('data-item-name') || 'cet élément';
+                        formToSubmit = document.getElementById(formId);
+                        if (nameSpan) nameSpan.textContent = itemName;
+                        modal.style.display = 'flex';
+                    });
+                });
+
+                function closeModal(){
+                    modal.style.display = 'none';
+                    formToSubmit = null;
+                }
+
+                btnCancel.addEventListener('click', closeModal);
+                modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+                document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.style.display === 'flex') closeModal(); });
+                btnConfirm.addEventListener('click', () => { if (formToSubmit) formToSubmit.submit(); });
+            })();
+            </script>
+            {% endblock %}
 {% endblock %}

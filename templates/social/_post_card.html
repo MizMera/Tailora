@@ -1,0 +1,70 @@
+<div class="post-card content-section">
+    <div class="post-header">
+        <a href="{% url 'social:profile' post.user.id %}" class="post-user">
+            <div class="user-avatar">{{ post.user.first_name|slice:":1"|upper }}</div>
+            <div class="user-info">
+                <span class="user-name">{{ post.user.get_full_name }}</span>
+                <span class="post-time">{{ post.created_at|timesince }} ago</span>
+            </div>
+        </a>
+        {% if post.user == request.user %}
+        <div class="post-menu">
+            <form id="delete-post-form-{{ post.id }}" method="post" action="{% url 'social:delete_post' post.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="button" class="btn-icon delete-trigger" data-form-id="delete-post-form-{{ post.id }}" data-item-name="cette publication">🗑️</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    
+    <a href="{% url 'social:post_detail' post.id %}" class="post-outfit-link">
+        <div class="post-outfit-grid">
+            {% for item in post.outfit.items.all %}
+                <div class="post-outfit-item">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                    {% else %}
+                        <div class="item-placeholder"></div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </a>
+    
+    <div class="post-actions">
+        <form method="post" action="{% url 'social:toggle_like' post.id %}" class="post-action-form">
+            {% csrf_token %}
+            <button type="submit" class="btn-action {% if post.is_liked %}active{% endif %}">
+                ❤️ <span>{{ post.likes_count }}</span>
+            </button>
+        </form>
+        <a href="{% url 'social:post_detail' post.id %}" class="btn-action">
+            💬 <span>{{ post.comments_count }}</span>
+        </a>
+        <form method="post" action="{% url 'social:toggle_save' post.id %}" class="post-action-form">
+            {% csrf_token %}
+            <button type="submit" class="btn-action {% if post.is_saved %}active{% endif %}">
+                🔖 <span>{{ post.saves_count }}</span>
+            </button>
+        </form>
+    </div>
+    
+    {% if post.caption %}
+    <div class="post-caption">
+        <a href="{% url 'social:profile' post.user.id %}" class="caption-user">{{ post.user.first_name }}</a>
+        {{ post.caption }}
+    </div>
+    {% endif %}
+    
+    {% if post.hashtags %}
+    <div class="post-hashtags">
+        {% for tag in post.hashtags %}
+            <span class="hashtag">{{ tag }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <a href="{% url 'outfits:outfit_detail' post.outfit.id %}" class="post-outfit-name">
+        View outfit: {{ post.outfit.name }}
+    </a>
+</div>
