@@ -71,11 +71,11 @@ def outfit_create_view(request):
         
         # Validation
         if not name:
-            messages.error(request, 'Le nom de la tenue est requis.')
+            messages.error(request, 'Outfit name is required.')
             return redirect('outfits:outfit_create')
         
         if not item_ids or len(item_ids) < 2:
-            messages.error(request, 'Veuillez sélectionner au moins 2 articles pour créer une tenue.')
+            messages.error(request, 'Please select at least 2 items to create an outfit.')
             return redirect('outfits:outfit_create')
         
         # Create outfit
@@ -100,24 +100,23 @@ def outfit_create_view(request):
                 except ClothingItem.DoesNotExist:
                     pass
             
-            messages.success(request, f'{name} a été créé avec succès!')
+            messages.success(request, f'{name} has been created successfully!')
             return redirect('outfits:outfit_detail', outfit_id=outfit.id)
         
         except Exception as e:
-            messages.error(request, f'Erreur lors de la création: {str(e)}')
+            messages.error(request, f'Error creating outfit: {str(e)}')
             return redirect('outfits:outfit_create')
     
     # GET request - show wardrobe items to select from
     wardrobe_items = ClothingItem.objects.filter(user=user, status='available')
     
-    # Group by category for easier selection
+    # Group by category for easier selection (include uncategorized)
     items_by_category = {}
     for item in wardrobe_items:
-        if item.category:
-            cat_name = item.category.name
-            if cat_name not in items_by_category:
-                items_by_category[cat_name] = []
-            items_by_category[cat_name].append(item)
+        cat_name = item.category.name if item.category else 'Uncategorized'
+        if cat_name not in items_by_category:
+            items_by_category[cat_name] = []
+        items_by_category[cat_name].append(item)
     
     context = {
         'items_by_category': items_by_category,
@@ -176,21 +175,20 @@ def outfit_edit_view(request, outfit_id):
                     pass
         
         outfit.save()
-        messages.success(request, f'{outfit.name} a été mis à jour!')
+        messages.success(request, f'{outfit.name} has been updated!')
         return redirect('outfits:outfit_detail', outfit_id=outfit.id)
     
     # GET request
     current_items = outfit.items.all()
     wardrobe_items = ClothingItem.objects.filter(user=request.user, status='available')
     
-    # Group by category
+    # Group by category (include uncategorized)
     items_by_category = {}
     for item in wardrobe_items:
-        if item.category:
-            cat_name = item.category.name
-            if cat_name not in items_by_category:
-                items_by_category[cat_name] = []
-            items_by_category[cat_name].append(item)
+        cat_name = item.category.name if item.category else 'Uncategorized'
+        if cat_name not in items_by_category:
+            items_by_category[cat_name] = []
+        items_by_category[cat_name].append(item)
     
     context = {
         'outfit': outfit,
@@ -212,7 +210,7 @@ def outfit_delete_view(request, outfit_id):
     if request.method == 'POST':
         outfit_name = outfit.name
         outfit.delete()
-        messages.success(request, f'{outfit_name} a été supprimé.')
+        messages.success(request, f'{outfit_name} has been deleted.')
         return redirect('outfits:outfit_gallery')
     
     return redirect('outfits:outfit_detail', outfit_id=outfit.id)
