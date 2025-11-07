@@ -10,6 +10,7 @@ from rest_framework import status
 from PIL import Image
 import io
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.conf import settings
 import sys
 
 from .models import ClothingItem, ClothingCategory
@@ -20,6 +21,7 @@ from .serializers import (
     ClothingCategorySerializer,
     WardrobeStatsSerializer
 )
+from .ai_image_analyzer import get_image_analyzer
 
 
 # ==================== Template Views ====================
@@ -113,9 +115,8 @@ def wardrobe_upload_view(request):
     
     if current_count >= max_items:
         messages.error(
-            request, 
-            f'Vous avez atteint la limite de {max_items} vêtements. '
-            f'Passez à Premium pour ajouter plus d\'articles!'
+            request,
+            f"You've reached your wardrobe limit of {max_items} items. Upgrade to Premium to add more!"
         )
         return redirect('wardrobe_gallery')
     
@@ -149,21 +150,21 @@ def wardrobe_upload_view(request):
         
         # Validation
         if not name or not image or not color:
-            error_msg = f'Nom, image et couleur sont requis. (Received: name={name}, image={image}, color={color})'
+            error_msg = f"Name, image, and color are required. (Received: name={name}, image={image}, color={color})"
             messages.error(request, error_msg)
             print(f"DEBUG: Validation failed - {error_msg}")
             return render(request, 'wardrobe_upload.html', {'categories': get_categories(user)})
         
         # Validate image
         if image.size > 5 * 1024 * 1024:  # 5MB
-            messages.error(request, 'La taille de l\'image ne doit pas dépasser 5 MB.')
+            messages.error(request, "Image size must not exceed 5 MB.")
             return render(request, 'wardrobe_upload.html', {'categories': get_categories(user)})
         
         # Process and optimize image
         try:
             processed_image = optimize_image(image)
         except Exception as e:
-            messages.error(request, f'Erreur lors du traitement de l\'image: {str(e)}')
+            messages.error(request, f"Error processing image: {str(e)}")
             return render(request, 'wardrobe_upload.html', {'categories': get_categories(user)})
         
         # Get category
@@ -200,11 +201,11 @@ def wardrobe_upload_view(request):
             # Update user's wardrobe count
             user.increment_wardrobe_count()
             
-            messages.success(request, f'{name} a été ajouté à votre garde-robe!')
+            messages.success(request, f"{name} has been added to your wardrobe!")
             return redirect('wardrobe_detail', item_id=item.id)
         
         except Exception as e:
-            messages.error(request, f'Erreur lors de l\'ajout: {str(e)}')
+            messages.error(request, f"Error adding item: {str(e)}")
             return render(request, 'wardrobe_upload.html', {'categories': get_categories(user)})
     
     # GET request
@@ -275,14 +276,14 @@ def wardrobe_edit_view(request, item_id):
             try:
                 item.image = optimize_image(new_image)
             except Exception as e:
-                messages.error(request, f'Erreur lors du traitement de l\'image: {str(e)}')
+                messages.error(request, f"Error processing image: {str(e)}")
                 return render(request, 'wardrobe_edit.html', {
                     'item': item,
                     'categories': get_categories(request.user)
                 })
         
         item.save()
-        messages.success(request, f'{item.name} a été mis à jour!')
+        messages.success(request, f"{item.name} has been updated!")
         return redirect('wardrobe_detail', item_id=item.id)
     
     # GET request
@@ -312,7 +313,7 @@ def wardrobe_delete_view(request, item_id):
             user.wardrobe_items_count -= 1
             user.save()
         
-        messages.success(request, f'{item_name} a été supprimé de votre garde-robe.')
+        messages.success(request, f"{item_name} has been removed from your wardrobe.")
         return redirect('wardrobe_gallery')
     
     context = {
@@ -540,3 +541,52 @@ def api_wardrobe_stats(request):
     
     serializer = WardrobeStatsSerializer(stats)
     return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_analyze_image(request):
+    """
+    API: Analyze uploaded image using AI to extract clothing metadata
+    """
+    try:
+        image_file = request.FILES.get('image')
+
+        if not image_file:
+            return Response(
+                {'error': 'No image file provided'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate image size (max 10MB for analysis)
+        if image_file.size > 10 * 1024 * 1024:
+            return Response(
+                {'error': 'Image size must not exceed 10 MB'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Analyze image
+        analyzer = get_image_analyzer()
+        analysis = analyzer.analyze_image(image_file)
+
+        # Get category suggestions
+        category_suggestions = analyzer.get_category_suggestions(analysis)
+
+        response_data = {
+            'analysis': analysis,
+            'category_suggestions': category_suggestions,
+            'success': True
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        print(f"AI analysis error: {str(e)}")
+        return Response(
+            {
+                'error': 'Failed to analyze image',
+                'details': str(e) if settings.DEBUG else 'Internal server error'
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+

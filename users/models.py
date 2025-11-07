@@ -12,19 +12,19 @@ class User(AbstractUser):
     
     # Role choices
     ROLE_CHOICES = [
-        ('user', 'Utilisateur Standard'),
-        ('premium', 'Utilisateur Premium'),
-        ('stylist', 'Styliste'),
-        ('influencer', 'Influenceur'),
-        ('admin', 'Administrateur'),
+        ('user', 'Standard User'),
+        ('premium', 'Premium User'),
+        ('stylist', 'Stylist'),
+        ('influencer', 'Influencer'),
+        ('admin', 'Administrator'),
     ]
     
     # Account status choices
     STATUS_CHOICES = [
-        ('active', 'Actif'),
-        ('inactive', 'Inactif'),
-        ('suspended', 'Suspendu'),
-        ('banned', 'Banni'),
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('suspended', 'Suspended'),
+        ('banned', 'Banned'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -59,8 +59,8 @@ class User(AbstractUser):
     
     class Meta:
         db_table = 'users'
-        verbose_name = 'Utilisateur'
-        verbose_name_plural = 'Utilisateurs'
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
         indexes = [
             models.Index(fields=['role']),
             models.Index(fields=['status']),
@@ -157,21 +157,21 @@ class StyleProfile(models.Model):
     STYLE_CHOICES = [
         ('casual', 'Casual'),
         ('chic', 'Chic'),
-        ('boheme', 'Bohème'),
-        ('sportif', 'Sportif'),
-        ('elegant', 'Élégant'),
-        ('classique', 'Classique'),
+        ('boheme', 'Bohemian'),
+        ('sportif', 'Sporty'),
+        ('elegant', 'Elegant'),
+        ('classique', 'Classic'),
         ('streetwear', 'Streetwear'),
         ('vintage', 'Vintage'),
-        ('minimaliste', 'Minimaliste'),
+        ('minimaliste', 'Minimalist'),
     ]
     
     BODY_TYPE_CHOICES = [
         ('rectangle', 'Rectangle'),
         ('triangle', 'Triangle'),
-        ('triangle_inverse', 'Triangle Inversé'),
-        ('sablier', 'Sablier'),
-        ('ovale', 'Ovale'),
+        ('triangle_inverse', 'Inverted Triangle'),
+        ('sablier', 'Hourglass'),
+        ('ovale', 'Oval'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -200,8 +200,8 @@ class StyleProfile(models.Model):
     
     class Meta:
         db_table = 'style_profiles'
-        verbose_name = 'Profil de Style'
-        verbose_name_plural = 'Profils de Style'
+        verbose_name = 'Style Profile'
+        verbose_name_plural = 'Style Profiles'
     
     def __str__(self):
         return f"Style Profile - {self.user.email}"
@@ -212,13 +212,13 @@ class Notification(models.Model):
     User notifications system
     """
     NOTIFICATION_TYPES = [
-        ('outfit_ready', 'Tenue Prête'),
-        ('weather_alert', 'Alerte Météo'),
-        ('social_like', 'J\'aime Social'),
-        ('social_comment', 'Commentaire Social'),
-        ('challenge', 'Défi de Style'),
-        ('recommendation', 'Recommandation'),
-        ('system', 'Système'),
+        ('outfit_ready', 'Outfit Ready'),
+        ('weather_alert', 'Weather Alert'),
+        ('social_like', 'Social Like'),
+        ('social_comment', 'Social Comment'),
+        ('challenge', 'Style Challenge'),
+        ('recommendation', 'Recommendation'),
+        ('system', 'System'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supprimer le compte - Tailora</title>
+    <title>Delete account - Tailora</title>
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,21 +16,21 @@
             <div class="auth-form-wrapper">
                 <div class="auth-header">
                     <h1 class="auth-title">Tailora</h1>
-                    <p class="auth-subtitle">Supprimer mon compte</p>
+                    <p class="auth-subtitle">Delete my account</p>
                 </div>
 
                 <div class="warning-box">
-                    <h3 class="warning-title">Action irréversible</h3>
+                    <h3 class="warning-title">Irreversible action</h3>
                     <p class="warning-text">
-                        La suppression de votre compte est <strong>définitive et irréversible</strong>. 
-                        Toutes vos données seront perdues :
+                        Deleting your account is <strong>permanent and irreversible</strong>.
+                        All your data will be lost:
                     </p>
                     <ul class="warning-list">
-                        <li>Votre garde-robe et tous vos vêtements</li>
-                        <li>Vos tenues créées</li>
-                        <li>Votre calendrier et planification</li>
-                        <li>Vos publications et interactions sociales</li>
-                        <li>Vos préférences de style et recommandations</li>
+                        <li>Your wardrobe and all your clothing items</li>
+                        <li>Your created outfits</li>
+                        <li>Your calendar and planning</li>
+                        <li>Your posts and social interactions</li>
+                        <li>Your style preferences and recommendations</li>
                     </ul>
                 </div>
 
@@ -46,7 +46,7 @@
                     {% csrf_token %}
 
                     <div class="input-field">
-                        <label for="password" class="input-label">Confirmer votre mot de passe</label>
+                        <label for="password" class="input-label">Confirm your password</label>
                         <input 
                             type="password" 
                             id="password" 
@@ -58,7 +58,7 @@
 
                     <div class="input-field">
                         <label for="confirmation" class="input-label">
-                            Tapez "DELETE" pour confirmer la suppression
+                            Type "DELETE" to confirm deletion
                         </label>
                         <input 
                             type="text" 
@@ -68,18 +68,18 @@
                             required
                             placeholder="DELETE"
                             autocomplete="off">
-                        <small class="input-hint">Cette action est irréversible</small>
+                        <small class="input-hint">This action is irreversible</small>
                     </div>
 
-                    <button type="button" class="btn btn-danger btn-lg delete-trigger" data-form-id="deleteForm" data-item-name="votre compte">
-                        Supprimer définitivement mon compte
+                    <button type="button" class="btn btn-danger btn-lg delete-trigger" data-form-id="deleteForm" data-item-name="your account">
+                        Permanently delete my account
                     </button>
                 </form>
 
                 <div class="form-footer">
-                    <a href="{% url 'profile_settings' %}" class="footer-link">Retour aux paramètres</a>
+                    <a href="{% url 'profile_settings' %}" class="footer-link">Back to settings</a>
                     <span class="footer-divider">•</span>
-                    <a href="{% url 'dashboard' %}" class="footer-link">Tableau de bord</a>
+                    <a href="{% url 'dashboard' %}" class="footer-link">Dashboard</a>
                 </div>
             </div>
         </div>
@@ -97,7 +97,7 @@
 
             if (confirmation !== 'DELETE') {
                 e.preventDefault();
-                alert('Vous devez taper "DELETE" exactement pour confirmer la suppression.');
+                alert('You must type "DELETE" exactly to confirm deletion.');
                 return false;
             }
 

@@ -9,25 +9,25 @@ class Command(BaseCommand):
         # Color compatibility rules
         color_pairs = [
             # Complementary colors
-            ('Bleu', '#0000FF', 'Orange', '#FFA500', 0.9, 'complementary'),
-            ('Rouge', '#FF0000', 'Vert', '#00FF00', 0.85, 'complementary'),
-            ('Jaune', '#FFFF00', 'Violet', '#800080', 0.8, 'complementary'),
+            ('Blue', '#0000FF', 'Orange', '#FFA500', 0.9, 'complementary'),
+            ('Red', '#FF0000', 'Green', '#00FF00', 0.85, 'complementary'),
+            ('Yellow', '#FFFF00', 'Purple', '#800080', 0.8, 'complementary'),
             
             # Analogous colors
-            ('Bleu', '#0000FF', 'Vert', '#00FF00', 0.85, 'analogous'),
-            ('Rouge', '#FF0000', 'Orange', '#FFA500', 0.9, 'analogous'),
-            ('Jaune', '#FFFF00', 'Orange', '#FFA500', 0.95, 'analogous'),
+            ('Blue', '#0000FF', 'Green', '#00FF00', 0.85, 'analogous'),
+            ('Red', '#FF0000', 'Orange', '#FFA500', 0.9, 'analogous'),
+            ('Yellow', '#FFFF00', 'Orange', '#FFA500', 0.95, 'analogous'),
             
             # Neutral combinations
-            ('Noir', '#000000', 'Blanc', '#FFFFFF', 1.0, 'neutral'),
-            ('Noir', '#000000', 'Gris', '#808080', 0.95, 'neutral'),
-            ('Blanc', '#FFFFFF', 'Gris', '#808080', 0.95, 'neutral'),
-            ('Beige', '#F5F5DC', 'Marron', '#8B4513', 0.9, 'neutral'),
+            ('Black', '#000000', 'White', '#FFFFFF', 1.0, 'neutral'),
+            ('Black', '#000000', 'Gray', '#808080', 0.95, 'neutral'),
+            ('White', '#FFFFFF', 'Gray', '#808080', 0.95, 'neutral'),
+            ('Beige', '#F5F5DC', 'Brown', '#8B4513', 0.9, 'neutral'),
             
             # Classic combinations
-            ('Bleu Marine', '#000080', 'Blanc', '#FFFFFF', 0.95, 'classic'),
-            ('Noir', '#000000', 'Rouge', '#FF0000', 0.9, 'classic'),
-            ('Gris', '#808080', 'Rose', '#FFC0CB', 0.85, 'classic'),
+            ('Navy Blue', '#000080', 'White', '#FFFFFF', 0.95, 'classic'),
+            ('Black', '#000000', 'Red', '#FF0000', 0.9, 'classic'),
+            ('Gray', '#808080', 'Pink', '#FFC0CB', 0.85, 'classic'),
         ]
         
         created_count = 0
@@ -52,42 +52,42 @@ class Command(BaseCommand):
         style_rules = [
             {
                 'category': 'color',
-                'name': 'Règle des 3 couleurs',
-                'description': 'Limiter une tenue à 3 couleurs principales maximum',
+                'name': 'Rule of 3 colors',
+                'description': 'Limit an outfit to a maximum of 3 main colors',
                 'conditions': {'max_colors': 3},
-                'recommendation': 'Choisir 3 couleurs au maximum pour un look harmonieux',
+                'recommendation': 'Choose a maximum of 3 colors for a harmonious look',
                 'importance': 0.8
             },
             {
                 'category': 'pattern',
-                'name': 'Mélange de motifs',
-                'description': 'Ne pas mélanger plus de 2 motifs différents',
+                'name': 'Pattern mixing',
+                'description': 'Do not mix more than 2 different patterns',
                 'conditions': {'max_patterns': 2},
-                'recommendation': 'Limiter à 2 motifs et varier les échelles',
+                'recommendation': 'Limit to 2 patterns and vary the scales',
                 'importance': 0.7
             },
             {
                 'category': 'season',
-                'name': 'Cohérence saisonnière',
-                'description': 'Privilégier les vêtements adaptés à la saison',
+                'name': 'Seasonal consistency',
+                'description': 'Favor clothing suitable for the season',
                 'conditions': {'match_season': True},
-                'recommendation': 'Vérifier que les vêtements correspondent à la saison',
+                'recommendation': 'Check that clothing matches the season',
                 'importance': 0.9
             },
             {
                 'category': 'proportion',
-                'name': 'Équilibre haut/bas',
-                'description': 'Équilibrer les volumes entre le haut et le bas',
+                'name': 'Top/bottom balance',
+                'description': 'Balance volumes between top and bottom',
                 'conditions': {'balance_volumes': True},
-                'recommendation': 'Haut ample avec bas ajusté ou inversement',
+                'recommendation': 'Loose top with fitted bottom or vice versa',
                 'importance': 0.8
             },
             {
                 'category': 'style_mix',
-                'name': 'Cohérence de style',
-                'description': 'Maintenir une cohérence dans le mélange de styles',
+                'name': 'Style consistency',
+                'description': 'Maintain consistency when mixing styles',
                 'conditions': {'style_consistency': 0.7},
-                'recommendation': 'Mélanger max 2 styles différents',
+                'recommendation': 'Mix max 2 different styles',
                 'importance': 0.75
             },
         ]

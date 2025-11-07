@@ -149,6 +149,7 @@ AUTH_USER_MODEL = 'users.User'
 # Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -177,6 +178,9 @@ CORS_ALLOWED_ORIGINS = [
 # Weather API Configuration (OpenWeatherMap example)
 WEATHER_API_KEY = ''  # Add your API key here
 WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/'
+
+# OpenAI API Configuration (for AI image analysis)
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')  # Set in environment variables
 
 # Email Configuration (use coded SMTP credentials with new App Password)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

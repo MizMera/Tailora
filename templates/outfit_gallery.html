@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Mes Tenues - Tailora{% endblock %}
+{% block title %}My Outfits - Tailora{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<link rel="stylesheet" href="{% static 'css/outfits.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -13,12 +14,12 @@
             <div class="page-header">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div>
-                        <h1 class="page-title">MES TENUES</h1>
-                        <p class="page-subtitle">{{ total_outfits }} tenue{{ total_outfits|pluralize }} • {{ favorite_count }} favori{{ favorite_count|pluralize }}</p>
+                        <h1 class="page-title">My outfits</h1>
+                        <p class="page-subtitle">{{ total_outfits }} outfit{{ total_outfits|pluralize }} • {{ favorite_count }} favorite{{ favorite_count|pluralize }}</p>
                     </div>
                     <div style="display: flex; gap: 12px;">
-                        <a href="{% url 'outfits:outfit_stats' %}" class="btn btn-secondary">STATISTIQUES</a>
-                        <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">CRÉER UNE TENUE</a>
+                        <a href="{% url 'outfits:outfit_stats' %}" class="btn btn-secondary">Statistics</a>
+                        <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">Create outfit</a>
                     </div>
                 </div>
             </div>
@@ -39,8 +40,8 @@
                 <form method="get" action="{% url 'outfits:outfit_gallery' %}">
                     <!-- Search Bar -->
                     <div style="display: flex; gap: 16px; margin-bottom: 20px;">
-                        <input type="text" name="search" value="{{ search_query }}" placeholder="Rechercher par nom, description, tags..." class="input-control" style="flex: 1;">
-                        <button type="submit" class="btn btn-primary">RECHERCHER</button>
+                        <input type="text" name="search" value="{{ search_query }}" placeholder="Search by name, description, tags..." class="input-control" style="flex: 1;">
+                        <button type="submit" class="btn btn-primary">Search</button>
                     </div>
 
                     <!-- Filter Grid -->
@@ -49,7 +50,7 @@
                         <div class="input-field">
                             <label for="occasion" class="input-label">OCCASION</label>
                             <select name="occasion" id="occasion" class="input-control" onchange="this.form.submit()">
-                                <option value="">Toutes les occasions</option>
+                                <option value="">All occasions</option>
                                 {% for value, label in occasions %}
                                 <option value="{{ value }}" {% if selected_occasion == value %}selected{% endif %}>{{ label }}</option>
                                 {% endfor %}
@@ -60,14 +61,14 @@
                         <div class="input-field">
                             <label class="checkbox-item-inline" style="display: flex; align-items: center; gap: 8px; margin-top: 32px;">
                                 <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %} onchange="this.form.submit()">
-                                <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.5px;">★ Favoris uniquement</span>
+                                <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.5px;">★ Favorites only</span>
                             </label>
                         </div>
                     </div>
 
                     <!-- Action Buttons -->
                     <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
-                        <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">RÉINITIALISER</a>
+                        <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">Reset</a>
                     </div>
                 </form>
             </div>
@@ -88,16 +89,16 @@
                                     {% if first_item %}
                                     <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}">
                                     {% else %}
-                                    <div class="item-placeholder">👔 Tenue</div>
+                                    <div class="item-placeholder">👔 Outfit</div>
                                     {% endif %}
                                 {% endwith %}
                                 {% endif %}
                             </div>
                             <div class="item-info">
-                                <h3 class="item-name">{{ outfit.name|upper }}</h3>
+                                <h3 class="item-name">{{ outfit.name }}</h3>
                                 <p class="item-category">{{ outfit.get_occasion_display }}</p>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">{{ outfit.items.count }} article{{ outfit.items.count|pluralize }}</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">{{ outfit.items.count }} item{{ outfit.items.count|pluralize }}</span>
                                     {% if outfit.favorite %}
                                     <span style="color: #2c2c2c; font-size: 16px;">★</span>
                                     {% endif %}
@@ -107,11 +108,11 @@
                         <div class="item-actions">
                             <form method="post" action="{% url 'outfits:outfit_toggle_favorite' outfit.id %}" style="display: inline;">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-icon" title="{% if outfit.favorite %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}">
+                                <button type="submit" class="btn-icon" title="{% if outfit.favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">
                                     {% if outfit.favorite %}★{% else %}☆{% endif %}
                                 </button>
                             </form>
-                            <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn-icon" title="Voir">👁️</a>
+                            <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn-icon" title="View">👁️</a>
                         </div>
                     </div>
                     {% endfor %}
@@ -121,15 +122,15 @@
                 {% if outfits.has_other_pages %}
                 <div class="pagination">
                     {% if outfits.has_previous %}
-                    <a href="?page={{ outfits.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">← PRÉCÉDENT</a>
+                    <a href="?page={{ outfits.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">← Previous</a>
                     {% endif %}
                     
                     <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
-                        Page {{ outfits.number }} sur {{ outfits.paginator.num_pages }}
+                        Page {{ outfits.number }} of {{ outfits.paginator.num_pages }}
                     </span>
                     
                     {% if outfits.has_next %}
-                    <a href="?page={{ outfits.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">SUIVANT →</a>
+                    <a href="?page={{ outfits.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">Next →</a>
                     {% endif %}
                 </div>
                 {% endif %}
@@ -139,22 +140,22 @@
                     <div style="font-size: 64px; margin-bottom: 24px; opacity: 0.3;">👔</div>
                     <h3 style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; color: #2c2c2c; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px;">
                         {% if search_query or selected_occasion or show_favorites %}
-                        Aucune tenue trouvée
+                        No outfits found
                         {% else %}
-                        Vous n'avez pas encore de tenues
+                        You don't have any outfits yet
                         {% endif %}
                     </h3>
                     <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: 0 0 32px 0;">
                         {% if search_query or selected_occasion or show_favorites %}
-                        Essayez de modifier vos filtres de recherche.
+                        Try adjusting your search filters.
                         {% else %}
-                        Créez votre première tenue en combinant vos articles de garde-robe!
+                        Create your first outfit by combining your wardrobe items!
                         {% endif %}
                     </p>
                     {% if not search_query and not selected_occasion and not show_favorites %}
-                    <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">CRÉER MA PREMIÈRE TENUE</a>
+                    <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">CREATE MY FIRST OUTFIT</a>
                     {% else %}
-                    <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">RÉINITIALISER LES FILTRES</a>
+                    <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">RESET FILTERS</a>
                     {% endif %}
                 </div>
                 {% endif %}

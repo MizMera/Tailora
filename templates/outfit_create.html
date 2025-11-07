@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Créer une Tenue - Tailora{% endblock %}
+{% block title %}Create an Outfit - Tailora{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
@@ -110,10 +110,10 @@
             <div class="page-header">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div>
-                        <h1 class="page-title">CRÉER UNE TENUE</h1>
-                        <p class="page-subtitle">Sélectionnez au moins 2 articles de votre garde-robe</p>
+                        <h1 class="page-title">Create outfit</h1>
+                        <p class="page-subtitle">Select at least 2 items from your wardrobe</p>
                     </div>
-                    <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">ANNULER</a>
+                    <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">Cancel</a>
                 </div>
             </div>
 
@@ -135,14 +135,14 @@
 
                     <!-- Basic Info -->
                     <div class="settings-section">
-                        <h3 class="section-title">INFORMATIONS DE BASE</h3>
+                        <h3 class="section-title">Basic information</h3>
                         <div class="form-grid">
                             <div class="input-field">
-                                <label for="name" class="input-label">NOM DE LA TENUE *</label>
-                                <input type="text" id="name" name="name" class="input-control" required placeholder="Ex: Look Bureau Chic">
+                                <label for="name" class="input-label">Outfit name *</label>
+                                <input type="text" id="name" name="name" class="input-control" required placeholder="e.g., Chic Office Look">
                             </div>
                             <div class="input-field">
-                                <label for="occasion" class="input-label">OCCASION</label>
+                                <label for="occasion" class="input-label">Occasion</label>
                                 <select id="occasion" name="occasion" class="input-control">
                                     {% for value, label in occasions %}
                                     <option value="{{ value }}">{{ label }}</option>
@@ -152,20 +152,20 @@
                         </div>
                         <div class="form-grid-full">
                             <div class="input-field">
-                                <label for="description" class="input-label">DESCRIPTION</label>
-                                <textarea id="description" name="description" class="input-control" rows="3" placeholder="Décrivez cette tenue..."></textarea>
+                                <label for="description" class="input-label">Description</label>
+                                <textarea id="description" name="description" class="input-control" rows="3" placeholder="Describe this outfit..."></textarea>
                             </div>
                         </div>
                     </div>
 
                     <!-- Selected Items Preview -->
                     <div class="settings-section">
-                        <h3 class="section-title">ARTICLES SÉLECTIONNÉS <span id="selectedCount" style="color: #757575; font-weight: 400;">(0)</span></h3>
+                        <h3 class="section-title">Selected items <span id="selectedCount" style="color: #757575; font-weight: 400;">(0)</span></h3>
                         <div id="selectedPreview" class="selected-preview" style="display: none;">
                             <!-- Selected items will appear here -->
                         </div>
                         <p id="selectionHint" style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-top: 16px; text-transform: uppercase; letter-spacing: 0.5px;">
-                            Cliquez sur les articles ci-dessous pour les ajouter à votre tenue
+                            Click the items below to add them to your outfit
                         </p>
                     </div>
 
@@ -173,7 +173,7 @@
                     {% if items_by_category %}
                     {% for category, items in items_by_category.items %}
                     <div class="settings-section">
-                        <h3 class="section-title">{{ category|upper }}</h3>
+                        <h3 class="section-title">{{ category }}</h3>
                         <div class="item-selector">
                             {% for item in items %}
                             <div class="selectable-item" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}" data-item-image="{{ item.image.url }}">
@@ -181,7 +181,7 @@
                                     <img src="{{ item.image.url }}" alt="{{ item.name }}">
                                     <div class="selection-badge">✓</div>
                                 </div>
-                                <p class="item-name">{{ item.name|upper }}</p>
+                                <p class="item-name">{{ item.name }}</p>
                             </div>
                             {% endfor %}
                         </div>
@@ -190,7 +190,7 @@
                     {% else %}
                     <div class="settings-section">
                         <p style="text-align: center; padding: 40px; font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
-                            Vous n'avez pas d'articles disponibles dans votre garde-robe. <a href="{% url 'wardrobe_upload' %}" style="color: #2c2c2c; text-decoration: underline;">Ajoutez des articles</a> pour créer des tenues.
+                            You don't have items available in your wardrobe. <a href="{% url 'wardrobe_upload' %}" style="color: #2c2c2c; text-decoration: underline;">Add items</a> to create outfits.
                         </p>
                     </div>
                     {% endif %}
@@ -200,8 +200,8 @@
 
                     <!-- Form Actions -->
                     <div class="form-actions">
-                        <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">ANNULER</a>
-                        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>CRÉER LA TENUE</button>
+                        <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Create outfit</button>
                     </div>
                 </form>
             </div>

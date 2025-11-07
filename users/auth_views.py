@@ -53,7 +53,7 @@ def login_view(request):
                 # Session lasts for 30 days
                 request.session.set_expiry(2592000)
             
-            messages.success(request, f'Bienvenue {user.first_name or user.username}!')
+            messages.success(request, f'Welcome {user.first_name or user.username}!')
             
             # Redirect to next or dashboard
             next_url = request.GET.get('next', 'dashboard')
@@ -158,7 +158,7 @@ def register_view(request):
             return redirect('dashboard')
             
         except Exception as e:
-            messages.error(request, f'Erreur lors de la création du compte: {str(e)}')
+            messages.error(request, f'Error creating account: {str(e)}')
             return render(request, 'register.html')
     
     return render(request, 'register.html')

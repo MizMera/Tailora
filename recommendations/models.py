@@ -11,11 +11,11 @@ class DailyRecommendation(models.Model):
     Core of the recommendation engine
     """
     STATUS_CHOICES = [
-        ('pending', 'En Attente'),
-        ('viewed', 'Vue'),
-        ('accepted', 'Acceptée'),
-        ('rejected', 'Rejetée'),
-        ('worn', 'Portée'),
+        ('pending', 'Pending'),
+        ('viewed', 'Viewed'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('worn', 'Worn'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -48,8 +48,8 @@ class DailyRecommendation(models.Model):
         db_table = 'daily_recommendations'
         ordering = ['recommendation_date', 'priority']
         unique_together = [['user', 'recommendation_date', 'outfit']]
-        verbose_name = 'Recommandation Quotidienne'
-        verbose_name_plural = 'Recommandations Quotidiennes'
+        verbose_name = 'Daily Recommendation'
+        verbose_name_plural = 'Daily Recommendations'
         indexes = [
             models.Index(fields=['user', 'recommendation_date']),
             models.Index(fields=['user', 'status']),
@@ -65,15 +65,15 @@ class UserPreferenceSignal(models.Model):
     Used to improve recommendations over time
     """
     SIGNAL_TYPES = [
-        ('outfit_created', 'Tenue Créée'),
-        ('outfit_liked', 'Tenue Aimée'),
-        ('outfit_worn', 'Tenue Portée'),
-        ('outfit_rated', 'Tenue Notée'),
-        ('item_favorited', 'Article Favori'),
-        ('recommendation_accepted', 'Recommandation Acceptée'),
-        ('recommendation_rejected', 'Recommandation Rejetée'),
-        ('post_liked', 'Publication Aimée'),
-        ('style_updated', 'Style Mis à Jour'),
+        ('outfit_created', 'Outfit Created'),
+        ('outfit_liked', 'Outfit Liked'),
+        ('outfit_worn', 'Outfit Worn'),
+        ('outfit_rated', 'Outfit Rated'),
+        ('item_favorited', 'Item Favorited'),
+        ('recommendation_accepted', 'Recommendation Accepted'),
+        ('recommendation_rejected', 'Recommendation Rejected'),
+        ('post_liked', 'Post Liked'),
+        ('style_updated', 'Style Updated'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -96,8 +96,8 @@ class UserPreferenceSignal(models.Model):
     class Meta:
         db_table = 'user_preference_signals'
         ordering = ['-created_at']
-        verbose_name = 'Signal de Préférence'
-        verbose_name_plural = 'Signaux de Préférence'
+        verbose_name = 'Preference Signal'
+        verbose_name_plural = 'Preference Signals'
         indexes = [
             models.Index(fields=['user', 'signal_type']),
             models.Index(fields=['user', '-created_at']),
@@ -124,8 +124,8 @@ class ColorCompatibility(models.Model):
     class Meta:
         db_table = 'color_compatibility'
         unique_together = [['color1', 'color2']]
-        verbose_name = 'Compatibilité des Couleurs'
-        verbose_name_plural = 'Compatibilités des Couleurs'
+        verbose_name = 'Color Compatibility'
+        verbose_name_plural = 'Color Compatibilities'
     
     def __str__(self):
         return f"{self.color1} + {self.color2} = {self.compatibility_score}"
@@ -137,12 +137,12 @@ class StyleRule(models.Model):
     Used by AI to create appropriate combinations
     """
     RULE_CATEGORIES = [
-        ('color', 'Couleur'),
-        ('pattern', 'Motif'),
-        ('season', 'Saison'),
+        ('color', 'Color'),
+        ('pattern', 'Pattern'),
+        ('season', 'Season'),
         ('occasion', 'Occasion'),
         ('proportion', 'Proportion'),
-        ('style_mix', 'Mélange de Styles'),
+        ('style_mix', 'Style Mix'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -162,8 +162,8 @@ class StyleRule(models.Model):
     
     class Meta:
         db_table = 'style_rules'
-        verbose_name = 'Règle de Style'
-        verbose_name_plural = 'Règles de Style'
+        verbose_name = 'Style Rule'
+        verbose_name_plural = 'Style Rules'
     
     def __str__(self):
         return f"{self.category} - {self.rule_name}"

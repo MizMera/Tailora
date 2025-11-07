@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Modifier {{ outfit.name }} - Tailora{% endblock %}
+{% block title %}Edit {{ outfit.name }} - Tailora{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
@@ -110,10 +110,10 @@
             <div class="page-header">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div>
-                        <h1 class="page-title">MODIFIER LA TENUE</h1>
+                        <h1 class="page-title">Edit outfit</h1>
                         <p class="page-subtitle">{{ outfit.name }}</p>
                     </div>
-                    <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary">ANNULER</a>
+                    <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary">Cancel</a>
                 </div>
             </div>
 
@@ -135,14 +135,14 @@
 
                     <!-- Basic Info -->
                     <div class="settings-section">
-                        <h3 class="section-title">INFORMATIONS DE BASE</h3>
+                        <h3 class="section-title">Basic information</h3>
                         <div class="form-grid">
                             <div class="input-field">
-                                <label for="name" class="input-label">NOM DE LA TENUE *</label>
+                                <label for="name" class="input-label">Outfit name *</label>
                                 <input type="text" id="name" name="name" class="input-control" required value="{{ outfit.name }}">
                             </div>
                             <div class="input-field">
-                                <label for="occasion" class="input-label">OCCASION</label>
+                                <label for="occasion" class="input-label">Occasion</label>
                                 <select id="occasion" name="occasion" class="input-control">
                                     {% for value, label in occasions %}
                                     <option value="{{ value }}" {% if outfit.occasion == value %}selected{% endif %}>{{ label }}</option>
@@ -152,21 +152,21 @@
                         </div>
                         <div class="form-grid-full">
                             <div class="input-field">
-                                <label for="description" class="input-label">DESCRIPTION</label>
+                                <label for="description" class="input-label">Description</label>
                                 <textarea id="description" name="description" class="input-control" rows="3">{{ outfit.description }}</textarea>
                             </div>
                         </div>
                         <div class="form-grid-full">
                             <label class="checkbox-item-inline" style="display: flex; align-items: center; gap: 8px;">
                                 <input type="checkbox" name="favorite" value="true" {% if outfit.favorite %}checked{% endif %}>
-                                <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.5px;">★ Marquer comme favori</span>
+                                <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.5px;">★ Mark as favorite</span>
                             </label>
                         </div>
                     </div>
 
                     <!-- Selected Items Preview -->
                     <div class="settings-section">
-                        <h3 class="section-title">ARTICLES SÉLECTIONNÉS <span id="selectedCount" style="color: #757575; font-weight: 400;">({{ outfit.items.count }})</span></h3>
+                        <h3 class="section-title">Selected items <span id="selectedCount" style="color: #757575; font-weight: 400;">({{ outfit.items.count }})</span></h3>
                         <div id="selectedPreview" class="selected-preview">
                             {% for item in outfit.items.all %}
                             <div class="preview-item" data-item-id="{{ item.id }}">
@@ -176,7 +176,7 @@
                             {% endfor %}
                         </div>
                         <p id="selectionHint" style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-top: 16px; text-transform: uppercase; letter-spacing: 0.5px;">
-                            Cliquez sur les articles ci-dessous pour les ajouter ou retirer de votre tenue (minimum 2 articles)
+                            Click the items below to add or remove them from your outfit (minimum 2 items)
                         </p>
                     </div>
 
@@ -184,7 +184,7 @@
                     {% if items_by_category %}
                     {% for category, items in items_by_category.items %}
                     <div class="settings-section">
-                        <h3 class="section-title">{{ category|upper }}</h3>
+                        <h3 class="section-title">{{ category }}</h3>
                         <div class="item-selector">
                             {% for item in items %}
                             <div class="selectable-item {% if item.id in selected_item_ids %}selected{% endif %}" 
@@ -195,7 +195,7 @@
                                     <img src="{{ item.image.url }}" alt="{{ item.name }}">
                                     <div class="selection-badge">✓</div>
                                 </div>
-                                <p class="item-name">{{ item.name|upper }}</p>
+                                <p class="item-name">{{ item.name }}</p>
                             </div>
                             {% endfor %}
                         </div>
@@ -212,8 +212,8 @@
 
                     <!-- Form Actions -->
                     <div class="form-actions">
-                        <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary">ANNULER</a>
-                        <button type="submit" class="btn btn-primary" id="submitBtn">ENREGISTRER LES MODIFICATIONS</button>
+                        <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Save changes</button>
                     </div>
                 </form>
             </div>

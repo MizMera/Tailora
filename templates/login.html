@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Tailora</title>
+    <title>Login - Tailora</title>
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,7 +25,7 @@
                 <!-- Header -->
                 <div class="auth-header">
                     <h1 class="auth-title">Tailora</h1>
-                    <p class="auth-subtitle">Le style taillé pour vous</p>
+                    <p class="auth-subtitle">Style tailored for you</p>
                 </div>
 
                 <!-- Login Form -->
@@ -56,7 +56,7 @@
 
                         <!-- Login Form Fields -->
                         <div class="form-section">
-                            <h3 class="section-title">Connexion</h3>
+                            <h3 class="section-title">Log in</h3>
                             
                             <!-- Email Field -->
                             <div class="input-field">
@@ -67,7 +67,7 @@
                                         id="email" 
                                         name="email" 
                                         class="input-control" 
-                                        placeholder="votre.email@example.com"
+                                        placeholder="your.email@example.com"
                                         value="{{ form.email.value|default:'' }}"
                                         required
                                         autocomplete="email"
@@ -77,7 +77,7 @@
 
                             <!-- Password Field -->
                             <div class="input-field">
-                                <label for="password" class="input-label">Mot de passe *</label>
+                                <label for="password" class="input-label">Password *</label>
                                 <div class="input-wrapper">
                                     <input 
                                         type="password" 
@@ -95,21 +95,21 @@
                             <div class="form-options">
                                 <label class="checkbox-item-inline">
                                     <input type="checkbox" name="remember_me" id="remember_me">
-                                    <span>Se souvenir de moi</span>
+                                    <span>Remember me</span>
                                 </label>
-                                <a href="{% url 'password_reset' %}" class="text-link">Mot de passe oublié?</a>
+                                <a href="{% url 'password_reset' %}" class="text-link">Forgot password?</a>
                             </div>
                         </div>
 
                         <!-- Action Buttons -->
                         <div class="auth-buttons">
-                            <button type="submit" class="btn btn-primary">Se connecter</button>
+                            <button type="submit" class="btn btn-primary">Log in</button>
                         </div>
 
                         <!-- Register Link -->
                         <div class="form-footer">
-                            <span class="footer-text">Pas encore de compte?</span>
-                            <a href="{% url 'register' %}" class="text-link-bold">S'inscrire</a>
+                            <span class="footer-text">Don't have an account?</span>
+                            <a href="{% url 'register' %}" class="text-link-bold">Sign up</a>
                         </div>
                     </div>
                 </form>

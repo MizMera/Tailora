@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Statistiques - Tailora{% endblock %}
+{% block title %}Statistics - Tailora{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -11,10 +11,10 @@
             <!-- Page Header -->
             <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
                 <div>
-                    <h2 style="font-family: 'Istok Web', sans-serif; font-size: 28px; font-weight: 400; color: #2c2c2c; margin: 0 0 8px 0;">Statistiques de garde-robe</h2>
-                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: 0;">Analysez votre collection et vos habitudes</p>
+                    <h2 style="font-family: 'Istok Web', sans-serif; font-size: 28px; font-weight: 400; color: #2c2c2c; margin: 0 0 8px 0;">Wardrobe statistics</h2>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: 0;">Analyze your collection and habits</p>
                 </div>
-                <a href="{% url 'wardrobe_gallery' %}" class="btn btn-secondary">Retour à la galerie</a>
+                <a href="{% url 'wardrobe_gallery' %}" class="btn btn-secondary">Back to gallery</a>
             </div>
 
             <!-- Stats Overview -->
@@ -25,7 +25,7 @@
                         {{ stats.total_items }}
                     </div>
                     <div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">
-                        Articles Total
+                        Total items
                     </div>
                 </div>
 
@@ -35,7 +35,7 @@
                         {{ stats.favorite_count }}
                     </div>
                     <div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">
-                        Favoris
+                        Favorites
                     </div>
                 </div>
 
@@ -45,7 +45,7 @@
                         {{ stats.total_items }}/{{ stats.wardrobe_limit }}
                     </div>
                     <div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">
-                        Capacité
+                        Capacity
                     </div>
                 </div>
 
@@ -55,7 +55,7 @@
                         {{ stats.remaining_slots }}
                     </div>
                     <div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">
-                        Places Restantes
+                        Remaining slots
                     </div>
                 </div>
             </div>
@@ -65,7 +65,7 @@
                 <!-- By Category -->
                 <div style="background: #ffffff; padding: 32px;">
                     <h3 style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 24px 0; padding-bottom: 16px; border-bottom: 2px solid #2c2c2c;">
-                        Par Catégorie
+                        By Category
                     </h3>
                     {% if stats.by_category %}
                     <div style="display: grid; gap: 16px;">
@@ -77,14 +77,14 @@
                         {% endfor %}
                     </div>
                     {% else %}
-                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-align: center; padding: 40px 0;">Aucune donnée disponible</p>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-align: center; padding: 40px 0;">No data available</p>
                     {% endif %}
                 </div>
 
                 <!-- By Color -->
                 <div style="background: #ffffff; padding: 32px;">
                     <h3 style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 24px 0; padding-bottom: 16px; border-bottom: 2px solid #2c2c2c;">
-                        Par Couleur
+                        By Color
                     </h3>
                     {% if stats.by_color %}
                     <div style="display: grid; gap: 16px;">
@@ -96,7 +96,7 @@
                         {% endfor %}
                     </div>
                     {% else %}
-                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-align: center; padding: 40px 0;">Aucune donnée disponible</p>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-align: center; padding: 40px 0;">No data available</p>
                     {% endif %}
                 </div>
             </div>
@@ -105,7 +105,7 @@
             {% if stats.most_worn %}
             <div style="background: #ffffff; padding: 32px; margin-bottom: 40px;">
                 <h3 style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 24px 0; padding-bottom: 16px; border-bottom: 2px solid #2c2c2c;">
-                    Articles les Plus Portés
+                    Most worn items
                 </h3>
                 <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
                     {% for item in stats.most_worn %}
@@ -116,7 +116,7 @@
                             {% endif %}
                         </div>
                         <p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #2c2c2c; margin: 0 0 4px 0; font-weight: 500;">{{ item.name }}</p>
-                        <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin: 0;">{{ item.times_worn }} fois</p>
+                        <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin: 0;">{{ item.times_worn }} times</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -127,7 +127,7 @@
             {% if stats.recent_additions %}
             <div style="background: #ffffff; padding: 32px;">
                 <h3 style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 24px 0; padding-bottom: 16px; border-bottom: 2px solid #2c2c2c;">
-                    Ajouts Récents
+                    Recent additions
                 </h3>
                 <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
                     {% for item in stats.recent_additions %}
@@ -148,12 +148,12 @@
             <!-- Upgrade Prompt if not premium -->
             {% if not is_premium and stats.remaining_slots < 10 %}
             <div style="background: linear-gradient(135deg, #2c2c2c 0%, #252320 100%); color: #ffffff; padding: 32px; margin-top: 40px; text-align: center;">
-                <h3 style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; margin: 0 0 16px 0;">Passez à Premium</h3>
+                <h3 style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; margin: 0 0 16px 0;">Upgrade to Premium</h3>
                 <p style="font-family: 'Inter', sans-serif; font-size: 14px; margin: 0 0 24px 0; color: rgba(255, 255, 255, 0.8);">
-                    Vous n'avez plus que {{ stats.remaining_slots }} places. Passez à Premium pour une garde-robe illimitée !
+                    You only have {{ stats.remaining_slots }} slots left. Upgrade to Premium for an unlimited wardrobe!
                 </p>
                 <a href="{% url 'profile_settings' %}" class="btn btn-primary" style="background: #ffffff; color: #2c2c2c; border-color: #ffffff;">
-                    Voir les options Premium
+                    See Premium options
                 </a>
             </div>
             {% endif %}

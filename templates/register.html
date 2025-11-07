@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - Tailora</title>
+    <title>Sign up - Tailora</title>
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,7 +25,7 @@
                 <!-- Header -->
                 <div class="auth-header">
                     <h1 class="auth-title">Tailora</h1>
-                    <p class="auth-subtitle">Le style taillé pour vous</p>
+                    <p class="auth-subtitle">Style tailored for you</p>
                 </div>
 
                 <!-- Register Form -->
@@ -37,12 +37,12 @@
                         <div class="step-indicator">
                             <div class="step active" data-step="1">
                                 <div class="step-number">1</div>
-                                <div class="step-label">Informations</div>
+                                <div class="step-label">Information</div>
                             </div>
                             <div class="step-line"></div>
                             <div class="step" data-step="2">
                                 <div class="step-number">2</div>
-                                <div class="step-label">Préférences</div>
+                                <div class="step-label">Preferences</div>
                             </div>
                         </div>
 
@@ -72,7 +72,7 @@
                             <!-- Step 1: Basic Information -->
                             <div class="form-step active" data-step="1">
                                 <div class="form-section">
-                            <h3 class="section-title">Informations de base</h3>
+                            <h3 class="section-title">Basic information</h3>
                             
                             <!-- Email Field -->
                             <div class="input-field">
@@ -83,7 +83,7 @@
                                         id="email" 
                                         name="email" 
                                         class="input-control" 
-                                        placeholder="votre.email@example.com"
+                                        placeholder="your.email@example.com"
                                         value="{{ form.email.value|default:'' }}"
                                         required
                                     >
@@ -92,14 +92,14 @@
 
                             <!-- Username Field -->
                             <div class="input-field">
-                                <label for="username" class="input-label">Nom d'utilisateur *</label>
+                                <label for="username" class="input-label">Username *</label>
                                 <div class="input-wrapper">
                                     <input 
                                         type="text" 
                                         id="username" 
                                         name="username" 
                                         class="input-control" 
-                                        placeholder="Votre nom d'utilisateur"
+                                        placeholder="Your username"
                                         value="{{ form.username.value|default:'' }}"
                                         required
                                     >
@@ -108,7 +108,7 @@
 
                             <!-- Phone Field -->
                             <div class="input-field">
-                                <label for="phone" class="input-label">Téléphone</label>
+                                <label for="phone" class="input-label">Phone</label>
                                 <div class="input-wrapper">
                                     <input 
                                         type="tel" 
@@ -123,7 +123,7 @@
 
                             <!-- Password Field -->
                             <div class="input-field">
-                                <label for="password" class="input-label">Mot de passe *</label>
+                                <label for="password" class="input-label">Password *</label>
                                 <div class="input-wrapper">
                                     <input 
                                         type="password" 
@@ -134,25 +134,25 @@
                                         required
                                     >
                                 </div>
-                                <small class="input-hint">Minimum 8 caractères</small>
+                                <small class="input-hint">Minimum 8 characters</small>
                             </div>
                                 </div>
 
                                 <!-- Step 1 Navigation -->
                                 <div class="step-navigation">
-                                    <a href="{% url 'login' %}" class="text-link">Vous avez déjà un compte?</a>
-                                    <button type="button" class="btn btn-primary" id="nextStep">Suivant</button>
+                                    <a href="{% url 'login' %}" class="text-link">Already have an account?</a>
+                                    <button type="button" class="btn btn-primary" id="nextStep">Next</button>
                                 </div>
                             </div>
 
                             <!-- Step 2: Style Preferences -->
                             <div class="form-step" data-step="2">
                                 <div class="form-section">
-                                    <h3 class="section-title">Préférences de style</h3>
+                                    <h3 class="section-title">Style preferences</h3>
                                     
                                     <!-- Preferred Styles -->
                                     <div class="input-field">
-                                        <label class="input-label">Styles préférés</label>
+                                        <label class="input-label">Preferred styles</label>
                                         <div class="checkbox-grid">
                                             <label class="checkbox-item">
                                                 <input type="checkbox" name="preferred_styles" value="casual">
@@ -164,19 +164,19 @@
                                             </label>
                                             <label class="checkbox-item">
                                                 <input type="checkbox" name="preferred_styles" value="boheme">
-                                                <span>Bohème</span>
+                                                <span>Bohemian</span>
                                             </label>
                                             <label class="checkbox-item">
                                                 <input type="checkbox" name="preferred_styles" value="sportif">
-                                                <span>Sportif</span>
+                                                <span>Sporty</span>
                                             </label>
                                             <label class="checkbox-item">
                                                 <input type="checkbox" name="preferred_styles" value="elegant">
-                                                <span>Élégant</span>
+                                                <span>Elegant</span>
                                             </label>
                                             <label class="checkbox-item">
                                                 <input type="checkbox" name="preferred_styles" value="classique">
-                                                <span>Classique</span>
+                                                <span>Classic</span>
                                             </label>
                                             <label class="checkbox-item">
                                                 <input type="checkbox" name="preferred_styles" value="streetwear">
@@ -188,27 +188,27 @@
                                             </label>
                                             <label class="checkbox-item">
                                                 <input type="checkbox" name="preferred_styles" value="minimaliste">
-                                                <span>Minimaliste</span>
+                                                <span>Minimalist</span>
                                             </label>
                                         </div>
                                     </div>
 
                                     <!-- Body Type -->
                                     <div class="input-field">
-                                        <label for="body_type" class="input-label">Morphologie</label>
+                                        <label for="body_type" class="input-label">Body type</label>
                                         <select id="body_type" name="body_type" class="input-control">
-                                            <option value="">Sélectionnez votre morphologie</option>
+                                            <option value="">Select your body type</option>
                                             <option value="rectangle">Rectangle</option>
                                             <option value="triangle">Triangle</option>
-                                            <option value="triangle_inverse">Triangle Inversé</option>
-                                            <option value="sablier">Sablier</option>
-                                            <option value="ovale">Ovale</option>
+                                            <option value="triangle_inverse">Inverted Triangle</option>
+                                            <option value="sablier">Hourglass</option>
+                                            <option value="ovale">Oval</option>
                                         </select>
                                     </div>
 
                                     <!-- Height -->
                                     <div class="input-field">
-                                        <label for="height" class="input-label">Taille (cm)</label>
+                                        <label for="height" class="input-label">Height (cm)</label>
                                         <div class="input-wrapper">
                                             <input 
                                                 type="number" 
@@ -225,52 +225,52 @@
 
                                     <!-- Favorite Colors -->
                                     <div class="input-field">
-                                        <label class="input-label">Couleurs préférées</label>
+                                        <label class="input-label">Favorite colors</label>
                                         <div class="color-grid">
                                             <label class="color-item">
                                                 <input type="checkbox" name="favorite_colors" value="#000000">
                                                 <span class="color-box color-black"></span>
-                                                <span class="color-name">Noir</span>
+                                                <span class="color-name">Black</span>
                                             </label>
                                             <label class="color-item">
                                                 <input type="checkbox" name="favorite_colors" value="#FFFFFF">
                                                 <span class="color-box color-white"></span>
-                                                <span class="color-name">Blanc</span>
+                                                <span class="color-name">White</span>
                                             </label>
                                             <label class="color-item">
                                                 <input type="checkbox" name="favorite_colors" value="#808080">
                                                 <span class="color-box color-gray"></span>
-                                                <span class="color-name">Gris</span>
+                                                <span class="color-name">Grey</span>
                                             </label>
                                             <label class="color-item">
                                                 <input type="checkbox" name="favorite_colors" value="#0000FF">
                                                 <span class="color-box color-blue"></span>
-                                                <span class="color-name">Bleu</span>
+                                                <span class="color-name">Blue</span>
                                             </label>
                                             <label class="color-item">
                                                 <input type="checkbox" name="favorite_colors" value="#FF0000">
                                                 <span class="color-box color-red"></span>
-                                                <span class="color-name">Rouge</span>
+                                                <span class="color-name">Red</span>
                                             </label>
                                             <label class="color-item">
                                                 <input type="checkbox" name="favorite_colors" value="#008000">
                                                 <span class="color-box color-green"></span>
-                                                <span class="color-name">Vert</span>
+                                                <span class="color-name">Green</span>
                                             </label>
                                             <label class="color-item">
                                                 <input type="checkbox" name="favorite_colors" value="#FFFF00">
                                                 <span class="color-box color-yellow"></span>
-                                                <span class="color-name">Jaune</span>
+                                                <span class="color-name">Yellow</span>
                                             </label>
                                             <label class="color-item">
                                                 <input type="checkbox" name="favorite_colors" value="#FFC0CB">
                                                 <span class="color-box color-pink"></span>
-                                                <span class="color-name">Rose</span>
+                                                <span class="color-name">Pink</span>
                                             </label>
                                             <label class="color-item">
                                                 <input type="checkbox" name="favorite_colors" value="#A52A2A">
                                                 <span class="color-box color-brown"></span>
-                                                <span class="color-name">Marron</span>
+                                                <span class="color-name">Brown</span>
                                             </label>
                                             <label class="color-item">
                                                 <input type="checkbox" name="favorite_colors" value="#F5DEB3">
@@ -282,15 +282,15 @@
 
                                     <!-- Preferences -->
                                     <div class="input-field">
-                                        <label class="input-label">Préférences shopping</label>
+                                        <label class="input-label">Shopping preferences</label>
                                         <div class="checkbox-list">
                                             <label class="checkbox-item-inline">
                                                 <input type="checkbox" name="prefers_sustainable" value="true">
-                                                <span>Je préfère les marques éco-responsables</span>
+                                                <span>I prefer eco-friendly brands</span>
                                             </label>
                                             <label class="checkbox-item-inline">
                                                 <input type="checkbox" name="prefers_secondhand" value="true">
-                                                <span>J'aime la seconde main</span>
+                                                <span>I like second-hand</span>
                                             </label>
                                         </div>
                                     </div>
@@ -298,8 +298,8 @@
 
                                 <!-- Step 2 Navigation -->
                                 <div class="step-navigation">
-                                    <button type="button" class="btn btn-secondary" id="prevStep">Précédent</button>
-                                    <button type="submit" class="btn btn-primary">S'inscrire</button>
+                                    <button type="button" class="btn btn-secondary" id="prevStep">Back</button>
+                                    <button type="submit" class="btn btn-primary">Sign up</button>
                                 </div>
                             </div>
                         </div>
@@ -378,19 +378,19 @@
                 const password = document.getElementById('password').value.trim();
 
                 if (!email || !username || !password) {
-                    alert('Veuillez remplir tous les champs obligatoires.');
+                    alert('Please fill in all required fields.');
                     return false;
                 }
 
                 if (password.length < 8) {
-                    alert('Le mot de passe doit contenir au moins 8 caractères.');
+                    alert('Password must be at least 8 characters.');
                     return false;
                 }
 
                 // Basic email validation
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(email)) {
-                    alert('Veuillez entrer une adresse email valide.');
+                    alert('Please enter a valid email address.');
                     return false;
                 }
 

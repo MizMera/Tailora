@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Modifier l'article - Tailora{% endblock %}
+{% block title %}Edit item - Tailora{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
@@ -23,10 +23,10 @@
             <!-- Page Header -->
             <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
                 <div>
-                    <h2 style="font-family: 'Istok Web', sans-serif; font-size: 28px; font-weight: 400; color: #2c2c2c; margin: 0 0 8px 0;">Modifier l'article</h2>
+                    <h2 style="font-family: 'Istok Web', sans-serif; font-size: 28px; font-weight: 400; color: #2c2c2c; margin: 0 0 8px 0;">Edit item</h2>
                     <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: 0;">{{ item.name }}</p>
                 </div>
-                <a href="{% url 'wardrobe_detail' item.id %}" class="btn btn-secondary">Annuler</a>
+                <a href="{% url 'wardrobe_detail' item.id %}" class="btn btn-secondary">Cancel</a>
             </div>
 
             <!-- Edit Form -->
@@ -41,12 +41,12 @@
                             <!-- Current Image Preview -->
                             <div>
                                 <img src="{{ item.image.url }}" alt="{{ item.name }}" id="currentImage" style="width: 100%; height: auto; border: 1px solid #e0e0e0;">
-                                <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin-top: 8px; text-align: center;">Photo actuelle</p>
+                                <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin-top: 8px; text-align: center;">Current photo</p>
                             </div>
                             
                             <!-- Upload New Image -->
                             <div>
-                                <label for="image" class="input-label">Nouvelle photo (optionnel)</label>
+                                <label for="image" class="input-label">New photo (optional)</label>
                                 <div id="imageDropArea" style="position: relative; padding: 40px 24px; border: 2px dashed #e0e0e0; text-align: center; cursor: pointer; transition: all 0.3s ease;">
                                     <input type="file" id="image" name="image" accept="image/*" style="display: none;">
                                     <div id="uploadPrompt">
@@ -55,8 +55,8 @@
                                             <path d="M17 8L12 3L7 8" stroke="#2c2c2c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                             <path d="M12 3V15" stroke="#2c2c2c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
-                                        <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; margin: 0 0 4px 0; font-weight: 600;">Cliquez pour télécharger ou glissez une image</p>
-                                        <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin: 0;">PNG, JPG, WEBP jusqu'à 5 MB</p>
+                                        <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; margin: 0 0 4px 0; font-weight: 600;">Click to upload or drag an image</p>
+                                        <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin: 0;">PNG, JPG, WEBP up to 5 MB</p>
                                     </div>
                                     <div id="imagePreview" style="display: none;">
                                         <img id="previewImage" style="max-width: 100%; max-height: 200px; border: 1px solid #e0e0e0;">
@@ -69,16 +69,16 @@
 
                     <!-- Basic Info -->
                     <div class="settings-section">
-                        <h3 class="section-title">Informations de base</h3>
+                        <h3 class="section-title">Basic information</h3>
                         <div class="form-grid">
                             <div class="input-field">
-                                <label for="name" class="input-label">Nom de l'article *</label>
+                                <label for="name" class="input-label">Item name *</label>
                                 <input type="text" id="name" name="name" class="input-control" value="{{ item.name }}" required>
                             </div>
                             <div class="input-field">
-                                <label for="category" class="input-label">Catégorie</label>
+                                <label for="category" class="input-label">Category</label>
                                 <select id="category" name="category" class="input-control">
-                                    <option value="">Sélectionnez une catégorie</option>
+                                    <option value="">Select a category</option>
                                     {% for cat in categories %}
                                     <option value="{{ cat.id }}" {% if item.category.id == cat.id %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
                                     {% endfor %}
@@ -88,21 +88,21 @@
                         <div class="form-grid-full">
                             <div class="input-field">
                                 <label for="description" class="input-label">Description</label>
-                                <textarea id="description" name="description" class="input-control" rows="3" placeholder="Décrivez cet article...">{{ item.description }}</textarea>
+                                <textarea id="description" name="description" class="input-control" rows="3" placeholder="Describe this item...">{{ item.description }}</textarea>
                             </div>
                         </div>
                     </div>
 
                     <!-- Color -->
                     <div class="settings-section">
-                        <h3 class="section-title">Couleur</h3>
+                        <h3 class="section-title">Color</h3>
                         <div class="form-grid">
                             <div class="input-field">
-                                <label for="color" class="input-label">Nom de la couleur *</label>
+                                <label for="color" class="input-label">Color name *</label>
                                 <input type="text" id="color" name="color" class="input-control" value="{{ item.color }}" required>
                             </div>
                             <div class="input-field">
-                                <label for="color_hex" class="input-label">Code couleur</label>
+                                <label for="color_hex" class="input-label">Color code</label>
                                 <div style="display: flex; gap: 12px; align-items: center;">
                                     <input type="color" id="color_hex" name="color_hex" value="{{ item.color_hex }}" style="width: 60px; height: 40px; border: 1px solid #e0e0e0; cursor: pointer; padding: 0;">
                                     <input type="text" id="color_hex_display" class="input-control" value="{{ item.color_hex }}" placeholder="#000000" style="flex: 1;">
@@ -113,28 +113,28 @@
 
                     <!-- Details -->
                     <div class="settings-section">
-                        <h3 class="section-title">Détails</h3>
+                        <h3 class="section-title">Details</h3>
                         <div class="form-grid">
                             <div class="input-field">
-                                <label for="brand" class="input-label">Marque</label>
-                                <input type="text" id="brand" name="brand" class="input-control" value="{{ item.brand }}" placeholder="Ex: Zara, H&M">
+                                <label for="brand" class="input-label">Brand</label>
+                                <input type="text" id="brand" name="brand" class="input-control" value="{{ item.brand }}" placeholder="e.g., Zara, H&M">
                             </div>
                             <div class="input-field">
-                                <label for="material" class="input-label">Matière</label>
-                                <input type="text" id="material" name="material" class="input-control" value="{{ item.material }}" placeholder="Ex: Coton, Polyester">
+                                <label for="material" class="input-label">Material</label>
+                                <input type="text" id="material" name="material" class="input-control" value="{{ item.material }}" placeholder="e.g., Cotton, Polyester">
                             </div>
                             <div class="input-field">
-                                <label for="pattern" class="input-label">Motif</label>
-                                <input type="text" id="pattern" name="pattern" class="input-control" value="{{ item.pattern }}" placeholder="Ex: Uni, Rayé">
+                                <label for="pattern" class="input-label">Pattern</label>
+                                <input type="text" id="pattern" name="pattern" class="input-control" value="{{ item.pattern }}" placeholder="e.g., Solid, Striped">
                             </div>
                             <div class="input-field">
-                                <label for="condition" class="input-label">État</label>
+                                <label for="condition" class="input-label">Condition</label>
                                 <select id="condition" name="condition" class="input-control">
-                                    <option value="new" {% if item.condition == 'new' %}selected{% endif %}>Neuf</option>
+                                    <option value="new" {% if item.condition == 'new' %}selected{% endif %}>New</option>
                                     <option value="excellent" {% if item.condition == 'excellent' %}selected{% endif %}>Excellent</option>
-                                    <option value="good" {% if item.condition == 'good' %}selected{% endif %}>Bon</option>
-                                    <option value="fair" {% if item.condition == 'fair' %}selected{% endif %}>Correct</option>
-                                    <option value="worn" {% if item.condition == 'worn' %}selected{% endif %}>Usé</option>
+                                    <option value="good" {% if item.condition == 'good' %}selected{% endif %}>Good</option>
+                                    <option value="fair" {% if item.condition == 'fair' %}selected{% endif %}>Fair</option>
+                                    <option value="worn" {% if item.condition == 'worn' %}selected{% endif %}>Worn</option>
                                 </select>
                             </div>
                         </div>
@@ -142,22 +142,22 @@
 
                     <!-- Status & Favorite -->
                     <div class="settings-section">
-                        <h3 class="section-title">Statut</h3>
+                        <h3 class="section-title">Status</h3>
                         <div class="form-grid">
                             <div class="input-field">
-                                <label for="status" class="input-label">Disponibilité</label>
+                                <label for="status" class="input-label">Availability</label>
                                 <select id="status" name="status" class="input-control">
-                                    <option value="available" {% if item.status == 'available' %}selected{% endif %}>Disponible</option>
-                                    <option value="washing" {% if item.status == 'washing' %}selected{% endif %}>Au lavage</option>
-                                    <option value="dry_cleaning" {% if item.status == 'dry_cleaning' %}selected{% endif %}>Au pressing</option>
-                                    <option value="loaned" {% if item.status == 'loaned' %}selected{% endif %}>Prêté</option>
-                                    <option value="repair" {% if item.status == 'repair' %}selected{% endif %}>En réparation</option>
+                                    <option value="available" {% if item.status == 'available' %}selected{% endif %}>Available</option>
+                                    <option value="washing" {% if item.status == 'washing' %}selected{% endif %}>Washing</option>
+                                    <option value="dry_cleaning" {% if item.status == 'dry_cleaning' %}selected{% endif %}>Dry cleaning</option>
+                                    <option value="loaned" {% if item.status == 'loaned' %}selected{% endif %}>Loaned</option>
+                                    <option value="repair" {% if item.status == 'repair' %}selected{% endif %}>Under repair</option>
                                 </select>
                             </div>
                             <div class="input-field">
                                 <label class="checkbox-item-inline" style="display: flex; align-items: center; gap: 8px; margin-top: 28px;">
                                     <input type="checkbox" name="favorite" id="favorite" {% if item.favorite %}checked{% endif %}>
-                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">★ Marquer comme favori</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">★ Mark as favorite</span>
                                 </label>
                             </div>
                         </div>
@@ -165,41 +165,41 @@
 
                     <!-- Seasons & Occasions -->
                     <div class="settings-section">
-                        <h3 class="section-title">Saisons</h3>
+                        <h3 class="section-title">Seasons</h3>
                         <div class="checkbox-grid">
                             <label class="checkbox-card">
                                 <input type="checkbox" name="seasons" value="spring" {% if 'spring' in item.seasons %}checked{% endif %}>
                                 <span class="checkbox-card-content">
                                     <span class="checkbox-card-icon">🌸</span>
-                                    <span class="checkbox-card-label">Printemps</span>
+                                    <span class="checkbox-card-label">Spring</span>
                                 </span>
                             </label>
                             <label class="checkbox-card">
                                 <input type="checkbox" name="seasons" value="summer" {% if 'summer' in item.seasons %}checked{% endif %}>
                                 <span class="checkbox-card-content">
                                     <span class="checkbox-card-icon">☀️</span>
-                                    <span class="checkbox-card-label">Été</span>
+                                    <span class="checkbox-card-label">Summer</span>
                                 </span>
                             </label>
                             <label class="checkbox-card">
                                 <input type="checkbox" name="seasons" value="fall" {% if 'fall' in item.seasons %}checked{% endif %}>
                                 <span class="checkbox-card-content">
                                     <span class="checkbox-card-icon">🍂</span>
-                                    <span class="checkbox-card-label">Automne</span>
+                                    <span class="checkbox-card-label">Fall</span>
                                 </span>
                             </label>
                             <label class="checkbox-card">
                                 <input type="checkbox" name="seasons" value="winter" {% if 'winter' in item.seasons %}checked{% endif %}>
                                 <span class="checkbox-card-content">
                                     <span class="checkbox-card-icon">❄️</span>
-                                    <span class="checkbox-card-label">Hiver</span>
+                                    <span class="checkbox-card-label">Winter</span>
                                 </span>
                             </label>
                             <label class="checkbox-card">
                                 <input type="checkbox" name="seasons" value="all_seasons" {% if 'all_seasons' in item.seasons %}checked{% endif %}>
                                 <span class="checkbox-card-content">
                                     <span class="checkbox-card-icon">🌍</span>
-                                    <span class="checkbox-card-label">Toutes saisons</span>
+                                    <span class="checkbox-card-label">All seasons</span>
                                 </span>
                             </label>
                         </div>
@@ -219,7 +219,7 @@
                                 <input type="checkbox" name="occasions" value="formal" {% if 'formal' in item.occasions %}checked{% endif %}>
                                 <span class="checkbox-card-content">
                                     <span class="checkbox-card-icon">👔</span>
-                                    <span class="checkbox-card-label">Formel</span>
+                                    <span class="checkbox-card-label">Formal</span>
                                 </span>
                             </label>
                             <label class="checkbox-card">
@@ -233,14 +233,14 @@
                                 <input type="checkbox" name="occasions" value="party" {% if 'party' in item.occasions %}checked{% endif %}>
                                 <span class="checkbox-card-content">
                                     <span class="checkbox-card-icon">🎉</span>
-                                    <span class="checkbox-card-label">Soirée</span>
+                                    <span class="checkbox-card-label">Party</span>
                                 </span>
                             </label>
                             <label class="checkbox-card">
                                 <input type="checkbox" name="occasions" value="work" {% if 'work' in item.occasions %}checked{% endif %}>
                                 <span class="checkbox-card-content">
                                     <span class="checkbox-card-icon">💼</span>
-                                    <span class="checkbox-card-label">Travail</span>
+                                    <span class="checkbox-card-label">Work</span>
                                 </span>
                             </label>
                         </div>
@@ -248,24 +248,24 @@
 
                     <!-- Purchase Info -->
                     <div class="settings-section">
-                        <h3 class="section-title">Informations d'achat</h3>
+                        <h3 class="section-title">Purchase information</h3>
                         <div class="form-grid">
                             <div class="input-field">
-                                <label for="purchase_date" class="input-label">Date d'achat</label>
+                                <label for="purchase_date" class="input-label">Purchase date</label>
                                 <input type="date" id="purchase_date" name="purchase_date" class="input-control" value="{{ item.purchase_date|date:'Y-m-d' }}">
                             </div>
                             <div class="input-field">
-                                <label for="purchase_price" class="input-label">Prix (EUR)</label>
+                                <label for="purchase_price" class="input-label">Price (EUR)</label>
                                 <input type="number" id="purchase_price" name="purchase_price" class="input-control" value="{{ item.purchase_price }}" step="0.01" min="0" placeholder="0.00">
                             </div>
                             <div class="input-field">
-                                <label for="purchase_location" class="input-label">Lieu d'achat</label>
-                                <input type="text" id="purchase_location" name="purchase_location" class="input-control" value="{{ item.purchase_location }}" placeholder="Ex: Zara Paris">
+                                <label for="purchase_location" class="input-label">Purchase location</label>
+                                <input type="text" id="purchase_location" name="purchase_location" class="input-control" value="{{ item.purchase_location }}" placeholder="e.g., Zara Paris">
                             </div>
                             <div class="input-field">
                                 <label class="checkbox-item-inline" style="display: flex; align-items: center; gap: 8px; margin-top: 28px;">
                                     <input type="checkbox" name="is_secondhand" id="is_secondhand" {% if item.is_secondhand %}checked{% endif %}>
-                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">Article de seconde main</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">Second-hand item</span>
                                 </label>
                             </div>
                         </div>
@@ -273,20 +273,20 @@
 
                     <!-- Tags -->
                     <div class="settings-section">
-                        <h3 class="section-title">Étiquettes</h3>
+                        <h3 class="section-title">Tags</h3>
                         <div class="form-grid-full">
                             <div class="input-field">
-                                <label for="tags" class="input-label">Étiquettes (séparées par des virgules)</label>
-                                <input type="text" id="tags" name="tags" class="input-control" value="{% for tag in item.tags %}{{ tag }}{% if not forloop.last %}, {% endif %}{% endfor %}" placeholder="Ex: confortable, été, bleu">
-                                <small class="input-hint">Ajoutez des mots-clés pour faciliter la recherche</small>
+                                <label for="tags" class="input-label">Tags (comma-separated)</label>
+                                <input type="text" id="tags" name="tags" class="input-control" value="{% for tag in item.tags %}{{ tag }}{% if not forloop.last %}, {% endif %}{% endfor %}" placeholder="e.g., comfy, summer, blue">
+                                <small class="input-hint">Add keywords to improve search</small>
                             </div>
                         </div>
                     </div>
 
                     <!-- Form Actions -->
                     <div class="form-actions">
-                        <a href="{% url 'wardrobe_detail' item.id %}" class="btn btn-secondary">Annuler</a>
-                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                        <a href="{% url 'wardrobe_detail' item.id %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
                     </div>
                 </form>
             </div>
@@ -357,13 +357,13 @@
             
             // Validate file type
             if (!file.type.startsWith('image/')) {
-                alert('Veuillez sélectionner une image valide.');
+                alert('Please select a valid image.');
                 return;
             }
             
             // Validate file size (5MB)
             if (file.size > 5 * 1024 * 1024) {
-                alert('La taille de l\'image ne doit pas dépasser 5 MB.');
+                alert('Image size must not exceed 5 MB.');
                 return;
             }
             

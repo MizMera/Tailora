@@ -140,21 +140,21 @@
             <h3 class="section-title">QUICK ACTIONS</h3>
             
             <div class="action-buttons">
-                <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary btn-block">✏️ Edit Event</a>
+                <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary btn-block"> Edit Event</a>
                 
                 <form method="post" action="{% url 'planner:toggle_complete' event.id %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-secondary btn-block">
                         {% if event.is_completed %}
-                            🔄 Mark as Upcoming
+                            Mark as Upcoming
                         {% else %}
-                            ✓ Mark as Completed
+                            Mark as Completed
                         {% endif %}
                     </button>
                 </form>
                 
-                <a href="{% url 'planner:calendar' %}" class="btn btn-secondary btn-block">📅 View Calendar</a>
-                <a href="{% url 'planner:event_list' %}" class="btn btn-secondary btn-block">📋 All Events</a>
+                <a href="{% url 'planner:calendar' %}" class="btn btn-secondary btn-block">View Calendar</a>
+                <a href="{% url 'planner:event_list' %}" class="btn btn-secondary btn-block">All Events</a>
             </div>
         </div>
         
@@ -163,7 +163,7 @@
             <h4 class="section-title">DANGER ZONE</h4>
             <form id="delete-event-form-{{ event.id }}" method="post" action="{% url 'planner:event_delete' event.id %}">
                 {% csrf_token %}
-                <button type="button" class="btn btn-danger btn-block delete-trigger" data-form-id="delete-event-form-{{ event.id }}" data-item-name="cet évènement">Delete Event</button>
+                <button type="button" class="btn btn-danger btn-block delete-trigger" data-form-id="delete-event-form-{{ event.id }}" data-item-name="this event">Delete Event</button>
             </form>
         </div>
     </div>

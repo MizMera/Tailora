@@ -114,8 +114,7 @@ class ClothingItemCreateSerializer(serializers.ModelSerializer):
         
         if current_count >= max_items:
             raise serializers.ValidationError(
-                f"Vous avez atteint la limite de {max_items} vêtements. "
-                f"Passez à Premium pour ajouter plus d'articles!"
+                f"You've reached your wardrobe limit of {max_items} items. Upgrade to Premium to add more!"
             )
         
         # Handle category

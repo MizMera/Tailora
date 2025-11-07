@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Statistiques Tenues - Tailora{% endblock %}
+{% block title %}Outfit Statistics - Tailora{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -12,10 +12,10 @@
             <div class="page-header">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div>
-                        <h1 class="page-title">STATISTIQUES DES TENUES</h1>
-                        <p class="page-subtitle">Analysez vos combinaisons et styles</p>
+                        <h1 class="page-title">Outfit statistics</h1>
+                        <p class="page-subtitle">Analyze your combinations and styles</p>
                     </div>
-                    <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">RETOUR</a>
+                    <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">Back</a>
                 </div>
             </div>
 
@@ -25,32 +25,32 @@
                     <!-- Total Outfits -->
                     <div class="stat-card">
                         <div class="stat-value">{{ stats.total_outfits }}</div>
-                        <div class="stat-label">TENUES CRÉÉES</div>
+                        <div class="stat-label">Outfits created</div>
                     </div>
 
                     <!-- Favorite Outfits -->
                     <div class="stat-card">
                         <div class="stat-value" style="color: #2c2c2c;">{{ stats.favorite_outfits }}</div>
-                        <div class="stat-label">TENUES FAVORITES</div>
+                        <div class="stat-label">Favorite outfits</div>
                     </div>
 
                     <!-- Average Items -->
                     <div class="stat-card">
                         <div class="stat-value" style="color: #2c2c2c;">{{ stats.avg_items_per_outfit|floatformat:1 }}</div>
-                        <div class="stat-label">ARTICLES PAR TENUE</div>
+                        <div class="stat-label">Items per outfit</div>
                     </div>
 
                     <!-- Most Worn -->
                     <div class="stat-card">
                         <div class="stat-value" style="color: #2c2c2c;">{{ stats.total_wears }}</div>
-                        <div class="stat-label">FOIS PORTÉES</div>
+                        <div class="stat-label">Times worn</div>
                     </div>
                 </div>
             </div>
 
             <!-- Occasions Breakdown -->
             <div class="content-section" style="margin-top: 24px;">
-                <h3 class="section-title">TENUES PAR OCCASION</h3>
+                <h3 class="section-title">Outfits by occasion</h3>
                 {% if stats.by_occasion %}
                 <div style="display: grid; gap: 16px; margin-top: 24px;">
                     {% for occasion, count in stats.by_occasion.items %}
@@ -69,7 +69,7 @@
                 </div>
                 {% else %}
                 <p style="text-align: center; padding: 40px; font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
-                    Aucune donnée disponible
+                    No data available
                 </p>
                 {% endif %}
             </div>
@@ -77,7 +77,7 @@
             <!-- Most Worn Outfits -->
             {% if stats.most_worn %}
             <div class="content-section" style="margin-top: 24px;">
-                <h3 class="section-title">TENUES LES PLUS PORTÉES</h3>
+                <h3 class="section-title">Most worn outfits</h3>
                 <div style="display: grid; gap: 16px; margin-top: 24px;">
                     {% for outfit in stats.most_worn %}
                     <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: #fafafa; border-left: 4px solid #2c2c2c;">
@@ -97,7 +97,7 @@
                                 {{ outfit.name }}
                             </h4>
                             <p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #757575; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                                {{ outfit.get_occasion_display }} • {{ outfit.items.count }} article{{ outfit.items.count|pluralize }}
+                                {{ outfit.get_occasion_display }} • {{ outfit.items.count }} item{{ outfit.items.count|pluralize }}
                             </p>
                         </div>
                         <div style="flex: 0 0 100px; text-align: right;">
@@ -105,10 +105,10 @@
                                 {{ outfit.wear_count }}
                             </div>
                             <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
-                                FOIS
+                                times
                             </div>
                         </div>
-                        <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary" style="flex: 0 0 auto;">VOIR</a>
+                        <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary" style="flex: 0 0 auto;">View</a>
                     </div>
                     {% endfor %}
                 </div>
@@ -118,7 +118,7 @@
             <!-- Recent Outfits -->
             {% if stats.recent_outfits %}
             <div class="content-section" style="margin-top: 24px;">
-                <h3 class="section-title">TENUES RÉCENTES</h3>
+                <h3 class="section-title">Recent outfits</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 24px;">
                     {% for outfit in stats.recent_outfits %}
                     <div style="border: 1px solid #e0e0e0; background: #ffffff;">
@@ -155,12 +155,12 @@
                 <div class="empty-state">
                     <div style="font-size: 64px; margin-bottom: 24px; opacity: 0.3;">👔</div>
                     <h3 style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; color: #2c2c2c; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px;">
-                        Aucune statistique disponible
+                        No statistics available
                     </h3>
                     <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: 0 0 32px 0;">
-                        Créez des tenues pour voir vos statistiques ici!
+                        Create outfits to see your stats here!
                     </p>
-                    <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">CRÉER UNE TENUE</a>
+                    <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">Create outfit</a>
                 </div>
             </div>
             {% endif %}

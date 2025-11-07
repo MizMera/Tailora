@@ -14,14 +14,14 @@
             <div class="page-header">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div>
-                        <h1 class="page-title">Le style taillé pour vous</h1>
-                        <p class="page-subtitle">Bienvenue, {{ user.first_name|default:user.username }}!</p>
+                        <h1 class="page-title">A Style tailored for you</h1>
+                        <p class="page-subtitle">Welcome, {{ user.first_name|default:user.username }}!</p>
                     </div>
                     <div style="display: flex; gap: 12px;">
-                        <a href="{% url 'profile_settings' %}" class="btn btn-secondary">Paramètres</a>
+                        <a href="{% url 'profile_settings' %}" class="btn btn-secondary">Settings</a>
                         <form method="post" action="{% url 'logout' %}" style="display: inline;">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-primary" style="border: none; cursor: pointer;">Déconnexion</button>
+                            <button type="submit" class="btn btn-primary" style="border: none; cursor: pointer;">Log out</button>
                         </form>
                     </div>
                 </div>
@@ -38,12 +38,12 @@
 
             {% if not user.is_verified %}
             <div class="warning-banner">
-                <h3 class="warning-title">⚠ Email Non Vérifié</h3>
+                <h3 class="warning-title">⚠ Email Not Verified</h3>
                 <p class="warning-text">
-                    Votre adresse email n'a pas encore été vérifiée. 
-                    Veuillez vérifier votre boîte de réception et cliquer sur le lien de vérification.
+                    Your email address hasn’t been verified yet.
+                    Please check your inbox and click the verification link.
                 </p>
-                <a href="{% url 'resend_verification' %}" class="warning-btn">Renvoyer l'email</a>
+                <a href="{% url 'resend_verification' %}" class="warning-btn">Resend email</a>
             </div>
             {% endif %}
 
@@ -51,17 +51,17 @@
                 <!-- Statistics Section -->
                 <div class="stats-section">
                     <div class="stat-card">
-                        <div class="stat-label">Articles</div>
+                        <div class="stat-label">Items</div>
                         <div class="stat-value">{{ user.wardrobe_items_count|default:"0" }}</div>
                         <div class="stat-description">Total wardrobe items</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Tenues</div>
+                        <div class="stat-label">Outfits</div>
                         <div class="stat-value">{{ user.outfits_created_count|default:"0" }}</div>
                         <div class="stat-description">Outfits created</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Abonnés</div>
+                        <div class="stat-label">Followers</div>
                         <div class="stat-value">{{ user.followers_count|default:"0" }}</div>
                         <div class="stat-description">Total followers</div>
                     </div>

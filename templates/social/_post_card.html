@@ -11,7 +11,7 @@
         <div class="post-menu">
             <form id="delete-post-form-{{ post.id }}" method="post" action="{% url 'social:delete_post' post.id %}" style="display: inline;">
                 {% csrf_token %}
-                <button type="button" class="btn-icon delete-trigger" data-form-id="delete-post-form-{{ post.id }}" data-item-name="cette publication">🗑️</button>
+                <button type="button" class="btn-icon delete-trigger" data-form-id="delete-post-form-{{ post.id }}" data-item-name="this post">🗑️</button>
             </form>
         </div>
         {% endif %}

@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Recommendation History - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/outfits.css' %}">
+<style>
+    .history-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .history-header {
+        margin-bottom: 2rem;
+    }
+
+    .history-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .filters-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .filter-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .filter-group select,
+    .filter-group input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .recommendation-list {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .recommendation-row {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+        gap: 1rem;
+        align-items: center;
+        transition: background 0.2s;
+    }
+
+    .recommendation-row:hover {
+        background: #f8f9fa;
+    }
+
+    .recommendation-row:last-child {
+        border-bottom: none;
+    }
+
+    .outfit-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .outfit-thumbnail {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
+    .outfit-details h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .outfit-details p {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .status-badge.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-badge.accepted {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-badge.worn {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .confidence-indicator {
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .apply-filters-btn {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .apply-filters-btn:hover {
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+        .recommendation-row {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <div class="history-header">
+        <h1>Recommendation History</h1>
+        <p>View and analyze your past outfit recommendations</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total }}</div>
+            <div class="stat-label">Total Recommendations</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.accepted }}</div>
+            <div class="stat-label">Accepted</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.worn }}</div>
+            <div class="stat-label">Worn</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.rejected }}</div>
+            <div class="stat-label">Rejected</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.avg_confidence|floatformat:0 }}%</div>
+            <div class="stat-label">Avg Confidence</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="get" action="{% url 'recommendations:history' %}">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="status">Status</label>
+                    <select name="status" id="status">
+                        <option value="">All Statuses</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="date_from">From Date</label>
+                    <input type="date" name="date_from" id="date_from" value="{{ request.GET.date_from }}">
+                </div>
+                <div class="filter-group">
+                    <label for="date_to">To Date</label>
+                    <input type="date" name="date_to" id="date_to" value="{{ request.GET.date_to }}">
+                </div>
+                <div class="filter-group" style="display: flex; align-items: flex-end;">
+                    <button type="submit" class="apply-filters-btn" style="width: 100%;">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Recommendations List -->
+    <div class="recommendation-list">
+        {% if recommendations %}
+            {% for rec in recommendations %}
+                <div class="recommendation-row">
+                    <div class="outfit-info">
+                        {% with rec.outfit.items.first as first_item %}
+                            {% if first_item and first_item.photo %}
+                                <img src="{{ first_item.photo.url }}" alt="{{ rec.outfit.name }}" class="outfit-thumbnail">
+                            {% else %}
+                                <div class="outfit-thumbnail" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #999;">No image</div>
+                            {% endif %}
+                        {% endwith %}
+                        <div class="outfit-details">
+                            <h3>{{ rec.outfit.name }}</h3>
+                            <p>{{ rec.recommendation_date }} • {{ rec.outfit.items.count }} items</p>
+                        </div>
+                    </div>
+                    <div class="status-badge {{ rec.status }}">
+                        {{ rec.get_status_display }}
+                    </div>
+                    <div class="confidence-indicator">
+                        {{ rec.confidence_score|floatformat:0 }}%
+                    </div>
+                    <div style="text-align: center;">
+                        {% if rec.user_rating %}
+                            <div style="color: #ffc107; font-size: 1.2rem;">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= rec.user_rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <span style="color: #999; font-size: 0.85rem;">Not rated</span>
+                        {% endif %}
+                    </div>
+                    <div style="text-align: right;">
+                        <a href="{% url 'outfits:outfit_detail' rec.outfit.id %}" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">View →</a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div style="padding: 4rem 2rem; text-align: center; color: var(--text-secondary);">
+                <h3>No recommendations found</h3>
+                <p>Try adjusting your filters or <a href="{% url 'recommendations:daily' %}" style="color: var(--primary-color);">generate new recommendations</a></p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

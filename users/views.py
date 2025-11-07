@@ -73,7 +73,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         if not email or not password:
             return Response(
-                {'error': 'Email et mot de passe requis'},
+                {'error': 'Email and password are required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -81,7 +81,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         if user is None:
             return Response(
-                {'error': 'Identifiants invalides'},
+                {'error': 'Invalid credentials'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
@@ -135,7 +135,7 @@ class StyleProfileViewSet(viewsets.ModelViewSet):
         except StyleProfile.DoesNotExist:
             if request.method == 'GET':
                 return Response(
-                    {'error': 'Profil de style non trouvé'},
+                    {'error': 'Style profile not found'},
                     status=status.HTTP_404_NOT_FOUND
                 )
             else:
@@ -168,7 +168,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
         notification = self.get_object()
         notification.is_read = True
         notification.save()
-        return Response({'status': 'notification marquée comme lue'})
+        return Response({'status': 'notification marked as read'})
     
     @action(detail=False, methods=['post'])
     def mark_all_read(self, request):
@@ -177,4 +177,4 @@ class NotificationViewSet(viewsets.ModelViewSet):
         POST /api/notifications/mark_all_read/
         """
         Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
-        return Response({'status': 'toutes les notifications marquées comme lues'})
+        return Response({'status': 'all notifications marked as read'})
