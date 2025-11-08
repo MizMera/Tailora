@@ -1,7 +1,7 @@
 """
 Open Source AI-powered image analysis service for wardrobe items
-Uses Hugging Face transformers for fashion classification (CLIP zero-shot + ViT)
-and PIL/Numpy for foreground-aware color detection.
+Now using FashionCLIP (fashion-focused CLIP) for zero-shot classification,
+plus PIL/Numpy for foreground-aware color detection.
 """
 import os
 import json
@@ -11,7 +11,7 @@ from collections import Counter
 from PIL import Image, ImageStat
 import numpy as np
 import io
-from transformers import pipeline, AutoImageProcessor, AutoModelForImageClassification
+from transformers import pipeline
 import torch
 from django.conf import settings
 
@@ -34,37 +34,18 @@ class OpenSourceClothingImageAnalyzer:
         self._initialize_color_mappings()
 
     def _initialize_models(self):
-        """Initialize the AI models"""
+        """Initialize the AI model (FashionCLIP)."""
         try:
-            # Try a fashion-specific CLIP first (optional, configurable)
+            # Fashion-specific CLIP (configurable, defaults to a public FashionCLIP checkpoint)
             self.fashion_model_id = getattr(
                 settings, 'FASHION_IMAGE_MODEL_ID', os.environ.get('FASHION_IMAGE_MODEL_ID', 'patrickjohncyh/fashion-clip')
             )
-            self.fashion_clip = None
-            try:
-                self.fashion_clip = pipeline(
-                    "zero-shot-image-classification",
-                    model=self.fashion_model_id,
-                    device=self.torch_device,
-                )
-                print(f"✅ Loaded fashion model: {self.fashion_model_id}")
-            except Exception as fe:
-                print(f"ℹ️ Fashion model not available ({self.fashion_model_id}): {fe}")
-                self.fashion_clip = None
-
-            # Zero-shot CLIP for robust clothing label classification with curated labels (generic fallback)
-            self.clip_classifier = pipeline(
+            self.fashion_clip = pipeline(
                 "zero-shot-image-classification",
-                model="openai/clip-vit-base-patch32",
+                model=self.fashion_model_id,
                 device=self.torch_device,
             )
-
-            # Secondary general classifier (fallback / tie-breaker)
-            self.classifier = pipeline(
-                "image-classification",
-                model="google/vit-base-patch16-224",
-                device=self.torch_device,
-            )
+            
 
             # Curated clothing labels (English + French synonyms)
             self.clothing_labels = [
@@ -89,12 +70,11 @@ class OpenSourceClothingImageAnalyzer:
                 "waistcoat", "vest", "gilet sans manches",
             ]
 
-            print("✅ AI models initialized successfully")
+            print("✅ FashionCLIP model initialized successfully")
 
         except Exception as e:
-            print(f"❌ Error initializing models: {str(e)}")
-            self.classifier = None
-            self.clip_classifier = None
+            print(f"❌ Error initializing FashionCLIP model: {str(e)}")
+            self.fashion_clip = None
 
     def _initialize_color_mappings(self):
         """Initialize color name mappings"""
@@ -232,65 +212,32 @@ class OpenSourceClothingImageAnalyzer:
         }
 
     def _classify_with_ai(self, image: Image.Image) -> Dict:
-        """Use AI models (CLIP zero-shot preferred) to classify the image"""
-        # Prefer fashion-specific CLIP if available
+        """Use FashionCLIP zero-shot to classify the image"""
         try:
-            if getattr(self, 'fashion_clip', None) is not None:
-                clip_results = self.fashion_clip(
-                    image,
-                    candidate_labels=self.clothing_labels,
-                    hypothesis_template="a photo of a {}",
-                )
-                if isinstance(clip_results, list) and len(clip_results) > 0:
-                    best = clip_results[0]
-                    label = best.get('label', '').lower()
-                    score = float(best.get('score', 0.0))
-                    item_type, category = self._canonicalize_label(label)
-                    if score >= 0.30:
-                        return {
-                            'item_type': item_type,
-                            'category': category,
-                            'confidence': score,
-                            'raw_results': clip_results[:3],
-                        }
+            if self.fashion_clip is None:
+                return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0}
 
-            # Otherwise, use generic CLIP zero-shot with curated labels
-            if self.clip_classifier is not None:
-                clip_results = self.clip_classifier(
-                    image,
-                    candidate_labels=self.clothing_labels,
-                    hypothesis_template="a photo of a {}",
-                )
-                # clip_results is list of dicts sorted by score
-                if isinstance(clip_results, list) and len(clip_results) > 0:
-                    best = clip_results[0]
-                    label = best.get('label', '').lower()
-                    score = float(best.get('score', 0.0))
-                    item_type, category = self._canonicalize_label(label)
+            clip_results = self.fashion_clip(
+                image,
+                candidate_labels=self.clothing_labels,
+                hypothesis_template="a photo of a {}",
+            )
 
-                    # If confidence is decent, return early
-                    if score >= 0.25:  # threshold tuned to reduce silly picks
-                        return {
-                            'item_type': item_type,
-                            'category': category,
-                            'confidence': score,
-                            'raw_results': clip_results[:3],
-                        }
-
+            if isinstance(clip_results, list) and len(clip_results) > 0:
+                best = clip_results[0]
+                label = best.get('label', '').lower()
+                score = float(best.get('score', 0.0))
+                item_type, category = self._canonicalize_label(label)
+                return {
+                    'item_type': item_type,
+                    'category': category,
+                    'confidence': score,
+                    'raw_results': clip_results[:3],
+                }
         except Exception as e:
-            print(f"CLIP zero-shot classification error: {str(e)}")
+            print(f"FashionCLIP classification error: {str(e)}")
 
-        # Fallback to general classifier + mapping
-        if self.classifier is None:
-            return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0}
-
-        try:
-            results = self.classifier(image, top_k=5)
-            fashion_mapping = self._map_to_fashion_categories(results)
-            return fashion_mapping
-        except Exception as e:
-            print(f"ViT classification error: {str(e)}")
-            return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0}
+        return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0}
 
     def _canonicalize_label(self, label: str) -> tuple[str, str]:
         """Map label/synonym to canonical item_type and category"""
