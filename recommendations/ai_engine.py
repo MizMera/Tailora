@@ -172,9 +172,56 @@ class OutfitRecommendationEngine:
             if item.category:
                 items_by_category[item.category.name].append(item)
         
-        # Essential categories for a complete outfit
-        essential_categories = ['Tops', 'Bottoms']
-        optional_categories = ['Shoes', 'Outerwear', 'Accessories']
+        print(f"DEBUG: Available categories: {list(items_by_category.keys())}")
+        print(f"DEBUG: Total wardrobe items: {self.wardrobe_items.count()}")
+        
+        # Essential categories for a complete outfit (case-insensitive matching)
+        essential_patterns = [
+            ['tops', 'top', 'shirt', 'blouse', 't-shirt'],  # Top items
+            ['bottoms', 'bottom', 'pants', 'jeans', 'skirt', 'shorts']  # Bottom items
+        ]
+        optional_patterns = [
+            ['shoes', 'shoe', 'footwear'],
+            ['outerwear', 'jacket', 'coat'],
+            ['accessories', 'accessory', 'bag', 'hat', 'scarf']
+        ]
+        
+        # Map actual categories to essential/optional groups
+        category_groups = {'essential': {}, 'optional': {}}
+        
+        for cat_name in items_by_category.keys():
+            cat_lower = cat_name.lower()
+            
+            # Check if it's an essential category
+            for i, patterns in enumerate(essential_patterns):
+                if any(pattern in cat_lower for pattern in patterns):
+                    group_key = f'essential_{i}'
+                    if group_key not in category_groups['essential']:
+                        category_groups['essential'][group_key] = []
+                    category_groups['essential'][group_key].extend(items_by_category[cat_name])
+                    break
+            
+            # Check if it's an optional category
+            for patterns in optional_patterns:
+                if any(pattern in cat_lower for pattern in patterns):
+                    if 'optional_items' not in category_groups['optional']:
+                        category_groups['optional']['optional_items'] = []
+                    category_groups['optional']['optional_items'].extend(items_by_category[cat_name])
+                    break
+        
+        print(f"DEBUG: Essential groups: {[k for k in category_groups['essential'].keys()]}")
+        print(f"DEBUG: Has optional items: {'optional_items' in category_groups['optional']}")
+        
+        # If we don't have enough essential categories, we can't generate outfits
+        if len(category_groups['essential']) < 2:
+            print(f"WARNING: Need at least tops and bottoms. Only have {len(category_groups['essential'])} essential groups")
+            # Fallback: just combine any available items
+            all_items = list(self.wardrobe_items)
+            if len(all_items) >= 2:
+                for _ in range(min(count, len(all_items) // 2)):
+                    random.shuffle(all_items)
+                    combinations.append(all_items[:min(3, len(all_items))])
+            return combinations
         
         # Generate combinations
         attempts = 0
@@ -184,22 +231,24 @@ class OutfitRecommendationEngine:
             attempts += 1
             outfit_items = []
             
-            # Pick essential items
-            for cat in essential_categories:
-                if cat in items_by_category and items_by_category[cat]:
-                    item = random.choice(items_by_category[cat])
+            # Pick one item from each essential group
+            for group_items in category_groups['essential'].values():
+                if group_items:
+                    item = random.choice(group_items)
                     outfit_items.append(item)
             
-            # Skip if missing essentials
-            if len(outfit_items) < len(essential_categories):
+            # Skip if we didn't get all essentials
+            if len(outfit_items) < len(category_groups['essential']):
                 continue
             
-            # Add some optional items (30% chance for each)
-            for cat in optional_categories:
-                if cat in items_by_category and items_by_category[cat]:
-                    if random.random() < 0.3:
-                        item = random.choice(items_by_category[cat])
-                        outfit_items.append(item)
+            # Add some optional items (30% chance)
+            if 'optional_items' in category_groups['optional']:
+                optional_items = category_groups['optional']['optional_items']
+                for _ in range(min(2, len(optional_items))):  # Max 2 optional items
+                    if random.random() < 0.3 and optional_items:
+                        item = random.choice(optional_items)
+                        if item not in outfit_items:  # Avoid duplicates
+                            outfit_items.append(item)
             
             # Avoid duplicates
             item_ids = tuple(sorted([item.id for item in outfit_items]))
