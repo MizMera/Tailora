@@ -1,7 +1,9 @@
 """
 Open Source AI-powered image analysis service for wardrobe items
-Now using FashionCLIP (fashion-focused CLIP) for zero-shot classification,
-plus PIL/Numpy for foreground-aware color detection.
+Rewritten to use an external OpenVisionAPI-style REST endpoint for clothing detection/classification
+instead of local Hugging Face transformers. Retains color + pattern analysis locally.
+Configure via environment variables or Django settings:
+    OPEN_VISION_API_URL, OPEN_VISION_API_TASK (detect|classify), OPEN_VISION_API_KEY (optional), OPEN_VISION_API_TIMEOUT.
 """
 import os
 import json
@@ -11,70 +13,27 @@ from collections import Counter
 from PIL import Image, ImageStat
 import numpy as np
 import io
-from transformers import pipeline
-import torch
+import requests
 from django.conf import settings
 
 
 class OpenSourceClothingImageAnalyzer:
-    """
-    Open source AI-powered analyzer for clothing images using Hugging Face models
-    """
+    """Analyzer that delegates clothing recognition to a REST API (OpenVisionAPI compatible)."""
 
     def __init__(self):
-        # Map to pipeline device index: 0 for CUDA, -1 for CPU
-        self.torch_device = 0 if torch.cuda.is_available() else -1
-        self.device_str = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Using device: {self.device_str}")
-
-        # Initialize models
-        self._initialize_models()
+        # Remote API configuration
+        self.api_base_url = getattr(settings, 'OPEN_VISION_API_URL', os.environ.get('OPEN_VISION_API_URL', '')).rstrip('/')
+        self.api_task = getattr(settings, 'OPEN_VISION_API_TASK', os.environ.get('OPEN_VISION_API_TASK', 'detect'))
+        self.api_timeout = int(getattr(settings, 'OPEN_VISION_API_TIMEOUT', os.environ.get('OPEN_VISION_API_TIMEOUT', '15')))
+        self.api_key = getattr(settings, 'OPEN_VISION_API_KEY', os.environ.get('OPEN_VISION_API_KEY', None))
+        if not self.api_base_url:
+            print("[AI] OPEN_VISION_API_URL not set. Analyzer will return fallback results.")
 
         # Color name mappings
         self._initialize_color_mappings()
 
-    def _initialize_models(self):
-        """Initialize the AI model (FashionCLIP)."""
-        try:
-            # Fashion-specific CLIP (configurable, defaults to a public FashionCLIP checkpoint)
-            self.fashion_model_id = getattr(
-                settings, 'FASHION_IMAGE_MODEL_ID', os.environ.get('FASHION_IMAGE_MODEL_ID', 'patrickjohncyh/fashion-clip')
-            )
-            self.fashion_clip = pipeline(
-                "zero-shot-image-classification",
-                model=self.fashion_model_id,
-                device=self.torch_device,
-            )
-            
-
-            # Curated clothing labels (English + French synonyms)
-            self.clothing_labels = [
-                # Tops / Chemises (rich synonyms)
-                "shirt", "dress shirt", "collared shirt", "button-down shirt", "button-up shirt",
-                "long-sleeve shirt", "short-sleeve shirt", "formal shirt", "oxford shirt",
-                "t-shirt", "tee", "polo shirt", "henley", "blouse",
-                "chemise", "chemise noire", "chemise blanche", "chemise homme", "chemise femme",
-                # Knitwear / Tops
-                "sweater", "jumper", "pullover", "hoodie", "cardigan", "pull",
-                # Outerwear
-                "jacket", "blazer", "coat", "trench coat", "parka", "down jacket", "overcoat",
-                # Bottoms
-                "jeans", "pants", "trousers", "chinos", "shorts", "skirt", "leggings", "cargo pants",
-                # One piece
-                "dress", "robe",
-                # Suits
-                "suit jacket", "suit", "tailored blazer",
-                # Accessories (lower priority)
-                "belt", "scarf", "hat", "beanie", "cap",
-                # Vests (non-tactical)
-                "waistcoat", "vest", "gilet sans manches",
-            ]
-
-            print("✅ FashionCLIP model initialized successfully")
-
-        except Exception as e:
-            print(f"❌ Error initializing FashionCLIP model: {str(e)}")
-            self.fashion_clip = None
+    def _initialize_models(self):  # Backward compatibility (unused now)
+        pass
 
     def _initialize_color_mappings(self):
         """Initialize color name mappings"""
@@ -123,8 +82,8 @@ class OpenSourceClothingImageAnalyzer:
             # Extract basic image features
             basic_features = self._extract_basic_features(image_cropped)
 
-            # AI-powered classification
-            ai_analysis = self._classify_with_ai(image_cropped)
+            # AI-powered classification via remote API
+            ai_analysis = self._infer_with_api(image_cropped)
 
             # Color analysis
             color_analysis = self._analyze_colors(image_cropped)
@@ -211,32 +170,48 @@ class OpenSourceClothingImageAnalyzer:
             'estimated_single_item': is_single_item,
         }
 
-    def _classify_with_ai(self, image: Image.Image) -> Dict:
-        """Use FashionCLIP zero-shot to classify the image"""
+    def _infer_with_api(self, image: Image.Image) -> Dict:
+        """Send image to OpenVisionAPI-style endpoint and parse response."""
+        if not self.api_base_url:
+            return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0}
         try:
-            if self.fashion_clip is None:
-                return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0}
-
-            clip_results = self.fashion_clip(
-                image,
-                candidate_labels=self.clothing_labels,
-                hypothesis_template="a photo of a {}",
-            )
-
-            if isinstance(clip_results, list) and len(clip_results) > 0:
-                best = clip_results[0]
-                label = best.get('label', '').lower()
-                score = float(best.get('score', 0.0))
-                item_type, category = self._canonicalize_label(label)
+            buf = io.BytesIO()
+            image.save(buf, format='JPEG', quality=90)
+            buf.seek(0)
+            files = {'image': ('image.jpg', buf, 'image/jpeg')}
+            data = {'task': self.api_task}
+            headers = {}
+            if self.api_key:
+                headers['Authorization'] = f'Bearer {self.api_key}'
+            resp = requests.post(f"{self.api_base_url}/predict", files=files, data=data, headers=headers, timeout=self.api_timeout)
+            resp.raise_for_status()
+            payload = resp.json()
+            predictions = payload.get('predictions') or payload.get('results') or payload.get('detections') or []
+            if isinstance(predictions, dict):
+                predictions = predictions.get('detections') or predictions.get('items') or []
+            best = None
+            best_score = -1.0
+            clothing_keywords = ['shirt','t-shirt','dress','jacket','coat','blazer','hoodie','sweater','cardigan','pants','trousers','jeans','shorts','skirt','leggings','waistcoat','vest','gilet']
+            for p in predictions:
+                label = (p.get('label') or p.get('class') or p.get('name') or '').lower()
+                score = float(p.get('confidence') or p.get('score') or p.get('prob') or 0.0)
+                if not label:
+                    continue
+                boost = 0.15 if any(k in label for k in clothing_keywords) else 0.0
+                ranked = score + boost
+                if ranked > best_score:
+                    best = {'label': label, 'score': score}
+                    best_score = ranked
+            if best:
+                item_type, category = self._canonicalize_label(best['label'])
                 return {
                     'item_type': item_type,
                     'category': category,
-                    'confidence': score,
-                    'raw_results': clip_results[:3],
+                    'confidence': float(best['score']),
+                    'raw_results': predictions[:3] if isinstance(predictions, list) else [],
                 }
         except Exception as e:
-            print(f"FashionCLIP classification error: {str(e)}")
-
+            print(f"[AI] Remote inference failed: {e}")
         return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0}
 
     def _canonicalize_label(self, label: str) -> tuple[str, str]:
