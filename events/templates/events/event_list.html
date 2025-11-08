@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Events - Tailora{% endblock %}
+
+{% block content %}
+<h1>Evénements </h1>
+<a href="{% url 'events:create' %}" class="btn btn-primary">Créer un événement</a>
+
+<table class="event-table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Location</th>
+            <th>Organizer</th>
+            <th>Capacity</th>
+            <th>Price</th>
+            <th>Dress Code</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for event in events %}
+        <tr>
+            <td>{{ event.name }}</td>
+            <td>{{ event.date }}</td>
+            <td>{{ event.start_time }}</td>
+            <td>{{ event.end_time }}</td>
+            <td>{{ event.location }}</td>
+            <td>{{ event.organizer }}</td>
+            <td>{{ event.capacity }}</td>
+            <td>{{ event.price }}</td>
+            <td>
+                <div style="width:20px; height:20px; background-color: {{ event.dress_code }}; border: 1px solid #000;"></div>
+            </td>
+            <td>
+                <a href="{% url 'events:update' event.pk %}" class="btn btn-sm btn-blue">Edit</a>
+                <a href="{% url 'events:delete' event.pk %}" class="btn btn-sm btn-red">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="10">No events available.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

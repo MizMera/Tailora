@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Event - Tailora{% endblock %}
+
+{% block content %}
+<h1>Delete Event</h1>
+<p>Are you sure you want to delete "{{ object.name }}"?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-red">Delete</button>
+    <a href="{% url 'events:list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,110 @@
+/* General Tailora styling */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+/* Buttons */
+.btn {
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    margin: 2px;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background-color: #1d4ed8;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6b7280;
+    color: white;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.btn-blue {
+    background-color: #2563eb;
+    color: white;
+}
+
+.btn-red {
+    background-color: #dc2626;
+    color: white;
+}
+
+/* Table styling */
+.events-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.events-table th,
+.events-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.events-table th {
+    background-color: #1e40af;
+    color: white;
+}
+
+/* Dress code color box */
+.color-box {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #000; /* optional for visibility */
+    display: inline-block;
+    border-radius: 3px;
+}
+.event-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.event-table th, .event-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.event-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.event-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.event-table tr:hover {
+    background-color: #e6f7ff;
+}
+
+.btn {
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    color: white;
+}
+
+.btn-primary { background-color: #007bff; }
+.btn-blue { background-color: #007bff; }
+.btn-red { background-color: #dc3545; }
+.btn-sm { font-size: 0.85em; padding: 3px 6px; }

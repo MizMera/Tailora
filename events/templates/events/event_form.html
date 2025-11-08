@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if view.object %}
+    {{ view.object.name }} - Tailora
+{% else %}
+    Create Event - Tailora
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<h1>
+{% if view.object %}
+    {{ view.object.name }}
+{% else %}
+    Create Event
+{% endif %}
+</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{% url 'events:list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}
