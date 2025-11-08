@@ -1,39 +1,86 @@
 """
 Open Source AI-powered image analysis service for wardrobe items
-Rewritten to use an external OpenVisionAPI-style REST endpoint for clothing detection/classification
-instead of local Hugging Face transformers. Retains color + pattern analysis locally.
-Configure via environment variables or Django settings:
-    OPEN_VISION_API_URL, OPEN_VISION_API_TASK (detect|classify), OPEN_VISION_API_KEY (optional), OPEN_VISION_API_TIMEOUT.
+Now using YOLOv8 (Ultralytics) for object detection and classification,
+plus PIL/Numpy for foreground-aware color detection.
 """
 import os
 import json
-import base64
 from typing import Dict, List, Optional, Tuple
 from collections import Counter
-from PIL import Image, ImageStat
+from PIL import Image
 import numpy as np
 import io
-import requests
 from django.conf import settings
 
 
 class OpenSourceClothingImageAnalyzer:
-    """Analyzer that delegates clothing recognition to a REST API (OpenVisionAPI compatible)."""
+    """
+    Open source AI-powered analyzer for clothing images using YOLOv8 (Ultralytics)
+    """
 
     def __init__(self):
-        # Remote API configuration
-        self.api_base_url = getattr(settings, 'OPEN_VISION_API_URL', os.environ.get('OPEN_VISION_API_URL', '')).rstrip('/')
-        self.api_task = getattr(settings, 'OPEN_VISION_API_TASK', os.environ.get('OPEN_VISION_API_TASK', 'detect'))
-        self.api_timeout = int(getattr(settings, 'OPEN_VISION_API_TIMEOUT', os.environ.get('OPEN_VISION_API_TIMEOUT', '15')))
-        self.api_key = getattr(settings, 'OPEN_VISION_API_KEY', os.environ.get('OPEN_VISION_API_KEY', None))
-        if not self.api_base_url:
-            print("[AI] OPEN_VISION_API_URL not set. Analyzer will return fallback results.")
+        print("Initializing clothing analyzer with YOLOv8...")
+        
+        # Initialize models
+        self._initialize_models()
 
         # Color name mappings
         self._initialize_color_mappings()
+        
+        # Clothing class mapping (YOLO COCO classes to fashion categories)
+        self._initialize_class_mappings()
 
-    def _initialize_models(self):  # Backward compatibility (unused now)
-        pass
+    def _initialize_models(self):
+        """Initialize the YOLOv8 model."""
+        try:
+            from ultralytics import YOLO
+            
+            # Use YOLOv8 pretrained model (you can fine-tune on fashion dataset later)
+            model_path = getattr(
+                settings, 'YOLO_MODEL_PATH', os.environ.get('YOLO_MODEL_PATH', 'yolov8n.pt')
+            )
+            
+            self.model = YOLO(model_path)
+            print(f"✅ YOLOv8 model loaded successfully: {model_path}")
+
+        except ImportError:
+            print("❌ Error: ultralytics not installed. Run: pip install ultralytics")
+            self.model = None
+        except Exception as e:
+            print(f"❌ Error initializing YOLOv8 model: {str(e)}")
+            self.model = None
+    
+    def _initialize_class_mappings(self):
+        """Map YOLO COCO classes to fashion categories"""
+        # COCO has some clothing-related classes
+        # For better results, you'd train/fine-tune YOLO on a fashion dataset
+        self.class_to_category = {
+            # COCO classes that are clothing-related
+            'person': 'unknown',  # Sometimes detects person wearing clothes
+            'backpack': 'accessories',
+            'umbrella': 'accessories',
+            'handbag': 'accessories',
+            'tie': 'accessories',
+            'suitcase': 'accessories',
+            'sports ball': 'accessories',
+            'baseball bat': 'accessories',
+            'baseball glove': 'accessories',
+            'skateboard': 'accessories',
+            'surfboard': 'accessories',
+            'tennis racket': 'accessories',
+            # Fallback for detected objects
+            'clothing': 'tops',
+            'shirt': 'tops',
+            'pants': 'bottoms',
+            'dress': 'dresses',
+            'jacket': 'outerwear',
+            'coat': 'outerwear',
+            'shoes': 'shoes',
+            'hat': 'accessories',
+            'bag': 'accessories',
+            'belt': 'accessories',
+            'scarf': 'accessories',
+        }
 
     def _initialize_color_mappings(self):
         """Initialize color name mappings"""
@@ -82,8 +129,8 @@ class OpenSourceClothingImageAnalyzer:
             # Extract basic image features
             basic_features = self._extract_basic_features(image_cropped)
 
-            # AI-powered classification via remote API
-            ai_analysis = self._infer_with_api(image_cropped)
+            # AI-powered classification
+            ai_analysis = self._classify_with_ai(image_cropped)
 
             # Color analysis
             color_analysis = self._analyze_colors(image_cropped)
@@ -170,52 +217,84 @@ class OpenSourceClothingImageAnalyzer:
             'estimated_single_item': is_single_item,
         }
 
-    def _infer_with_api(self, image: Image.Image) -> Dict:
-        """Send image to OpenVisionAPI-style endpoint and parse response."""
-        if not self.api_base_url:
-            return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0}
+    def _classify_with_ai(self, image: Image.Image) -> Dict:
+        """Use YOLOv8 to detect and classify clothing items in the image"""
         try:
-            buf = io.BytesIO()
-            image.save(buf, format='JPEG', quality=90)
-            buf.seek(0)
-            files = {'image': ('image.jpg', buf, 'image/jpeg')}
-            data = {'task': self.api_task}
-            headers = {}
-            if self.api_key:
-                headers['Authorization'] = f'Bearer {self.api_key}'
-            resp = requests.post(f"{self.api_base_url}/predict", files=files, data=data, headers=headers, timeout=self.api_timeout)
-            resp.raise_for_status()
-            payload = resp.json()
-            predictions = payload.get('predictions') or payload.get('results') or payload.get('detections') or []
-            if isinstance(predictions, dict):
-                predictions = predictions.get('detections') or predictions.get('items') or []
-            best = None
-            best_score = -1.0
-            clothing_keywords = ['shirt','t-shirt','dress','jacket','coat','blazer','hoodie','sweater','cardigan','pants','trousers','jeans','shorts','skirt','leggings','waistcoat','vest','gilet']
-            for p in predictions:
-                label = (p.get('label') or p.get('class') or p.get('name') or '').lower()
-                score = float(p.get('confidence') or p.get('score') or p.get('prob') or 0.0)
-                if not label:
-                    continue
-                boost = 0.15 if any(k in label for k in clothing_keywords) else 0.0
-                ranked = score + boost
-                if ranked > best_score:
-                    best = {'label': label, 'score': score}
-                    best_score = ranked
-            if best:
-                item_type, category = self._canonicalize_label(best['label'])
+            if self.model is None:
+                return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0, 'detections': []}
+
+            # Run YOLOv8 detection
+            results = self.model(image, verbose=False)
+            
+            if not results or len(results) == 0:
+                return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0, 'detections': []}
+            
+            # Get detections from first result
+            result = results[0]
+            boxes = result.boxes
+            
+            if boxes is None or len(boxes) == 0:
+                return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0, 'detections': []}
+            
+            # Parse detections
+            detections = []
+            for box in boxes:
+                class_id = int(box.cls[0])
+                confidence = float(box.conf[0])
+                class_name = result.names[class_id].lower()
+                
+                # Get bounding box coordinates
+                xyxy = box.xyxy[0].tolist()  # [x1, y1, x2, y2]
+                
+                # Map to fashion category
+                category = self.class_to_category.get(class_name, 'tops')
+                
+                detections.append({
+                    'class': class_name,
+                    'confidence': confidence,
+                    'bbox': xyxy,
+                    'category': category,
+                })
+            
+            # Use the highest confidence detection as primary
+            if detections:
+                detections.sort(key=lambda x: x['confidence'], reverse=True)
+                primary = detections[0]
+                
+                # Infer item_type from class name
+                item_type = self._infer_item_type(primary['class'])
+                
                 return {
                     'item_type': item_type,
-                    'category': category,
-                    'confidence': float(best['score']),
-                    'raw_results': predictions[:3] if isinstance(predictions, list) else [],
+                    'category': primary['category'],
+                    'confidence': primary['confidence'],
+                    'detections': detections,
                 }
+            
+            return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0, 'detections': []}
+            
         except Exception as e:
-            print(f"[AI] Remote inference failed: {e}")
-        return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0}
+            print(f"YOLOv8 detection error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return {'item_type': 'clothing item', 'category': 'tops', 'confidence': 0.0, 'detections': []}
+    
+    def _infer_item_type(self, class_name: str) -> str:
+        """Infer friendly item type name from YOLO class"""
+        # Map COCO/YOLO classes to friendly names
+        type_mapping = {
+            'backpack': 'backpack',
+            'handbag': 'handbag',
+            'tie': 'tie',
+            'suitcase': 'suitcase',
+            'umbrella': 'umbrella',
+            'person': 'clothing item',
+        }
+        
+        return type_mapping.get(class_name, class_name.replace('_', ' '))
 
     def _canonicalize_label(self, label: str) -> tuple[str, str]:
-        """Map label/synonym to canonical item_type and category"""
+        """Map label/synonym to canonical item_type and category (kept for compatibility)"""
         label = label.lower().strip()
         # Normalize French -> English where helpful
         mapping = {
