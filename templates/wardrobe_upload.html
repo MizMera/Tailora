@@ -6,6 +6,98 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<style>
+    .crop-modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        overflow: auto;
+    }
+
+    .crop-modal-content {
+        position: relative;
+        background-color: #fff;
+        margin: 2% auto;
+        padding: 0;
+        width: 90%;
+        max-width: 900px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .crop-header {
+        padding: 20px 24px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .crop-header h2 {
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c2c2c;
+        margin: 0;
+    }
+
+    .crop-body {
+        padding: 24px;
+        max-height: 70vh;
+        overflow: hidden;
+    }
+
+    .crop-container {
+        max-height: 60vh;
+        overflow: hidden;
+    }
+
+    .crop-footer {
+        padding: 20px 24px;
+        background: #f8f9fa;
+        border-top: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .crop-controls {
+        display: flex;
+        gap: 8px;
+    }
+
+    .crop-control-btn {
+        padding: 8px 16px;
+        background: #fff;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #2c2c2c;
+        transition: all 0.2s;
+    }
+
+    .crop-control-btn:hover {
+        background: #f5f5f5;
+        border-color: #bbb;
+    }
+
+    .crop-control-btn.active {
+        background: #667eea;
+        color: #fff;
+        border-color: #667eea;
+    }
+</style>
 {% endblock %}
 
 {% block container_class %}page-reveal{% endblock %}
@@ -599,6 +691,216 @@
         // Fade in animation
         document.addEventListener('DOMContentLoaded', () => {
             document.body.style.opacity = '1';
+        });
+    </script>
+
+    <!-- Cropper.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+    <!-- Image Cropper Modal -->
+    <div id="cropModal" class="crop-modal">
+        <div class="crop-modal-content">
+            <div class="crop-header">
+                <h2>✂️ Crop Your Image</h2>
+                <button type="button" id="closeCropModal" class="crop-control-btn" style="background: transparent; border: none; font-size: 24px; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+            <div class="crop-body">
+                <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-bottom: 16px; text-align: center;">
+                    Adjust the crop area to focus on your clothing item
+                </p>
+                <div class="crop-container">
+                    <img id="cropImage" src="" alt="Crop preview" style="max-width: 100%;">
+                </div>
+            </div>
+            <div class="crop-footer">
+                <div class="crop-controls">
+                    <button type="button" class="crop-control-btn" id="zoomIn" title="Zoom In">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="16"/>
+                            <line x1="8" y1="12" x2="16" y2="12"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="crop-control-btn" id="zoomOut" title="Zoom Out">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="8" y1="12" x2="16" y2="12"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="crop-control-btn" id="rotateLeft" title="Rotate Left">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="crop-control-btn" id="rotateRight" title="Rotate Right">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+                            <path d="M21 3v5h-5"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="crop-control-btn" id="flipH" title="Flip Horizontal">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 3v18"/>
+                            <path d="M8 7h8"/>
+                            <path d="M8 12h8"/>
+                            <path d="M8 17h8"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="crop-control-btn" id="resetCrop" title="Reset">↻ Reset</button>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" class="btn btn-secondary" id="cancelCrop">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="cropConfirm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                        ✓ Apply Crop
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cropper = null;
+        let originalFile = null;
+        let scaleX = 1;
+        let scaleY = 1;
+
+        // Open crop modal when image is selected
+        const originalFileInput = document.getElementById('image-input');
+        
+        originalFileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                originalFile = this.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = (event) => {
+                    // Show crop modal
+                    const cropModal = document.getElementById('cropModal');
+                    const cropImage = document.getElementById('cropImage');
+                    
+                    cropImage.src = event.target.result;
+                    cropModal.style.display = 'block';
+                    
+                    // Initialize cropper
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                    
+                    cropper = new Cropper(cropImage, {
+                        aspectRatio: NaN, // Free aspect ratio
+                        viewMode: 1,
+                        autoCropArea: 0.8,
+                        responsive: true,
+                        guides: true,
+                        center: true,
+                        highlight: true,
+                        cropBoxMovable: true,
+                        cropBoxResizable: true,
+                        toggleDragModeOnDblclick: false,
+                    });
+                };
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // Crop controls
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            if (cropper) cropper.zoom(0.1);
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            if (cropper) cropper.zoom(-0.1);
+        });
+
+        document.getElementById('rotateLeft').addEventListener('click', () => {
+            if (cropper) cropper.rotate(-45);
+        });
+
+        document.getElementById('rotateRight').addEventListener('click', () => {
+            if (cropper) cropper.rotate(45);
+        });
+
+        document.getElementById('flipH').addEventListener('click', () => {
+            scaleX = scaleX === 1 ? -1 : 1;
+            if (cropper) cropper.scaleX(scaleX);
+        });
+
+        document.getElementById('resetCrop').addEventListener('click', () => {
+            if (cropper) {
+                cropper.reset();
+                scaleX = 1;
+                scaleY = 1;
+            }
+        });
+
+        // Close modal handlers
+        document.getElementById('closeCropModal').addEventListener('click', closeCropModal);
+        document.getElementById('cancelCrop').addEventListener('click', closeCropModal);
+
+        function closeCropModal() {
+            const cropModal = document.getElementById('cropModal');
+            cropModal.style.display = 'none';
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            // Reset file input
+            originalFileInput.value = '';
+        }
+
+        // Apply crop
+        document.getElementById('cropConfirm').addEventListener('click', () => {
+            if (!cropper) return;
+
+            // Get cropped canvas
+            const canvas = cropper.getCroppedCanvas({
+                maxWidth: 2048,
+                maxHeight: 2048,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+            });
+
+            // Convert canvas to blob
+            canvas.toBlob((blob) => {
+                // Create new file from blob
+                const croppedFile = new File([blob], originalFile.name, {
+                    type: originalFile.type,
+                    lastModified: Date.now(),
+                });
+
+                // Update file input with cropped image
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(croppedFile);
+                originalFileInput.files = dataTransfer.files;
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const previewImg = document.getElementById('preview-img');
+                    const imagePreview = document.getElementById('image-preview');
+                    const uploadLabel = document.querySelector('.upload-label');
+                    
+                    previewImg.src = e.target.result;
+                    imagePreview.style.display = 'flex';
+                    uploadLabel.style.display = 'none';
+                };
+                reader.readAsDataURL(croppedFile);
+
+                // Close modal
+                const cropModal = document.getElementById('cropModal');
+                cropModal.style.display = 'none';
+                cropper.destroy();
+                cropper = null;
+            }, originalFile.type);
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            const cropModal = document.getElementById('cropModal');
+            if (e.target === cropModal) {
+                closeCropModal();
+            }
         });
     </script>
 {% endblock %}
