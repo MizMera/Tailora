@@ -133,6 +133,80 @@
   pointer-events: none;
 }
 
+/* Themed Confirmation Modal (shared) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 20px;
+  overflow-y: auto; /* allow modal content to scroll if needed */
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 520px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.modal-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
+  color: #fff;
+  font-size: 36px;
+  box-shadow: 0 8px 20px rgba(229,57,53,0.35);
+}
+
+.modal-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.modal-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: #4a5568;
+  margin: 0 0 6px;
+}
+
+.modal-subtext {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #718096;
+  margin: 0 0 16px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-danger-strong {
+  background: linear-gradient(135deg, #ef5350 0%, #e53935 100%) !important;
+  border-color: #e53935 !important;
+  color: #fff !important;
+}
+
+.btn-danger-strong:hover {
+  filter: brightness(0.95);
+  box-shadow: 0 8px 18px rgba(229,57,53,0.35);
+}
+
 /* Primary Button */
 .btn-primary {
   background: var(--color-primary-dark);

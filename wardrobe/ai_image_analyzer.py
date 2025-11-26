@@ -1,6 +1,6 @@
 """
-Fashion-specific AI image analysis using shape and color heuristics.
-Optimized for clothing detection without heavy ML dependencies.
+Fashion-specific AI image analysis using shape and color heuristics + BLIP-2 captioning.
+Optimized for clothing detection with rich AI-generated descriptions.
 """
 import os
 import json
@@ -12,26 +12,41 @@ import numpy as np
 import io
 from django.conf import settings
 
+# BLIP-2 integration
+try:
+    from .blip2_captioner import get_fashion_captioner, BLIP2FashionCaptioner
+    BLIP2_AVAILABLE = True
+except ImportError:
+    BLIP2_AVAILABLE = False
+    print("⚠️ BLIP-2 not available - falling back to heuristic descriptions")
+
 
 class FashionImageAnalyzer:
     """
-    Lightweight fashion analyzer using computer vision heuristics.
-    Optimized for accuracy without requiring heavy ML models or datasets.
-    
-    Detects:
-    - Item type (shirt, pants, dress, socks, shoes, etc.)
-    - Category (tops, bottoms, dresses, accessories, shoes)
-    - Color (accurate dominant color detection)
-    - Pattern (solid, striped, floral, etc.)
+    Advanced fashion analyzer combining computer vision heuristics with BLIP-2 AI captioning.
+    Provides both structured metadata and rich natural language descriptions.
     """
 
-    def __init__(self):
-        print("Initializing Fashion Image Analyzer (heuristics-based)...")
-        
+    def __init__(self, use_blip2: bool = True):
+        print("Initializing Fashion Image Analyzer...")
+
         # Initialize color mappings
         self._initialize_color_mappings()
-        
-        print("✅ Fashion analyzer ready (no ML dependencies required)")
+
+        # Initialize BLIP-2 captioner
+        self.blip2_captioner = None
+        if use_blip2 and BLIP2_AVAILABLE:
+            try:
+                print("Loading BLIP-2 fashion captioner...")
+                self.blip2_captioner = get_fashion_captioner()
+                print("✅ BLIP-2 captioner ready for rich descriptions")
+            except Exception as e:
+                print(f"⚠️ BLIP-2 initialization failed: {str(e)}")
+                print("Falling back to heuristic descriptions")
+        else:
+            print("ℹ️ BLIP-2 disabled - using heuristic descriptions only")
+
+        print("✅ Fashion analyzer ready")
 
     def _initialize_color_mappings(self):
         """Initialize color name mappings"""
@@ -89,7 +104,7 @@ class FashionImageAnalyzer:
             color_analysis = self._analyze_colors(image_final, ai_analysis.get('category', 'tops'))
 
             # Combine results
-            analysis = self._combine_analyses(basic_features, ai_analysis, color_analysis)
+            analysis = self._combine_analyses(basic_features, ai_analysis, color_analysis, image_final)
 
             return analysis
 
@@ -261,21 +276,94 @@ class FashionImageAnalyzer:
 
     def _classify_with_ai(self, image: Image.Image) -> Dict:
         """
-        Classify clothing using smart heuristics - more reliable than pre-trained models.
-        Pre-trained models (ResNet/ImageNet, YOLO/COCO) don't understand fashion well,
-        so we use intelligent shape, color, and pattern analysis instead.
+        Classify clothing using BLIP-2 description as primary source when available,
+        falling back to shape heuristics when BLIP-2 cannot confidently identify the item.
         """
-        print("Starting smart clothing classification (shape + color analysis)...")
-        
-        # Use our improved shape-based classifier as PRIMARY method
+        print("Starting smart clothing classification...")
+
+        if self.blip2_captioner is not None:
+            try:
+                print("Analyzing with BLIP-2 (RTX GPU accelerated)...")
+                enhanced_desc = self.blip2_captioner.generate_enhanced_description(image)
+                blip2_caption = enhanced_desc.get('caption', '').strip()
+                blip2_confidence = enhanced_desc.get('confidence', 0.75)
+
+                if blip2_caption and len(blip2_caption) > 5:
+                    blip2_lower = blip2_caption.lower()
+                    blip2_type, blip2_category, layout_conf = self._extract_category_from_description(blip2_lower)
+                    overall_confidence = max(blip2_confidence, layout_conf)
+
+                    if blip2_type:
+                        print(f"✅ BLIP-2 detected: '{blip2_type}' ({overall_confidence:.0%} confidence) from: '{blip2_caption}'")
+                        return {
+                            'item_type': blip2_type,
+                            'category': blip2_category,
+                            'confidence': overall_confidence,
+                            'description': blip2_caption,
+                            'description_source': 'blip2',
+                            'raw_predictions': [],
+                        }
+                    else:
+                        print("⚠️ BLIP-2 caption did not match any known clothing keywords, falling back to heuristics")
+            except Exception as e:
+                print(f"⚠️ BLIP-2 analysis failed: {str(e)}")
+
+        print("Using shape + color analysis as fallback...")
         item_type, category, confidence = self._classify_by_shape_and_color(image)
-        
+
         return {
             'item_type': item_type,
             'category': category,
             'confidence': confidence,
+            'description': None,
+            'description_source': 'shape',
             'raw_predictions': [],
         }
+
+    def _extract_category_from_description(self, description: str) -> tuple[str, str, float]:
+        """Extract clothing category from BLIP-2 natural language description"""
+        desc_lower = description.lower()
+        
+        # Keyword patterns for each category (ordered by specificity)
+        category_patterns = {
+            # Accessories (check first - most specific)
+            'socks': (['sock', 'socks', 'ankle sock', 'crew sock', 'nike sock'], 'accessories', 0.90),
+            'shoes': (['shoe', 'shoes', 'sneaker', 'sneakers', 'boot', 'boots', 'sandal', 'heel'], 'shoes', 0.88),
+            'hat': (['hat', 'cap', 'beanie', 'baseball cap'], 'accessories', 0.85),
+            'bag': (['bag', 'purse', 'backpack', 'handbag'], 'accessories', 0.85),
+            'belt': (['belt'], 'accessories', 0.85),
+            'scarf': (['scarf'], 'accessories', 0.85),
+            'gloves': (['glove', 'gloves'], 'accessories', 0.85),
+            
+            # Bottoms
+            'jeans': (['jean', 'jeans', 'denim'], 'bottoms', 0.88),
+            'pants': (['pant', 'pants', 'trouser', 'trousers', 'slacks'], 'bottoms', 0.85),
+            'shorts': (['short', 'shorts'], 'bottoms', 0.85),
+            'skirt': (['skirt'], 'bottoms', 0.85),
+            'leggings': (['legging', 'leggings'], 'bottoms', 0.85),
+            
+            # Dresses
+            'dress': (['dress', 'gown'], 'dresses', 0.85),
+            
+            # Tops
+            't-shirt': (['t-shirt', 'tshirt', 'tee'], 'tops', 0.85),
+            'shirt': (['shirt', 'blouse', 'top'], 'tops', 0.80),
+            'sweater': (['sweater', 'pullover', 'jumper'], 'tops', 0.85),
+            'hoodie': (['hoodie', 'sweatshirt'], 'tops', 0.85),
+            'jacket': (['jacket', 'coat', 'blazer'], 'outerwear', 0.85),
+        }
+        
+        # Check for matches
+        for item_type, (keywords, category, confidence) in category_patterns.items():
+            for keyword in keywords:
+                if keyword in desc_lower:
+                    # Increase confidence if multiple keywords match
+                    word_count = sum(1 for kw in keywords if kw in desc_lower)
+                    adjusted_confidence = min(confidence + (word_count - 1) * 0.03, 0.95)
+                    return item_type, category, adjusted_confidence
+        
+        # No match found
+        return None, None, 0.0
     
     def _map_predictions_to_fashion(self, predictions: List[Dict]) -> tuple[str, str, float]:
         """Map ResNet predictions to fashion categories"""
@@ -1122,7 +1210,7 @@ class FashionImageAnalyzer:
         else:
             return "patterned"
 
-    def _combine_analyses(self, basic: Dict, ai: Dict, colors: Dict) -> Dict:
+    def _combine_analyses(self, basic: Dict, ai: Dict, colors: Dict, image: Image.Image) -> Dict:
         """Combine all analysis results into final output"""
         # Map categories to more specific types
         category_to_types = {
@@ -1138,7 +1226,7 @@ class FashionImageAnalyzer:
         possible_types = category_to_types.get(category, ['clothing item'])
 
         # Generate description
-        description = self._generate_description(ai, colors, basic)
+        description = self._generate_description(ai, colors, basic, image)
 
         # Determine material (rough heuristic)
         material = self._infer_material(colors, ai)
@@ -1166,16 +1254,21 @@ class FashionImageAnalyzer:
             'features': self._extract_features(basic, ai),
         }
 
-    def _generate_description(self, ai: Dict, colors: Dict, basic: Dict) -> str:
-        """Generate a human-readable description"""
+    def _generate_description(self, ai: Dict, colors: Dict, basic: Dict, image: Image.Image) -> str:
+        """Generate a human-readable description, preferring the already-captured BLIP-2 text."""
+        existing_desc = ai.get('description')
+        if existing_desc and len(existing_desc) > 5:
+            return existing_desc
+
+        print("Using heuristic description generation...")
         item_type = ai.get('item_type', 'clothing item')
         color = colors.get('primary_color', 'colored')
         pattern = colors.get('pattern', 'solid')
 
         if pattern != 'solid':
-            desc = f"A {color} {item_type} with {pattern}"
+            desc = f"A {color} {item_type} with {pattern} pattern."
         else:
-            desc = f"A {color} {item_type}"
+            desc = f"A {color} {item_type}."
 
         return desc
 
@@ -1691,3 +1784,24 @@ class HuggingFaceQwenImageAnalyzer:
                 except Exception:
                     return {}
             return {}
+
+
+# Global analyzer instance
+_analyzer_instance = None
+
+def get_image_analyzer(use_blip2: bool = True) -> FashionImageAnalyzer:
+    """
+    Get or create a global FashionImageAnalyzer instance.
+
+    Args:
+        use_blip2: Whether to enable BLIP-2 captioning
+
+    Returns:
+        FashionImageAnalyzer instance
+    """
+    global _analyzer_instance
+
+    if _analyzer_instance is None:
+        _analyzer_instance = FashionImageAnalyzer(use_blip2=use_blip2)
+
+    return _analyzer_instance

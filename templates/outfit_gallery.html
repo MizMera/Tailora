@@ -89,7 +89,7 @@
                                     {% if first_item %}
                                     <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}">
                                     {% else %}
-                                    <div class="item-placeholder">👔 Outfit</div>
+                                    <div class="item-placeholder">Outfit</div>
                                     {% endif %}
                                 {% endwith %}
                                 {% endif %}
@@ -137,7 +137,7 @@
                 {% else %}
                 <!-- Empty State -->
                 <div class="empty-state">
-                    <div style="font-size: 64px; margin-bottom: 24px; opacity: 0.3;">👔</div>
+                    <div style="font-size: 64px; margin-bottom: 24px; opacity: 0.3;">O</div>
                     <h3 style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; color: #2c2c2c; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px;">
                         {% if search_query or selected_occasion or show_favorites %}
                         No outfits found

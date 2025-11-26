@@ -149,6 +149,32 @@ def delete_post(request, post_id):
 
 
 @login_required
+def edit_post(request, post_id):
+    """Edit a lookbook post caption, visibility and hashtags"""
+    post = get_object_or_404(LookbookPost, id=post_id, user=request.user)
+
+    if request.method == 'POST':
+        caption = request.POST.get('caption', '').strip()
+        visibility = request.POST.get('visibility', post.visibility)
+        hashtags_raw = request.POST.get('hashtags', '').strip()
+        # Normalize hashtags into list
+        hashtags = [h if h.startswith('#') else f"#{h}" for h in hashtags_raw.split() if h]
+
+        post.caption = caption
+        post.visibility = visibility if visibility in dict(LookbookPost.VISIBILITY_CHOICES) else post.visibility
+        post.hashtags = hashtags
+        post.save(update_fields=['caption', 'visibility', 'hashtags', 'updated_at'])
+
+        messages.success(request, 'Post updated successfully!')
+        return redirect('social:post_detail', post_id=post.id)
+
+    context = {
+        'post': post,
+    }
+    return render(request, 'social/edit_post.html', context)
+
+
+@login_required
 def toggle_like(request, post_id):
     """Like or unlike a post"""
     post = get_object_or_404(LookbookPost, id=post_id)

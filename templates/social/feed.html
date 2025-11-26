@@ -4,86 +4,107 @@
 {% block title %}Social Feed - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/social.css' %}">
+<link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<link rel="stylesheet" href="{% static 'css/social_v2.css' %}">
 {% endblock %}
 
+{% block container_class %}page-reveal{% endblock %}
+
 {% block content %}
+<!-- Page Header -->
 <div class="page-header">
-    <div>
-        <h1 class="page-title">Social Feed</h1>
-        <p class="page-subtitle">Discover and share your style</p>
-    </div>
-    <div class="header-actions">
-        <a href="{% url 'social:discover' %}" class="btn btn-secondary">Discover</a>
-        <a href="{% url 'social:create_post' %}" class="btn btn-primary">+ Share Outfit</a>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 class="page-title">Social Feed</h1>
+            <p class="page-subtitle">Discover and share your style with the community</p>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <a href="{% url 'social:discover' %}" class="btn btn-secondary">Discover</a>
+            <a href="{% url 'social:create_post' %}" class="btn btn-primary">+ Share Outfit</a>
+        </div>
     </div>
 </div>
 
+<!-- Messages -->
 {% if messages %}
+<div style="margin-bottom: 24px;">
     {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+        {{ message }}
+    </div>
     {% endfor %}
+</div>
 {% endif %}
 
-<div class="social-layout">
-    <!-- Main Feed -->
-    <div class="feed-main">
-        {% if posts %}
-            <div class="posts-feed">
-                {% for post in posts %}
-                    {% include 'social/_post_card.html' with post=post %}
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-state content-section">
-                <div class="empty-icon">👥</div>
-                <h3>Your Feed is Empty</h3>
-                <p>Follow other users to see their posts here</p>
-                <a href="{% url 'social:discover' %}" class="btn btn-primary">Discover Users</a>
-            </div>
-        {% endif %}
-    </div>
-    
-    <!-- Sidebar -->
-    <div class="feed-sidebar">
-        <!-- User Stats -->
-        <div class="content-section">
-            <h3 class="section-title">YOUR PROFILE</h3>
-            <div class="user-stats-grid">
-                <div class="user-stat-item">
-                    <span class="stat-value">{{ posts_count }}</span>
-                    <span class="stat-label">Posts</span>
+<!-- Main Content -->
+<div style="background: #ffffff; padding: 40px;">
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
+        <!-- Main Feed -->
+        <div>
+            {% if posts %}
+                <div style="display: grid; gap: 32px;">
+                    {% for post in posts %}
+                        {% include 'social/_post_card.html' with post=post %}
+                    {% endfor %}
                 </div>
-                <div class="user-stat-item">
-                    <span class="stat-value">{{ followers_count }}</span>
-                    <span class="stat-label">Followers</span>
+            {% else %}
+                <div style="text-align: center; padding: 80px 40px;">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 24px; background: #f4e9cf; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2c2c2c" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">Your Feed is Empty</h3>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-bottom: 24px;">Follow other users to see their posts here</p>
+                    <a href="{% url 'social:discover' %}" class="btn btn-primary">Discover Users</a>
                 </div>
-                <div class="user-stat-item">
-                    <span class="stat-value">{{ following_count }}</span>
-                    <span class="stat-label">Following</span>
-                </div>
-            </div>
-            <a href="{% url 'social:profile' user.id %}" class="btn btn-secondary btn-block" style="margin-top: 16px;">View Profile</a>
-            <a href="{% url 'social:saved_posts' %}" class="btn btn-secondary btn-block" style="margin-top: 8px;">Saved Posts</a>
+            {% endif %}
         </div>
         
-        <!-- Active Challenges -->
-        {% if active_challenges %}
-        <div class="content-section">
-            <h3 class="section-title">ACTIVE CHALLENGES</h3>
-            <div class="challenges-mini-list">
-                {% for challenge in active_challenges %}
-                    <a href="{% url 'social:challenge_detail' challenge.id %}" class="challenge-mini-card">
-                        <h4>{{ challenge.title }}</h4>
-                        <p>{{ challenge.theme }}</p>
-                        <span class="challenge-hashtag">{{ challenge.hashtag }}</span>
-                    </a>
-                {% endfor %}
+        <!-- Sidebar -->
+        <div>
+            <!-- User Stats -->
+            <div class="settings-section" style="margin-bottom: 32px;">
+                <h3 class="section-title">Your Profile</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center; padding: 16px 0; border-bottom: 1px solid #e0e0e0; margin-bottom: 16px;">
+                    <div>
+                        <div style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #2c2c2c;">{{ posts_count }}</div>
+                        <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Posts</div>
+                    </div>
+                    <div>
+                        <div style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #2c2c2c;">{{ followers_count }}</div>
+                        <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Followers</div>
+                    </div>
+                    <div>
+                        <div style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #2c2c2c;">{{ following_count }}</div>
+                        <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Following</div>
+                    </div>
+                </div>
+                <a href="{% url 'social:profile' user.id %}" class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;">View Profile</a>
+                <a href="{% url 'social:saved_posts' %}" class="btn btn-secondary" style="width: 100%;">Saved Posts</a>
             </div>
-            <a href="{% url 'social:challenges_list' %}" class="btn btn-secondary btn-block" style="margin-top: 16px;">All Challenges</a>
+            
+            <!-- Active Challenges -->
+            {% if active_challenges %}
+            <div class="settings-section">
+                <h3 class="section-title">Active Challenges</h3>
+                <div style="display: grid; gap: 12px; margin-bottom: 16px;">
+                    {% for challenge in active_challenges %}
+                        <a href="{% url 'social:challenge_detail' challenge.id %}" style="display: block; padding: 16px; background: #fafafa; border: 1px solid #e0e0e0; text-decoration: none; transition: all 0.3s ease;">
+                            <h4 style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; margin-bottom: 4px;">{{ challenge.title }}</h4>
+                            <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin-bottom: 8px;">{{ challenge.theme }}</p>
+                            <span style="padding: 4px 12px; background: #f4e9cf; color: #2c2c2c; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">{{ challenge.hashtag }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+                <a href="{% url 'social:challenges_list' %}" class="btn btn-secondary" style="width: 100%;">All Challenges</a>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </div>
             

@@ -407,7 +407,7 @@
                                 {% csrf_token %}
                                 <button type="submit" class="action-btn btn-reject">✗ Not for me</button>
                             </form>
-                            <button type="button" class="action-btn btn-rate" onclick="toggleRating({{ rec.id }})">⭐ Rate</button>
+                            <button type="button" class="action-btn btn-rate" onclick="toggleRating({{ rec.id }})">Rate</button>
                         </div>
 
                         <div class="rating-form" id="rating-form-{{ rec.id }}">
@@ -444,7 +444,7 @@
     {% if past_recommendations %}
         <div class="past-recommendations">
             <div class="section-title">
-                📅 Recent Recommendations
+                Recent Recommendations
                 <a href="{% url 'recommendations:history' %}" style="margin-left: auto; font-size: 0.9rem; color: var(--primary-color);">View All →</a>
             </div>
             {% for rec in past_recommendations %}

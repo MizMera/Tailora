@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Post - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<link rel="stylesheet" href="{% static 'css/social_v2.css' %}">
+{% endblock %}
+
+{% block container_class %}page-reveal{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <a href="{% url 'social:post_detail' post.id %}" style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-decoration: none; display: inline-block; margin-bottom: 8px;">&larr; Back to Post</a>
+      <h1 class="page-title">Edit Post</h1>
+      <p class="page-subtitle">Update your post details</p>
+    </div>
+    <div style="display: flex; gap: 12px;">
+      <a href="{% url 'social:post_detail' post.id %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div style="background: #ffffff; padding: 40px;">
+  <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px;">
+    <!-- Left: Outfit Preview -->
+    <div>
+      <h3 class="section-title">Outfit Preview</h3>
+      <div style="background: #fafafa; border: 1px solid #e0e0e0; overflow: hidden;">
+        {% with items=post.outfit.items.all %}
+          {% if items|length == 1 %}
+            {% for item in items %}
+              {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width: 100%; height: auto; display: block;">
+              {% else %}
+                <div style="background:#f4f4f5; height:280px; display: flex; align-items: center; justify-content: center;">
+                  <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575;">No image</span>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <div class="post-image-grid post-image-grid-{{ items|length }}">
+              {% for item in items %}
+                {% if item.image %}
+                <div class="grid-image-wrapper">
+                  <img src="{{ item.image.url }}" alt="{{ item.name }}" class="grid-image">
+                </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+      </div>
+      
+      <div style="margin-top: 16px; padding: 16px; background: #fafafa; border: 1px solid #e0e0e0;">
+        <label style="display: block; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Outfit</label>
+        <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; margin: 0;">{{ post.outfit.name }}</p>
+        <a href="{% url 'outfits:outfit_detail' post.outfit.id %}" style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-decoration: none; display: inline-block; margin-top: 8px;">View outfit details &rarr;</a>
+      </div>
+    </div>
+
+    <!-- Right: Edit Form -->
+    <div>
+      <div class="settings-section">
+        <h3 class="section-title">Post Information</h3>
+        
+        <form method="post" action="{% url 'social:edit_post' post.id %}">
+          {% csrf_token %}
+          
+          <div style="display: grid; gap: 24px;">
+            <div>
+              <label for="caption" class="input-label">Caption</label>
+              <textarea id="caption" name="caption" rows="4" class="input-textarea" placeholder="Write a caption for your post...">{{ post.caption }}</textarea>
+              <small style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; display: block; margin-top: 4px;">Describe your outfit or share styling tips</small>
+            </div>
+
+            <div>
+              <label for="visibility" class="input-label">Visibility</label>
+              <select id="visibility" name="visibility" class="input-select">
+                <option value="public" {% if post.visibility == 'public' %}selected{% endif %}>Public - Anyone can see this post</option>
+                <option value="followers" {% if post.visibility == 'followers' %}selected{% endif %}>Followers Only - Only your followers can see</option>
+                <option value="private" {% if post.visibility == 'private' %}selected{% endif %}>Private - Only you can see this post</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="hashtags" class="input-label">Hashtags</label>
+              <input id="hashtags" type="text" name="hashtags" class="input-text" placeholder="#fashion #style #outfit"
+                     value="{{ post.hashtags|join:' ' }}">
+              <small style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; display: block; margin-top: 4px;">Separate hashtags with spaces. We'll add # automatically if missing.</small>
+            </div>
+
+            <div style="display: flex; gap: 12px; padding-top: 16px; border-top: 1px solid #e0e0e0;">
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+              <a href="{% url 'social:post_detail' post.id %}" class="btn btn-secondary">Cancel</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

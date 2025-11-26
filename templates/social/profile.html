@@ -4,7 +4,7 @@
 {% block title %}{{ profile_user.get_full_name }} - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/social.css' %}">
+<link rel="stylesheet" href="{% static 'css/social_v2.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -57,8 +57,8 @@
                         {% endwith %}
                     </div>
                     <div class="grid-post-overlay">
-                        <span>❤️ {{ post.likes_count }}</span>
-                        <span>💬 {{ post.comments_count }}</span>
+                        <span>{{ post.likes_count }} likes</span>
+                        <span>{{ post.comments_count }} comments</span>
                     </div>
                 </a>
             {% endfor %}

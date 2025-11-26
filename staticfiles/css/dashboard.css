@@ -11,6 +11,13 @@
     margin-top: 0;
 }
 
+/* Simple stats grid used on stats pages */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
 .stats-section {
     background: #ffffff;
     padding: 40px;
