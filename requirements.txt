@@ -16,6 +16,8 @@ django-imagekit==5.0.0
 
 # API Documentation
 drf-yasg==1.21.7
+django-filter==23.5
+
 
 # Environment Variables
 python-decouple==3.8
