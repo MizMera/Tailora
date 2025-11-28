@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete account - Tailora</title>
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="auth-form-wrapper">
+                <div class="auth-header">
+                    <h1 class="auth-title">Tailora</h1>
+                    <p class="auth-subtitle">Delete my account</p>
+                </div>
+
+                <div class="warning-box">
+                    <h3 class="warning-title">Irreversible action</h3>
+                    <p class="warning-text">
+                        Deleting your account is <strong>permanent and irreversible</strong>.
+                        All your data will be lost:
+                    </p>
+                    <ul class="warning-list">
+                        <li>Your wardrobe and all your clothing items</li>
+                        <li>Your created outfits</li>
+                        <li>Your calendar and planning</li>
+                        <li>Your posts and social interactions</li>
+                        <li>Your style preferences and recommendations</li>
+                    </ul>
+                </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="{% if message.tags == 'error' %}form-errors{% else %}success-message{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" class="auth-form" id="deleteForm">
+                    {% csrf_token %}
+
+                    <div class="input-field">
+                        <label for="password" class="input-label">Confirm your password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="input-control" 
+                            required
+                            autocomplete="current-password">
+                    </div>
+
+                    <div class="input-field">
+                        <label for="confirmation" class="input-label">
+                            Type "DELETE" to confirm deletion
+                        </label>
+                        <input 
+                            type="text" 
+                            id="confirmation" 
+                            name="confirmation" 
+                            class="input-control" 
+                            required
+                            placeholder="DELETE"
+                            autocomplete="off">
+                        <small class="input-hint">This action is irreversible</small>
+                    </div>
+
+                    <button type="button" class="btn btn-danger btn-lg delete-trigger" data-form-id="deleteForm" data-item-name="your account">
+                        Permanently delete my account
+                    </button>
+                </form>
+
+                <div class="form-footer">
+                    <a href="{% url 'profile_settings' %}" class="footer-link">Back to settings</a>
+                    <span class="footer-divider">•</span>
+                    <a href="{% url 'dashboard' %}" class="footer-link">Dashboard</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-right">
+            <img src="{% static 'images/login_pic.jpg' %}" alt="Tailora" class="auth-image">
+        </div>
+    </div>
+
+    <script src="{% static 'js/confirm-modal.js' %}"></script>
+    <script>
+        // Confirmation validation
+        document.getElementById('deleteForm').addEventListener('submit', function(e) {
+            const confirmation = document.getElementById('confirmation').value;
+
+            if (confirmation !== 'DELETE') {
+                e.preventDefault();
+                alert('You must type "DELETE" exactly to confirm deletion.');
+                return false;
+            }
+
+            // Show fade out animation on submit
+            document.body.classList.add('fade-out');
+        });
+
+        // Smooth page transitions
+        document.addEventListener('DOMContentLoaded', function() {
+            const links = document.querySelectorAll('a:not([target="_blank"])');
+            
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    
+                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                        e.preventDefault();
+                        document.body.classList.add('fade-out');
+                        setTimeout(() => {
+                            window.location.href = href;
+                        }, 300);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

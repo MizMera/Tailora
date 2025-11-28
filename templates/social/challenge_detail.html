@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ challenge.title }} - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/social.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="challenge-header content-section">
+    <div class="challenge-badge">{{ challenge.theme }}</div>
+    <h1>{{ challenge.title }}</h1>
+    <p class="challenge-description">{{ challenge.description }}</p>
+    <div class="challenge-dates">
+        <span>📅 {{ challenge.start_date|date:"F d, Y" }} - {{ challenge.end_date|date:"F d, Y" }}</span>
+    </div>
+    <a href="{% url 'social:create_post' %}?challenge={{ challenge.id }}" class="btn btn-primary">Join Challenge</a>
+</div>
+
+<div class="challenge-entries">
+    <h2>Entries ({{ posts.count }})</h2>
+    <div class="posts-container">
+        {% for post in posts %}
+            {% include 'social/_post_card.html' %}
+        {% empty %}
+        <div class="empty-state content-section">
+            <p>No entries yet. Be the first to join!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+ 
+{% endblock %}

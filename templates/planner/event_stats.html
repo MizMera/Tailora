@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Event Statistics - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/planner.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Event Statistics</h1>
+        <p class="page-subtitle">Track your event planning activity</p>
+    </div>
+    <a href="{% url 'planner:calendar' %}" class="btn btn-secondary">Back to Calendar</a>
+</div>
+
+<!-- Overview Stats -->
+<div class="content-section">
+    <h3 class="section-title">OVERVIEW</h3>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_events }}</div>
+            <div class="stat-label">Total Events</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ upcoming_events }}</div>
+            <div class="stat-label">Upcoming Events</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ completed_events }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ events_with_outfits }}</div>
+            <div class="stat-label">With Outfits</div>
+        </div>
+    </div>
+</div>
+
+<!-- Events by Occasion -->
+<div class="content-section">
+    <h3 class="section-title">EVENTS BY OCCASION</h3>
+    {% if occasion_stats %}
+        <div class="occasion-stats-list">
+            {% for stat in occasion_stats %}
+                <div class="occasion-stat-item">
+                    <div class="occasion-info">
+                        <span class="occasion-badge {{ stat.occasion_type }}">
+                            {{ stat.occasion_type_display }}
+                        </span>
+                        <span class="occasion-count">{{ stat.count }} event{{ stat.count|pluralize }}</span>
+                    </div>
+                    <div class="occasion-bar">
+                        <div class="occasion-bar-fill {{ stat.occasion_type }}" style="width: {% widthratio stat.count total_events 100 %}%;"></div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-state">No events yet</p>
+    {% endif %}
+</div>
+
+<div class="stats-two-column">
+    <!-- Popular Outfits -->
+    <div class="content-section">
+        <h3 class="section-title">MOST USED OUTFITS</h3>
+        {% if popular_outfits %}
+            <div class="popular-outfits-list">
+                {% for outfit in popular_outfits %}
+                    <div class="popular-outfit-item">
+                        <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="outfit-name">{{ outfit.name }}</a>
+                        <span class="usage-count">{{ outfit.event_count }} event{{ outfit.event_count|pluralize }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">No outfits used in events yet</p>
+        {% endif %}
+    </div>
+    
+    <!-- Upcoming Events -->
+    <div class="content-section">
+        <h3 class="section-title">NEXT EVENTS</h3>
+        {% if next_events %}
+            <div class="next-events-list">
+                {% for event in next_events %}
+                    <div class="next-event-item">
+                        <div class="event-date-mini">
+                            <span class="mini-day">{{ event.date.day }}</span>
+                            <span class="mini-month">{{ event.date|date:"M" }}</span>
+                        </div>
+                        <div class="event-mini-info">
+                            <a href="{% url 'planner:event_detail' event.id %}" class="event-mini-title">{{ event.title }}</a>
+                            <span class="event-mini-occasion">{{ event.get_occasion_type_display }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">No upcoming events</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Monthly Activity -->
+{% if monthly_stats %}
+<div class="content-section">
+    <h3 class="section-title">MONTHLY ACTIVITY (Last 6 Months)</h3>
+    <div class="monthly-chart">
+        {% for month, count in monthly_stats.items %}
+            <div class="month-bar">
+                <div class="month-bar-fill" style="height: {% widthratio count 10 100 %}%;"></div>
+                <div class="month-label">{{ month|slice:"5:" }}</div>
+                <div class="month-count">{{ count }}</div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if not total_events %}
+<div class="content-section">
+    <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h3>No Statistics Yet</h3>
+        <p>Create some events to see your statistics</p>
+        <a href="{% url 'planner:event_create' %}" class="btn btn-primary">Create Your First Event</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

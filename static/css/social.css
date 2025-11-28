@@ -1,0 +1,686 @@
+/* Social Module Styles */
+
+/* Feed Layout */
+.social-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feed-main {
+    min-width: 0;
+}
+
+.feed-sidebar {
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+}
+
+/* Post Card */
+.post-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.3s ease;
+}
+
+.post-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.post-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.user-avatar-sm {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #1a202c;
+}
+
+.post-time {
+    margin-left: auto;
+    font-size: 13px;
+    color: #718096;
+}
+
+/* Post Outfit Grid */
+.post-outfit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.outfit-item-img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.item-placeholder {
+    width: 100%;
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+    border-radius: 8px;
+}
+
+/* Post Actions */
+.post-actions {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #4a5568;
+    transition: all 0.2s ease;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.action-btn:hover {
+    background: #f7fafc;
+    color: #2d3748;
+}
+
+.action-btn.liked {
+    color: #e53e3e;
+}
+
+.action-btn.saved {
+    color: #3182ce;
+}
+
+.action-icon {
+    font-size: 20px;
+}
+
+.action-count {
+    font-weight: 600;
+}
+
+/* Post Content */
+.post-caption {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.post-hashtags {
+    font-size: 14px;
+    color: #3182ce;
+}
+
+.outfit-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+.outfit-link:hover {
+    text-decoration: underline;
+}
+
+/* Sidebar */
+.user-stats-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    text-align: center;
+}
+
+.stat-item {
+    padding: 12px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+}
+
+.stat-value {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    display: block;
+    font-size: 12px;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Challenges Mini Card */
+.challenges-mini {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.challenges-mini h3 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: #1a202c;
+}
+
+.challenge-mini-item {
+    padding: 12px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);
+    margin-bottom: 10px;
+    text-decoration: none;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.challenge-mini-item:hover {
+    transform: translateY(-2px);
+}
+
+.challenge-mini-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 4px;
+}
+
+.challenge-mini-meta {
+    font-size: 12px;
+    color: #718096;
+}
+
+/* Profile Page */
+.profile-header {
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.profile-info {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.profile-avatar-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 48px;
+    flex-shrink: 0;
+}
+
+.profile-meta {
+    flex: 1;
+}
+
+.profile-name {
+    font-size: 28px;
+    margin-bottom: 5px;
+    color: #1a202c;
+}
+
+.profile-email {
+    color: #718096;
+    margin-bottom: 20px;
+}
+
+.profile-stats {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.profile-stat {
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease;
+}
+
+.profile-stat:hover {
+    transform: translateY(-2px);
+}
+
+.profile-stat .stat-value {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.profile-stat .stat-label {
+    display: block;
+    font-size: 14px;
+    color: #718096;
+    margin-top: 4px;
+}
+
+/* Profile Posts Grid */
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.grid-post-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grid-post-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.grid-post-image {
+    width: 100%;
+    height: 100%;
+}
+
+.grid-post-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.grid-post-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    color: white;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.grid-post-item:hover .grid-post-overlay {
+    opacity: 1;
+}
+
+/* Post Detail */
+.post-detail-layout {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.post-detail-card {
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.post-outfit-full {
+    margin: 20px 0;
+}
+
+.outfit-link-large {
+    text-decoration: none;
+}
+
+.outfit-link-large h2 {
+    color: #1a202c;
+    margin-bottom: 15px;
+    font-size: 24px;
+}
+
+.outfit-link-large:hover h2 {
+    color: #667eea;
+}
+
+.outfit-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.outfit-item-card {
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f7fafc;
+}
+
+.outfit-item-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+.item-info {
+    padding: 10px;
+}
+
+.item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 4px;
+}
+
+.item-category {
+    font-size: 12px;
+    color: #718096;
+}
+
+/* Comments Section */
+.comments-section {
+    padding: 25px;
+}
+
+.comments-section h3 {
+    margin-bottom: 20px;
+    color: #1a202c;
+}
+
+.comment-form {
+    margin-bottom: 25px;
+}
+
+.comment-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 10px;
+    transition: border-color 0.2s ease;
+}
+
+.comment-form textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.comment-item {
+    padding: 15px;
+    background: #f7fafc;
+    border-radius: 8px;
+}
+
+.comment-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: inherit;
+    margin-bottom: 8px;
+}
+
+.comment-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #2d3748;
+    margin: 8px 0;
+}
+
+.comment-time {
+    font-size: 12px;
+    color: #718096;
+}
+
+/* Users List */
+.users-list {
+    padding: 20px;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.user-item:last-child {
+    border-bottom: none;
+}
+
+.user-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    flex: 1;
+}
+
+.user-info strong {
+    display: block;
+    font-size: 15px;
+    color: #1a202c;
+}
+
+.user-info .text-muted {
+    font-size: 13px;
+}
+
+/* Challenges */
+.challenges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.challenge-card {
+    padding: 25px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.challenge-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.challenge-card h3 {
+    color: #1a202c;
+    margin-bottom: 12px;
+    font-size: 20px;
+}
+
+.challenge-desc {
+    color: #4a5568;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.challenge-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.challenge-dates {
+    font-size: 13px;
+    color: #718096;
+}
+
+.challenge-header {
+    padding: 30px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.challenge-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 15px;
+}
+
+.challenge-header h1 {
+    font-size: 32px;
+    margin-bottom: 15px;
+    color: #1a202c;
+}
+
+.challenge-description {
+    font-size: 16px;
+    color: #4a5568;
+    max-width: 700px;
+    margin: 0 auto 20px;
+    line-height: 1.6;
+}
+
+.challenge-entries {
+    margin-top: 30px;
+}
+
+.challenge-entries h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #1a202c;
+}
+
+/* Create Post Form */
+.posts-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.create-post-form {
+    padding: 30px;
+}
+
+.create-post-form h1 {
+    margin-bottom: 25px;
+    color: #1a202c;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .social-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .feed-sidebar {
+        position: static;
+    }
+    
+    .posts-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    
+    .challenges-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .post-outfit-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .profile-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .profile-stats {
+        justify-content: center;
+    }
+    
+    .posts-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .outfit-items-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ item.name }} - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
+{% endblock %}
+
+{% block container_class %}page-reveal{% endblock %}
+
+{% block content %}
+            <!-- Page Header -->
+            <div class="page-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <a href="{% url 'wardrobe_gallery' %}" style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-decoration: none; display: inline-block; margin-bottom: 8px;">&larr; Back to Wardrobe</a>
+                        <h1 class="page-title">{{ item.name }}</h1>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <a href="{% url 'wardrobe_edit' item.id %}" class="btn btn-primary">Edit</a>
+                        <a href="{% url 'wardrobe_gallery' %}" class="btn btn-secondary">Close</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div style="background: #ffffff; padding: 40px;">
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px;">
+                    <!-- Left: Image -->
+                    <div>
+                        <div style="position: relative; background: #fafafa; border: 1px solid #e0e0e0; overflow: hidden;">
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width: 100%; height: auto; display: block;">
+                            {% if item.status != 'available' %}
+                            <div style="position: absolute; top: 16px; right: 16px; padding: 8px 16px; background: #2c2c2c; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                                {% if item.status == 'washing' %}Washing
+                                {% elif item.status == 'dry_cleaning' %}Dry cleaning
+                                {% elif item.status == 'loaned' %}Loaned
+                                {% elif item.status == 'repair' %}Repair
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; margin-top: 24px;">
+                            <form method="post" action="{% url 'wardrobe_toggle_favorite' item.id %}" style="flex: 1;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn {% if item.favorite %}btn-primary{% else %}btn-secondary{% endif %}" style="width: 100%;">
+                                    {% if item.favorite %}★ Favorite{% else %}☆ Add to favorites{% endif %}
+                                </button>
+                            </form>
+                            <form id="delete-form-{{ item.id }}" method="post" action="{% url 'wardrobe_delete' item.id %}" style="flex: 1;">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-primary delete-trigger" data-form-id="delete-form-{{ item.id }}" data-item-name="{{ item.name }}" style="background: #c62828; border-color: #c62828; width: 100%;">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Right: Information -->
+                    <div>
+                        <!-- Basic Info -->
+                        <div class="settings-section" style="margin-bottom: 32px;">
+                            <h3 class="section-title">Information</h3>
+                            
+                            <div style="display: grid; gap: 16px;">
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Category</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">
+                                        {% if item.category %}
+                                        {{ item.category.icon }} {{ item.category.name }}
+                                        {% else %}
+                                        <em style="color: #757575;">Not specified</em>
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Color</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; display: flex; align-items: center; gap: 8px;">
+                                        <span style="display: inline-block; width: 20px; height: 20px; border: 1px solid #e0e0e0; background-color: {{ item.color_hex|default:item.color }};"></span>
+                                        {{ item.color }}
+                                    </span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Pattern</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">
+                                        {% if item.pattern %}{{ item.pattern }}{% else %}<em style="color: #757575;">None</em>{% endif %}
+                                    </span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Brand</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">
+                                        {% if item.brand %}{{ item.brand }}{% else %}<em style="color: #757575;">Not specified</em>{% endif %}
+                                    </span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Material</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">
+                                        {% if item.material %}{{ item.material }}{% else %}<em style="color: #757575;">Not specified</em>{% endif %}
+                                    </span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Condition</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">
+                                        <span style="padding: 4px 12px; background: #f4e9cf; color: #2c2c2c; font-size: 12px; font-weight: 600; text-transform: uppercase;">
+                                            {% if item.condition == 'new' %}New
+                                            {% elif item.condition == 'excellent' %}Excellent
+                                            {% elif item.condition == 'good' %}Good
+                                            {% elif item.condition == 'fair' %}Fair
+                                            {% elif item.condition == 'worn' %}Worn
+                                            {% endif %}
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Status</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">
+                                        <span style="padding: 4px 12px; background: #2c2c2c; color: #ffffff; font-size: 12px; font-weight: 600; text-transform: uppercase;">
+                                            {% if item.status == 'available' %}Available
+                                            {% elif item.status == 'washing' %}Washing
+                                            {% elif item.status == 'dry_cleaning' %}Dry cleaning
+                                            {% elif item.status == 'loaned' %}Loaned
+                                            {% elif item.status == 'repair' %}Under repair
+                                            {% endif %}
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+
+                        <!-- Seasons and Occasions -->
+                        {% if item.seasons or item.occasions %}
+                        <div class="settings-section" style="margin-bottom: 32px;">
+                            <h3 class="section-title">Usage</h3>
+                            
+                            {% if item.seasons %}
+                            <div style="margin-bottom: 24px;">
+                                <label style="display: block; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Seasons</label>
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    {% for season in item.seasons %}
+                                    <span style="padding: 6px 16px; background: #f4e9cf; color: #2c2c2c; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;">
+                                        {% if season == 'spring' %}Spring
+                                        {% elif season == 'summer' %}Summer
+                                        {% elif season == 'fall' %}Fall
+                                        {% elif season == 'winter' %}Winter
+                                        {% elif season == 'all_seasons' %}All seasons
+                                        {% endif %}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if item.occasions %}
+                            <div>
+                                <label style="display: block; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Occasions</label>
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    {% for occasion in item.occasions %}
+                                    <span style="padding: 6px 16px; background: #f4e9cf; color: #2c2c2c; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;">
+                                        {% if occasion == 'casual' %}Casual
+                                        {% elif occasion == 'formal' %}Formal
+                                        {% elif occasion == 'sport' %}Sport
+                                        {% elif occasion == 'party' %}Party
+                                        {% elif occasion == 'work' %}Work
+                                        {% else %}{{ occasion }}
+                                        {% endif %}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Purchase Info -->
+                        {% if item.purchase_date or item.purchase_price or item.purchase_location %}
+                        <div class="settings-section" style="margin-bottom: 32px;">
+                            <h3 class="section-title">Purchase</h3>
+                            
+                            <div style="display: grid; gap: 16px;">
+                                {% if item.purchase_date %}
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Date</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ item.purchase_date|date:'d/m/Y' }}</span>
+                                </div>
+                                {% endif %}
+
+                                {% if item.purchase_price %}
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Price</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ item.purchase_price }} EUR</span>
+                                </div>
+                                {% endif %}
+
+                                {% if item.purchase_location %}
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Place</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ item.purchase_location }}</span>
+                                </div>
+                                {% endif %}
+
+                                {% if item.is_secondhand %}
+                                <div style="padding-top: 8px;">
+                                    <span style="padding: 6px 16px; background: #4caf50; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase;">Second-hand item</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Usage Stats -->
+                        <div class="settings-section" style="margin-bottom: 32px;">
+                            <h3 class="section-title">Statistics</h3>
+                            
+                            <div style="display: grid; gap: 16px;">
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Worn</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ item.times_worn }} times</span>
+                                </div>
+
+                                {% if item.last_worn %}
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Last worn</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ item.last_worn|date:'d/m/Y' }}</span>
+                                </div>
+                                {% endif %}
+
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">Added</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ item.created_at|date:'d/m/Y' }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        {% if item.description %}
+                        <div class="settings-section" style="margin-bottom: 32px;">
+                            <h3 class="section-title">Description</h3>
+                            <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #252320; line-height: 1.6; margin: 0;">{{ item.description }}</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Tags -->
+                        {% if item.tags %}
+                        <div class="settings-section" style="margin-bottom: 32px;">
+                            <h3 class="section-title">Tags</h3>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                {% for tag in item.tags %}
+                                <span style="padding: 6px 16px; background: #f4e9cf; color: #2c2c2c; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Actions -->
+                        <div style="display: flex; gap: 12px; padding-top: 16px; border-top: 2px solid #2c2c2c;">
+                            <a href="{% url 'wardrobe_edit' item.id %}" class="btn btn-primary" style="flex: 1; text-align: center;">Edit this item</a>
+                            <a href="{% url 'wardrobe_gallery' %}" class="btn btn-secondary" style="flex: 1; text-align: center;">Back to gallery</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+{% endblock %}
+
+

@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ event.title }} - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/planner.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ event.title }}</h1>
+        <p class="page-subtitle">{{ event.date|date:"F j, Y" }}{% if event.time %} at {{ event.time|date:"g:i A" }}{% endif %}</p>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary">Edit Event</a>
+        <a href="{% url 'planner:calendar' %}" class="btn btn-secondary">Back to Calendar</a>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="event-detail-layout">
+    <!-- Main Event Info -->
+    <div class="event-detail-main">
+        <div class="content-section">
+            <h3 class="section-title">EVENT DETAILS</h3>
+            
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Date</span>
+                    <span class="detail-value">{{ event.date|date:"l, F j, Y" }}</span>
+                </div>
+                
+                {% if event.time %}
+                <div class="detail-item">
+                    <span class="detail-label">Time</span>
+                    <span class="detail-value">{{ event.time|date:"g:i A" }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="detail-item">
+                    <span class="detail-label">Occasion Type</span>
+                    <span class="detail-value"><span class="occasion-badge {{ event.occasion_type }}">{{ event.get_occasion_type_display }}</span></span>
+                </div>
+                
+                {% if event.location %}
+                <div class="detail-item">
+                    <span class="detail-label">Location</span>
+                    <span class="detail-value">{{ event.location }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="detail-item">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value">
+                        {% if event.is_completed %}
+                            <span class="status-badge completed">✓ Completed</span>
+                        {% else %}
+                            <span class="status-badge upcoming">Upcoming</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            {% if event.notes %}
+            <div class="notes-section">
+                <h4 class="detail-label">Notes</h4>
+                <p class="notes-text">{{ event.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Outfit Assignment -->
+        <div class="content-section">
+            <h3 class="section-title">PLANNED OUTFIT</h3>
+            
+            {% if event.outfit %}
+                <div class="assigned-outfit">
+                    <div class="outfit-preview">
+                        <h4 class="outfit-name">{{ event.outfit.name }}</h4>
+                        <p class="outfit-meta">{{ event.outfit.get_occasion_display }} • {{ event.outfit.items.count }} items</p>
+                        
+                        <div class="outfit-items-grid">
+                            {% for item in event.outfit.items.all %}
+                                <div class="outfit-item-preview">
+                                    {% if item.image %}
+                                        <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                    {% else %}
+                                        <div class="item-placeholder"></div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="outfit-actions">
+                            <a href="{% url 'outfits:outfit_detail' event.outfit.id %}" class="btn btn-secondary">View Outfit Details</a>
+                            <form method="post" action="{% url 'planner:assign_outfit' event.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" name="outfit_id" value="" class="btn btn-secondary">Remove Outfit</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="no-outfit-assigned">
+                    <p>No outfit has been assigned to this event yet.</p>
+                    
+                    {% if suggested_outfits %}
+                        <h4 class="suggestions-title">Suggested Outfits</h4>
+                        <div class="suggestions-grid">
+                            {% for outfit in suggested_outfits %}
+                                <div class="suggestion-card">
+                                    <h5>{{ outfit.name }}</h5>
+                                    <p>{{ outfit.items.count }} items</p>
+                                    <form method="post" action="{% url 'planner:assign_outfit' event.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" name="outfit_id" value="{{ outfit.id }}" class="btn btn-sm btn-primary">Assign This Outfit</button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <a href="{% url 'outfits:outfit_gallery' %}?occasion={{ event.occasion_type }}" class="btn btn-secondary">Browse All Outfits</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Sidebar Actions -->
+    <div class="event-detail-sidebar">
+        <div class="content-section">
+            <h3 class="section-title">QUICK ACTIONS</h3>
+            
+            <div class="action-buttons">
+                <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary btn-block"> Edit Event</a>
+                
+                <form method="post" action="{% url 'planner:toggle_complete' event.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary btn-block">
+                        {% if event.is_completed %}
+                            Mark as Upcoming
+                        {% else %}
+                            Mark as Completed
+                        {% endif %}
+                    </button>
+                </form>
+                
+                <a href="{% url 'planner:calendar' %}" class="btn btn-secondary btn-block">View Calendar</a>
+                <a href="{% url 'planner:event_list' %}" class="btn btn-secondary btn-block">All Events</a>
+            </div>
+        </div>
+        
+        <!-- Danger Zone -->
+        <div class="content-section danger-zone">
+            <h4 class="section-title">DANGER ZONE</h4>
+            <form id="delete-event-form-{{ event.id }}" method="post" action="{% url 'planner:event_delete' event.id %}">
+                {% csrf_token %}
+                <button type="button" class="btn btn-danger btn-block delete-trigger" data-form-id="delete-event-form-{{ event.id }}" data-item-name="this event">Delete Event</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

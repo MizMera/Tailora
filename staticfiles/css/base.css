@@ -1,0 +1,232 @@
+/* Tailora Base Layout - Exact Figma Design Match */
+
+/* Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Istok+Web:wght@400;700&display=swap');
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f0f0;
+    background-image: url('/static/images/background1.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+/* Main Container - White Box */
+.tailora-container {
+    width: 100%;
+    max-width: 950px;
+    background: #ffffff;
+    border-radius: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header - Tailora Logo + Navigation */
+.tailora-header {
+    background: #ffffff;
+    border-bottom: 1px solid #d9d9d9;
+    padding: 16px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tailora-logo {
+    font-family: 'Inter', sans-serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: #252320;
+    text-decoration: none;
+    line-height: 1;
+    text-align: center;
+}
+
+.tailora-nav {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #1e1e1e;
+    background: transparent;
+    border-radius: 0;
+    text-decoration: none;
+    transition: background 0.3s ease;
+    white-space: nowrap;
+}
+
+.nav-pill:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.nav-pill.active {
+    background: #e3e3e3;
+    color: #1e1e1e;
+}
+
+/* Content Area - Beige Background */
+.tailora-content {
+    flex: 1;
+    background: #f4e9cf;
+    padding: 0;
+    overflow-y: auto;
+}
+
+/* Page Title Section */
+.page-header {
+    padding: 32px;
+    background: #f4e9cf;
+}
+
+.page-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: #252320;
+    margin: 0;
+    line-height: 1;
+}
+
+.page-subtitle {
+    font-family: 'Istok Web', sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: #252320;
+    margin: 8px 0 0 0;
+    line-height: normal;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 0;
+    font-family: 'Istok Web', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.btn-primary {
+    background: #2c2c2c;
+    color: #f5f5f5;
+    border-color: #2c2c2c;
+}
+
+.btn-primary:hover {
+    background: #1a1a1a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.btn-secondary {
+    background: #cdcdcd;
+    color: #252320;
+    border-color: transparent;
+}
+
+.btn-secondary:hover {
+    background: #b8b8b8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        padding: 0;
+        align-items: flex-start;
+    }
+
+    .tailora-container {
+        max-width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+    }
+
+    .tailora-header {
+        padding: 24px;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .tailora-logo {
+        margin-right: 0;
+    }
+
+    .tailora-nav {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .nav-pills {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .page-header {
+        padding: 24px;
+    }
+
+    .page-title {
+        font-size: 28px;
+    }
+
+    .page-subtitle {
+        font-size: 18px;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}

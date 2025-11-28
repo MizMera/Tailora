@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Daily Recommendations - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/outfits.css' %}">
+<style>
+    .recommendations-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .recommendations-header {
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+
+    .recommendations-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+
+    .recommendations-header p {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+    }
+
+    .recommendations-section {
+        margin-bottom: 3rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .recommendation-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .recommendation-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .recommendation-card.accepted {
+        border: 2px solid #28a745;
+        background: #f0f9f4;
+    }
+
+    .recommendation-card.rejected {
+        opacity: 0.6;
+        border: 2px solid #dc3545;
+    }
+
+    .recommendation-card.worn {
+        border: 2px solid #007bff;
+        background: #f0f7ff;
+    }
+
+    .recommendation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+
+    .recommendation-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .confidence-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .confidence-badge.high {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .confidence-badge.medium {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .confidence-badge.low {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+
+    .outfit-preview {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .item-preview {
+        text-align: center;
+    }
+
+    .item-preview img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+
+    .item-preview .item-name {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .reasoning-section {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    .reasoning-section h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+
+    .reasoning-section p {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+    .score-breakdown {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+
+    .score-item {
+        text-align: center;
+    }
+
+    .score-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+
+    .score-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .recommendation-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        font-size: 1rem;
+    }
+
+    .btn-accept {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+    }
+
+    .btn-accept:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(17, 153, 142, 0.3);
+    }
+
+    .btn-reject {
+        background: white;
+        color: #dc3545;
+        border: 2px solid #dc3545;
+    }
+
+    .btn-reject:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-rate {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .rating-form {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        display: none;
+    }
+
+    .rating-form.active {
+        display: block;
+    }
+
+    .star-rating {
+        display: flex;
+        gap: 0.5rem;
+        font-size: 2rem;
+        margin: 1rem 0;
+    }
+
+    .star {
+        cursor: pointer;
+        color: #ddd;
+        transition: color 0.2s;
+    }
+
+    .star:hover,
+    .star.active {
+        color: #ffc107;
+    }
+
+    .generate-btn {
+        display: inline-block;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: transform 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .generate-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--text-secondary);
+    }
+
+    .past-recommendations {
+        margin-top: 3rem;
+    }
+
+    .past-recommendation-item {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-badge.accepted {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.worn {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="recommendations-container">
+    <div class="recommendations-header">
+        <h1>Your Daily Outfit Recommendations</h1>
+        <p>AI-powered outfit suggestions based on your wardrobe and preferences</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="recommendations-section">
+        <div class="section-title">
+            <span>✨</span> Today's Recommendations ({{ today }})
+            <form method="post" action="{% url 'recommendations:generate' %}" style="margin-left: auto;">
+                {% csrf_token %}
+                <button type="submit" class="generate-btn">🔄 Generate New</button>
+            </form>
+        </div>
+
+        {% if recommendations %}
+            {% for rec in recommendations %}
+                <div class="recommendation-card {% if rec.status == 'accepted' %}accepted{% elif rec.status == 'rejected' %}rejected{% elif rec.status == 'worn' %}worn{% endif %}">
+                    <div class="recommendation-header">
+                        <div>
+                            <div class="recommendation-title">
+                                {{ rec.outfit.name }}
+                            </div>
+                            <span class="confidence-badge {% if rec.confidence_score >= 0.8 %}high{% elif rec.confidence_score >= 0.6 %}medium{% else %}low{% endif %}">
+                                {{ rec.confidence_score|floatformat:0 }}% Confidence
+                            </span>
+                        </div>
+                        <div>
+                            <span class="status-badge {{ rec.status }}">{{ rec.get_status_display }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Outfit Preview -->
+                    <div class="outfit-preview">
+                        {% for item in rec.outfit.items.all %}
+                            <div class="item-preview">
+                                {% if item.photo %}
+                                    <img src="{{ item.photo.url }}" alt="{{ item.name }}">
+                                {% else %}
+                                    <div style="width: 100%; height: 150px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        No image
+                                    </div>
+                                {% endif %}
+                                <div class="item-name">{{ item.name }}</div>
+                                <div class="item-name" style="font-size: 0.75rem; color: #999;">{{ item.category.name }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Score Breakdown -->
+                    <div class="score-breakdown">
+                        <div class="score-item">
+                            <div class="score-label">Color Harmony</div>
+                            <div class="score-value">{{ rec.color_harmony_score|floatformat:0 }}%</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-label">Style Match</div>
+                            <div class="score-value">{{ rec.style_consistency_score|floatformat:0 }}%</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-label">Personal Preference</div>
+                            <div class="score-value">{{ rec.personal_preference_score|floatformat:0 }}%</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-label">Season Match</div>
+                            <div class="score-value">{{ rec.season_appropriateness_score|floatformat:0 }}%</div>
+                        </div>
+                    </div>
+
+                    <!-- Reasoning -->
+                    {% if rec.reasoning %}
+                        <div class="reasoning-section">
+                            <h4>Why we recommend this:</h4>
+                            <p>{{ rec.reasoning }}</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    {% if rec.status == 'pending' %}
+                        <div class="recommendation-actions">
+                            <form method="post" action="{% url 'recommendations:accept' rec.id %}" style="flex: 1;">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn btn-accept">✓ Accept & Wear</button>
+                            </form>
+                            <form method="post" action="{% url 'recommendations:reject' rec.id %}" style="flex: 1;">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn btn-reject">✗ Not for me</button>
+                            </form>
+                            <button type="button" class="action-btn btn-rate" onclick="toggleRating({{ rec.id }})">⭐ Rate</button>
+                        </div>
+
+                        <div class="rating-form" id="rating-form-{{ rec.id }}">
+                            <form method="post" action="{% url 'recommendations:rate' rec.id %}">
+                                {% csrf_token %}
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Rate this recommendation:</label>
+                                <div class="star-rating" id="stars-{{ rec.id }}">
+                                    <span class="star" data-rating="1" onclick="setRating({{ rec.id }}, 1)">★</span>
+                                    <span class="star" data-rating="2" onclick="setRating({{ rec.id }}, 2)">★</span>
+                                    <span class="star" data-rating="3" onclick="setRating({{ rec.id }}, 3)">★</span>
+                                    <span class="star" data-rating="4" onclick="setRating({{ rec.id }}, 4)">★</span>
+                                    <span class="star" data-rating="5" onclick="setRating({{ rec.id }}, 5)">★</span>
+                                </div>
+                                <input type="hidden" name="rating" id="rating-input-{{ rec.id }}" required>
+                                <textarea name="feedback" placeholder="Optional: Tell us what you think..." style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 1rem;"></textarea>
+                                <button type="submit" class="action-btn btn-accept" style="width: 100%;">Submit Rating</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <h3>No recommendations yet!</h3>
+                <p>We'll generate personalized outfit recommendations based on your wardrobe.</p>
+                <form method="post" action="{% url 'recommendations:generate' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="generate-btn">Generate My First Recommendations</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if past_recommendations %}
+        <div class="past-recommendations">
+            <div class="section-title">
+                📅 Recent Recommendations
+                <a href="{% url 'recommendations:history' %}" style="margin-left: auto; font-size: 0.9rem; color: var(--primary-color);">View All →</a>
+            </div>
+            {% for rec in past_recommendations %}
+                <div class="past-recommendation-item">
+                    <div>
+                        <strong>{{ rec.outfit.name }}</strong>
+                        <span style="color: #999; margin-left: 1rem;">{{ rec.recommendation_date }}</span>
+                    </div>
+                    <span class="status-badge {{ rec.status }}">{{ rec.get_status_display }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleRating(recId) {
+    const form = document.getElementById(`rating-form-${recId}`);
+    form.classList.toggle('active');
+}
+
+function setRating(recId, rating) {
+    const input = document.getElementById(`rating-input-${recId}`);
+    const stars = document.querySelectorAll(`#stars-${recId} .star`);
+    
+    input.value = rating;
+    
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.add('active');
+        } else {
+            star.classList.remove('active');
+        }
+    });
+}
+</script>
+{% endblock %}

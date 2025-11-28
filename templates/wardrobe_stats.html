@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Statistics - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+            <!-- Page Header -->
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                <div>
+                    <h2 style="font-family: 'Istok Web', sans-serif; font-size: 28px; font-weight: 400; color: #2c2c2c; margin: 0 0 8px 0;">Wardrobe statistics</h2>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: 0;">Analyze your collection and habits</p>
+                </div>
+                <a href="{% url 'wardrobe_gallery' %}" class="btn btn-secondary">Back to gallery</a>
+            </div>
+
+            <!-- Stats Overview -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 40px;">
+                <!-- Total Items -->
+                <div style="background: #ffffff; padding: 24px; text-align: center;">
+                    <div style="font-family: 'Istok Web', sans-serif; font-size: 48px; font-weight: 700; color: #2c2c2c; margin-bottom: 8px;">
+                        {{ stats.total_items }}
+                    </div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">
+                        Total items
+                    </div>
+                </div>
+
+                <!-- Favorites -->
+                <div style="background: #ffffff; padding: 24px; text-align: center;">
+                    <div style="font-family: 'Istok Web', sans-serif; font-size: 48px; font-weight: 700; color: #2c2c2c; margin-bottom: 8px;">
+                        {{ stats.favorite_count }}
+                    </div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">
+                        Favorites
+                    </div>
+                </div>
+
+                <!-- Wardrobe Usage -->
+                <div style="background: #ffffff; padding: 24px; text-align: center;">
+                    <div style="font-family: 'Istok Web', sans-serif; font-size: 48px; font-weight: 700; color: #2c2c2c; margin-bottom: 8px;">
+                        {{ stats.total_items }}/{{ stats.wardrobe_limit }}
+                    </div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">
+                        Capacity
+                    </div>
+                </div>
+
+                <!-- Remaining Slots -->
+                <div style="background: #ffffff; padding: 24px; text-align: center;">
+                    <div style="font-family: 'Istok Web', sans-serif; font-size: 48px; font-weight: 700; color: {% if stats.remaining_slots > 10 %}#2e7d32{% elif stats.remaining_slots > 0 %}#f57c00{% else %}#c62828{% endif %}; margin-bottom: 8px;">
+                        {{ stats.remaining_slots }}
+                    </div>
+                    <div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 1px;">
+                        Remaining slots
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px;">
+                <!-- By Category -->
+                <div style="background: #ffffff; padding: 32px;">
+                    <h3 style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 24px 0; padding-bottom: 16px; border-bottom: 2px solid #2c2c2c;">
+                        By Category
+                    </h3>
+                    {% if stats.by_category %}
+                    <div style="display: grid; gap: 16px;">
+                        {% for category, count in stats.by_category.items %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                            <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ category }}</span>
+                            <span style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; color: #2c2c2c;">{{ count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-align: center; padding: 40px 0;">No data available</p>
+                    {% endif %}
+                </div>
+
+                <!-- By Color -->
+                <div style="background: #ffffff; padding: 32px;">
+                    <h3 style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 24px 0; padding-bottom: 16px; border-bottom: 2px solid #2c2c2c;">
+                        By Color
+                    </h3>
+                    {% if stats.by_color %}
+                    <div style="display: grid; gap: 16px;">
+                        {% for color, count in stats.by_color.items %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                            <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ color|title }}</span>
+                            <span style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; color: #2c2c2c;">{{ count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-align: center; padding: 40px 0;">No data available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Most Worn Items -->
+            {% if stats.most_worn %}
+            <div style="background: #ffffff; padding: 32px; margin-bottom: 40px;">
+                <h3 style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 24px 0; padding-bottom: 16px; border-bottom: 2px solid #2c2c2c;">
+                    Most worn items
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
+                    {% for item in stats.most_worn %}
+                    <div style="text-align: center;">
+                        <div style="position: relative; padding-bottom: 100%; background: #fafafa; border: 1px solid #e0e0e0; margin-bottom: 8px; overflow: hidden;">
+                            {% if item.image %}
+                            <img src="{{ item.image }}" alt="{{ item.name }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                            {% endif %}
+                        </div>
+                        <p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #2c2c2c; margin: 0 0 4px 0; font-weight: 500;">{{ item.name }}</p>
+                        <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin: 0;">{{ item.times_worn }} times</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Additions -->
+            {% if stats.recent_additions %}
+            <div style="background: #ffffff; padding: 32px;">
+                <h3 style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 24px 0; padding-bottom: 16px; border-bottom: 2px solid #2c2c2c;">
+                    Recent additions
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
+                    {% for item in stats.recent_additions %}
+                    <div style="text-align: center;">
+                        <div style="position: relative; padding-bottom: 100%; background: #fafafa; border: 1px solid #e0e0e0; margin-bottom: 8px; overflow: hidden;">
+                            {% if item.image %}
+                            <img src="{{ item.image }}" alt="{{ item.name }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                            {% endif %}
+                        </div>
+                        <p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #2c2c2c; margin: 0 0 4px 0; font-weight: 500;">{{ item.name }}</p>
+                        <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin: 0;">{{ item.created_at|date:'d/m/Y' }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Upgrade Prompt if not premium -->
+            {% if not is_premium and stats.remaining_slots < 10 %}
+            <div style="background: linear-gradient(135deg, #2c2c2c 0%, #252320 100%); color: #ffffff; padding: 32px; margin-top: 40px; text-align: center;">
+                <h3 style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; margin: 0 0 16px 0;">Upgrade to Premium</h3>
+                <p style="font-family: 'Inter', sans-serif; font-size: 14px; margin: 0 0 24px 0; color: rgba(255, 255, 255, 0.8);">
+                    You only have {{ stats.remaining_slots }} slots left. Upgrade to Premium for an unlimited wardrobe!
+                </p>
+                <a href="{% url 'profile_settings' %}" class="btn btn-primary" style="background: #ffffff; color: #2c2c2c; border-color: #ffffff;">
+                    See Premium options
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
