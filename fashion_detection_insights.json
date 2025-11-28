@@ -1,0 +1,210 @@
+{
+  "shirts": {
+    "aspect_ratio_range": {
+      "min": 1.1,
+      "max": 1.6,
+      "typical": 1.3
+    },
+    "required_features": [
+      "buttons",
+      "collar"
+    ],
+    "optional_features": [
+      "sleeves",
+      "rectangular_shape"
+    ],
+    "color_patterns": [
+      "white",
+      "blue",
+      "black",
+      "gray",
+      "red",
+      "green"
+    ],
+    "size_characteristics": {
+      "typical_width_range": {
+        "min": 250,
+        "max": 300,
+        "mean": 276,
+        "std": 20
+      },
+      "typical_height_range": {
+        "min": 350,
+        "max": 400,
+        "mean": 376,
+        "std": 20
+      }
+    },
+    "detection_rules": [
+      "Must have rectangular shape",
+      "Buttons should be in top 40% of image",
+      "Collar features in top 15%",
+      "At least one of: collar, sleeves, or buttons"
+    ]
+  },
+  "pants": {
+    "aspect_ratio_range": {
+      "min": 1.8,
+      "max": 2.5,
+      "typical": 2.1
+    },
+    "required_features": [
+      "waistband",
+      "leg_openings"
+    ],
+    "optional_features": [
+      "vertical_symmetry"
+    ],
+    "color_patterns": [
+      "blue",
+      "black",
+      "gray",
+      "khaki",
+      "white"
+    ],
+    "size_characteristics": {
+      "typical_width_range": {
+        "min": 180,
+        "max": 220,
+        "mean": 200,
+        "std": 16
+      },
+      "typical_height_range": {
+        "min": 380,
+        "max": 450,
+        "mean": 410,
+        "std": 29
+      }
+    },
+    "detection_rules": [
+      "Must have vertical elongated shape",
+      "Waistband in top 20% of image",
+      "Should show vertical symmetry",
+      "No neckline features (distinguishes from dresses)"
+    ]
+  },
+  "dresses": {
+    "aspect_ratio_range": {
+      "min": 1.5,
+      "max": 2.2,
+      "typical": 1.8
+    },
+    "required_features": [
+      "neckline",
+      "flowing_silhouette"
+    ],
+    "optional_features": [
+      "top_bottom_contrast"
+    ],
+    "color_patterns": [
+      "black",
+      "red",
+      "blue",
+      "white",
+      "pink",
+      "green"
+    ],
+    "size_characteristics": {
+      "typical_width_range": {
+        "min": 220,
+        "max": 280,
+        "mean": 250,
+        "std": 24
+      },
+      "typical_height_range": {
+        "min": 400,
+        "max": 500,
+        "mean": 450,
+        "std": 40
+      }
+    },
+    "detection_rules": [
+      "Must have flowing silhouette",
+      "Neckline in top 10% of image",
+      "Top-bottom color contrast",
+      "No leg openings (distinguishes from pants)"
+    ]
+  },
+  "socks": {
+    "aspect_ratio_range": {
+      "min": 2.0,
+      "max": 3.5,
+      "typical": 2.8
+    },
+    "required_features": [
+      "ankle_opening",
+      "uniform_color"
+    ],
+    "optional_features": [
+      "vertical_elongated"
+    ],
+    "color_patterns": [
+      "white",
+      "black",
+      "gray",
+      "blue",
+      "red"
+    ],
+    "size_characteristics": {
+      "typical_width_range": {
+        "min": 120,
+        "max": 180,
+        "mean": 150,
+        "std": 24
+      },
+      "typical_height_range": {
+        "min": 350,
+        "max": 450,
+        "mean": 400,
+        "std": 40
+      }
+    },
+    "detection_rules": [
+      "Very high aspect ratio (2.0+)",
+      "Ankle opening in bottom 30%",
+      "Uniform color distribution",
+      "No waistband or neckline"
+    ]
+  },
+  "shoes": {
+    "aspect_ratio_range": {
+      "min": 0.4,
+      "max": 0.8,
+      "typical": 0.6
+    },
+    "required_features": [
+      "sole_indicators",
+      "wide_base"
+    ],
+    "optional_features": [
+      "horizontal_wide"
+    ],
+    "color_patterns": [
+      "black",
+      "brown",
+      "white",
+      "blue",
+      "red"
+    ],
+    "size_characteristics": {
+      "typical_width_range": {
+        "min": 300,
+        "max": 400,
+        "mean": 350,
+        "std": 40
+      },
+      "typical_height_range": {
+        "min": 180,
+        "max": 220,
+        "mean": 200,
+        "std": 16
+      }
+    },
+    "detection_rules": [
+      "Low aspect ratio (0.4-0.8)",
+      "Sole indicators at bottom",
+      "Wide base shape",
+      "Horizontal orientation"
+    ]
+  }
+}

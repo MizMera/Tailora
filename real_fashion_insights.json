@@ -1,0 +1,29 @@
+{
+  "shirt": {
+    "training_examples": 10284,
+    "article_types": [
+      "Tshirts",
+      "Shirts"
+    ]
+  },
+  "pants": {
+    "training_examples": 1139,
+    "article_types": [
+      "Trousers",
+      "Jeans"
+    ]
+  },
+  "dress": {
+    "training_examples": 464,
+    "article_types": [
+      "Dresses"
+    ]
+  },
+  "shoes": {
+    "training_examples": 4881,
+    "article_types": [
+      "Casual Shoes",
+      "Sports Shoes"
+    ]
+  }
+}
