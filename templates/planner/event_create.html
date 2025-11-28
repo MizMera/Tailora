@@ -6,6 +6,55 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/planner.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+#map { 
+    height: 300px; 
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+.map-container {
+    margin-bottom: 20px;
+}
+.coordinates-display {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    margin-top: 10px;
+    font-family: monospace;
+}
+.search-button {
+    margin-top: 5px;
+}
+.loading {
+    color: #007bff;
+}
+.error {
+    color: #dc3545;
+}
+.success {
+    color: #28a745;
+}
+.map-placeholder {
+    text-align: center;
+    padding: 20px;
+}
+.location-input-container {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+.location-input {
+    flex: 1;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -23,8 +72,12 @@
 {% endif %}
 
 <div class="content-section" style="max-width: 800px; margin: 0 auto;">
-    <form method="post" class="event-form">
+    <form method="post" class="event-form" id="eventForm">
         {% csrf_token %}
+        
+        <!-- HIDDEN COORDINATES FIELDS -->
+        <input type="hidden" id="latitude" name="latitude">
+        <input type="hidden" id="longitude" name="longitude">
         
         <div class="form-section">
             <h3 class="section-title">EVENT DETAILS</h3>
@@ -54,9 +107,33 @@
                     </select>
                 </div>
                 
+                <!-- LOCATION FIELD -->
                 <div class="form-group full-width">
                     <label for="location" class="form-label">Location</label>
-                    <input type="text" id="location" name="location" class="input-control" placeholder="e.g., Office, Restaurant Name, City">
+                    <div class="location-input-container">
+                        <div class="location-input">
+                            <input type="text" id="location" name="location" class="input-control" 
+                                   placeholder="e.g., Tunis, Sousse, Hammamet">
+                            <p class="form-help">Enter a Tunisian city name</p>
+                        </div>
+                        <button type="button" id="searchLocation" class="btn btn-primary">
+                            Find on Map
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- MAP -->
+                <div class="form-group full-width map-container">
+                    <label class="form-label">Location Map</label>
+                    <div id="map" class="map-placeholder">
+                        <div>
+                            <div style="font-size: 48px; margin-bottom: 10px;">🗺️</div>
+                            <div>Enter a location and click "Find on Map"</div>
+                        </div>
+                    </div>
+                    <div class="coordinates-display">
+                        <small>Coordinates: <span id="coordinatesDisplay">Not set</span></small>
+                    </div>
                 </div>
                 
                 <div class="form-group full-width">
@@ -87,4 +164,117 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchButton = document.getElementById('searchLocation');
+    const locationInput = document.getElementById('location');
+    const coordinatesDisplay = document.getElementById('coordinatesDisplay');
+    const mapDiv = document.getElementById('map');
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+
+    // Tunisian cities list for autocompletion
+    const tunisianCities = [
+        'Tunis', 'Sousse', 'Sfax', 'Kairouan', 'Bizerte', 'Gabès', 
+        'Ariana', 'Gafsa', 'Monastir', 'Kasserine', 'Ben Arous', 
+        'Medenine', 'Nabeul', 'Tataouine', 'Beja', 'Jendouba', 
+        'Kef', 'Mahdia', 'Manouba', 'Sidi Bouzid', 'Siliana', 
+        'Tozeur', 'Zaghouan', 'Kelibia', 'Hammamet', 'Djerba',
+        'Sidi Bou Said', 'Carthage', 'La Marsa'
+    ];
+
+    searchButton.addEventListener('click', function() {
+        const location = locationInput.value.trim();
+        
+        if (!location) {
+            alert('Please enter a location name.');
+            return;
+        }
+
+        // Show loading
+        coordinatesDisplay.textContent = 'Searching...';
+        coordinatesDisplay.className = 'loading';
+        searchButton.disabled = true;
+        searchButton.textContent = 'Searching...';
+
+        // Call our Django view for geocoding
+        fetch(`{% url 'planner:geocode_location' %}?location=${encodeURIComponent(location)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Success - update coordinates
+                latitudeInput.value = data.latitude;
+                longitudeInput.value = data.longitude;
+                
+                coordinatesDisplay.textContent = `${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (${data.display_name})`;
+                coordinatesDisplay.className = 'success';
+                
+                // Update map with OpenStreetMap
+                updateMapWithStaticImage(data.latitude, data.longitude, data.display_name);
+                
+            } else {
+                // Error
+                coordinatesDisplay.textContent = `Error: ${data.error}`;
+                coordinatesDisplay.className = 'error';
+            }
+        })
+        .catch(error => {
+            coordinatesDisplay.textContent = 'Network error. Please try again.';
+            coordinatesDisplay.className = 'error';
+            console.error('Geocoding error:', error);
+        })
+        .finally(() => {
+            searchButton.disabled = false;
+            searchButton.textContent = 'Find on Map';
+        });
+    });
+
+    function updateMapWithStaticImage(lat, lng, placeName) {
+        // Solution avec OpenStreetMap embed - meilleure qualité et noms corrects
+        const bbox = `${lng-0.02},${lat-0.02},${lng+0.02},${lat+0.02}`;
+        
+        mapDiv.innerHTML = `
+            <div style="position: relative; height: 100%;">
+                <iframe 
+                    src="https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}"
+                    style="width: 100%; height: 100%; border: none; border-radius: 8px;"
+                    frameborder="0">
+                </iframe>
+                <div style="position: absolute; bottom: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 4px; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    📍 ${placeName}
+                </div>
+            </div>
+        `;
+    }
+
+    // Auto-search with Enter
+    locationInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchButton.click();
+        }
+    });
+
+    // Tunisian cities suggestions
+    locationInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        if (value.length > 1) {
+            const suggestions = tunisianCities.filter(city => 
+                city.toLowerCase().includes(value)
+            );
+            // You can add a dropdown suggestions list here
+            console.log('Suggestions:', suggestions); // Pour debug
+        }
+    });
+
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').min = today;
+});
+</script>
 {% endblock %}

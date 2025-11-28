@@ -7,7 +7,9 @@ from datetime import datetime, timedelta
 import calendar as cal
 from .models import Event
 from outfits.models import Outfit
-
+from django.db.models import Count, Avg, Q
+from wardrobe.models import ClothingItem
+from .models import WearHistory  # AJOUTEZ CET IMPORT
 
 @login_required
 def calendar_view(request):
@@ -130,7 +132,6 @@ def event_list(request):
     
     return render(request, 'planner/event_list.html', context)
 
-
 @login_required
 def event_create(request):
     """Create a new event"""
@@ -142,6 +143,10 @@ def event_create(request):
         location = request.POST.get('location', '')
         notes = request.POST.get('notes', '')
         outfit_id = request.POST.get('outfit')
+        
+        # AJOUT: Récupérer latitude et longitude
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
         
         if not title or not date:
             messages.error(request, 'Title and date are required.')
@@ -156,7 +161,10 @@ def event_create(request):
             occasion_type=occasion_type,
             location=location,
             notes=notes,
-            outfit_id=outfit_id if outfit_id else None
+            outfit_id=outfit_id if outfit_id else None,
+            # AJOUT: Sauvegarder les coordonnées
+            latitude=float(latitude) if latitude else None,
+            longitude=float(longitude) if longitude else None
         )
         
         messages.success(request, f'Event "{event.title}" created successfully!')
@@ -172,7 +180,42 @@ def event_create(request):
     
     return render(request, 'planner/event_create.html', context)
 
-
+@login_required
+def event_edit(request, event_id):
+    """Edit an event"""
+    event = get_object_or_404(Event, id=event_id, user=request.user)
+    
+    if request.method == 'POST':
+        event.title = request.POST.get('title')
+        event.date = request.POST.get('date')
+        event.time = request.POST.get('time') or None
+        event.occasion_type = request.POST.get('occasion_type')
+        event.location = request.POST.get('location', '')
+        event.notes = request.POST.get('notes', '')
+        
+        # AJOUT: Mettre à jour latitude et longitude
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        event.latitude = float(latitude) if latitude else None
+        event.longitude = float(longitude) if longitude else None
+        
+        outfit_id = request.POST.get('outfit')
+        event.outfit_id = outfit_id if outfit_id else None
+        
+        event.save()
+        messages.success(request, 'Event updated successfully!')
+        return redirect('planner:event_detail', event_id=event.id)
+    
+    # GET: Show form
+    outfits = Outfit.objects.filter(user=request.user).order_by('-created_at')
+    
+    context = {
+        'event': event,
+        'occasion_choices': Event.OCCASION_CHOICES,
+        'outfits': outfits,
+    }
+    
+    return render(request, 'planner/event_edit.html', context)
 @login_required
 def event_detail(request, event_id):
     """View event details"""
@@ -194,36 +237,6 @@ def event_detail(request, event_id):
     return render(request, 'planner/event_detail.html', context)
 
 
-@login_required
-def event_edit(request, event_id):
-    """Edit an event"""
-    event = get_object_or_404(Event, id=event_id, user=request.user)
-    
-    if request.method == 'POST':
-        event.title = request.POST.get('title')
-        event.date = request.POST.get('date')
-        event.time = request.POST.get('time') or None
-        event.occasion_type = request.POST.get('occasion_type')
-        event.location = request.POST.get('location', '')
-        event.notes = request.POST.get('notes', '')
-        
-        outfit_id = request.POST.get('outfit')
-        event.outfit_id = outfit_id if outfit_id else None
-        
-        event.save()
-        messages.success(request, 'Event updated successfully!')
-        return redirect('planner:event_detail', event_id=event.id)
-    
-    # GET: Show form
-    outfits = Outfit.objects.filter(user=request.user).order_by('-created_at')
-    
-    context = {
-        'event': event,
-        'occasion_choices': Event.OCCASION_CHOICES,
-        'outfits': outfits,
-    }
-    
-    return render(request, 'planner/event_edit.html', context)
 
 
 @login_required
@@ -341,3 +354,213 @@ def event_stats(request):
     }
     
     return render(request, 'planner/event_stats.html', context)
+def get_coordinates_for_city(city_name):
+    """Fallback coordinates for major cities - FOCUS ON TUNISIA"""
+    city_coordinates = {
+        # Villes Tunisiennes
+        'tunis': (36.8065, 10.1815),
+        'sousse': (35.8254, 10.6360),
+        'sfax': (34.7406, 10.7603),
+        'kairouan': (35.6781, 10.0963),
+        'bizerte': (37.2747, 9.8739),
+        'gabès': (33.8815, 10.0982),
+        'ariana': (36.8601, 10.1934),
+        'gafsa': (34.4250, 8.7842),
+        'monastir': (35.7833, 10.8333),
+        'kasserine': (35.1676, 8.8365),
+        'ben arous': (36.7533, 10.2189),
+        'medenine': (33.3549, 10.5055),
+        'nabeul': (36.4561, 10.7376),
+        'tataouine': (32.9297, 10.4518),
+        'beja': (36.7256, 9.1817),
+        'jendouba': (36.5012, 8.7804),
+        'kef': (36.1822, 8.7148),
+        'mahdia': (35.5047, 11.0622),
+        'manouba': (36.8081, 10.0972),
+        'sidibouzid': (35.0383, 9.4840),
+        'siliana': (36.0847, 9.3708),
+        'tozeur': (33.9197, 8.1334),
+        'zaghouan': (36.4029, 10.1429),
+        'kelibia': (36.8476, 11.0939),
+        'hammamet': (36.4000, 10.6167),
+        'djerba': (33.8750, 10.8575),
+        'sidi bou said': (36.8687, 10.3416),
+        'carthage': (36.8545, 10.3307),
+        'la marsa': (36.8760, 10.3244),
+        
+        # Villes internationales (pour backup)
+        'paris': (48.8566, 2.3522),
+        'london': (51.5074, -0.1278),
+        'new york': (40.7128, -74.0060),
+    }
+    
+    city_lower = city_name.lower().strip()
+    
+    # Recherche exacte d'abord
+    if city_lower in city_coordinates:
+        return city_coordinates[city_lower]
+    
+    # Recherche partielle
+    for city, coords in city_coordinates.items():
+        if city in city_lower:
+            return coords
+    
+    return None
+import requests
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def geocode_location(request):
+    """Geocode location name to coordinates - TUNISIA FOCUS"""
+    if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        location_name = request.GET.get('location', '')
+        
+        if not location_name:
+            return JsonResponse({'success': False, 'error': 'Veuillez entrer un nom de lieu'})
+        
+        try:
+            # Essayer d'abord avec les coordonnées prédéfinies pour la Tunisie
+            fallback_coords = get_coordinates_for_city(location_name)
+            if fallback_coords:
+                return JsonResponse({
+                    'success': True,
+                    'latitude': fallback_coords[0],
+                    'longitude': fallback_coords[1],
+                    'display_name': f"{location_name.title()}, Tunisie",
+                    'source': 'predefined'
+                })
+            
+            # Sinon utiliser l'API Nominatim
+            url = "https://nominatim.openstreetmap.org/search"
+            params = {
+                'q': f"{location_name}, Tunisie",
+                'format': 'json',
+                'limit': 1,
+                'countrycodes': 'tn'  # Focus sur la Tunisie
+            }
+            
+            response = requests.get(url, params=params, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data:
+                    result = data[0]
+                    return JsonResponse({
+                        'success': True,
+                        'latitude': float(result['lat']),
+                        'longitude': float(result['lon']),
+                        'display_name': result['display_name'],
+                        'source': 'api'
+                    })
+                else:
+                    return JsonResponse({'success': False, 'error': 'Lieu non trouvé. Essayez avec un nom de ville tunisienne.'})
+            else:
+                return JsonResponse({'success': False, 'error': 'Erreur du service de géocodage'})
+                
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'Erreur: {str(e)}'})
+    
+    return JsonResponse({'success': False, 'error': 'Requête invalide'})
+# AJOUTEZ CES VUES POUR L'HISTORIQUE DES VÊTEMENTS À LA FIN DU FICHIER :
+
+@login_required
+def add_wear_history_from_event(request, event_id):
+    """Add wear history from an event with assigned outfit"""
+    event = get_object_or_404(Event, id=event_id, user=request.user)
+    
+    if not event.outfit:
+        messages.error(request, 'This event has no outfit assigned.')
+        return redirect('planner:event_detail', event_id=event.id)
+    
+    if request.method == 'POST':
+        # Check if wear history already exists for this event
+        existing_entry = WearHistory.objects.filter(
+            user=request.user,
+            worn_date=event.date,  # Changé de wear_date à worn_date
+            outfit=event.outfit
+        ).first()
+        
+        if existing_entry:
+            messages.info(request, 'Wear history already exists for this event.')
+            return redirect('planner:wear_history_list')
+        
+        # Create wear history entry from event
+        wear_entry = WearHistory.objects.create(
+            user=request.user,
+            worn_date=event.date,  # Changé de wear_date à worn_date
+            outfit=event.outfit,
+            notes=f"Worn for event: {event.title}" + (f" - {event.notes}" if event.notes else "")
+        )
+        
+        # Add all clothing items from the outfit
+        wear_entry.clothing_items.set(event.outfit.items.all())
+        
+        messages.success(request, f'Wear history added for {event.date}!')
+        return redirect('planner:wear_history_list')
+    
+    # GET: Show confirmation page
+    context = {
+        'event': event,
+    }
+    return render(request, 'planner/add_wear_history_from_event.html', context)
+@login_required
+def wear_history_list(request):
+    """
+    View to display wear history for the current user
+    """
+    wear_history = WearHistory.objects.filter(user=request.user).order_by('-worn_date')  # Changé de wear_date à worn_date
+    
+    context = {
+        'wear_history': wear_history,
+    }
+    return render(request, 'planner/wear_history_list.html', context)
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+
+def mark_worn_and_back(request, event_id):
+    """
+    Marque l'outfit comme porté et redirige vers la liste des événements
+    """
+    event = get_object_or_404(Event, id=event_id, user=request.user)
+    
+    if event.outfit and not event.is_completed:
+        try:
+            # Créer l'entrée dans l'historique des portés
+            WearHistory.objects.create(
+                user=request.user,
+                outfit=event.outfit,
+                event=event,
+                worn_date=event.date
+            )
+            
+            # Marquer l'événement comme complété
+            event.is_completed = True
+            event.save()
+            
+            messages.success(request, f"Outfit '{event.outfit.name}' marked as worn and event completed!")
+        except Exception as e:
+            messages.error(request, f"Error marking as worn: {str(e)}")
+    else:
+        if not event.outfit:
+            messages.warning(request, "Cannot mark as worn - no outfit assigned to this event.")
+        elif event.is_completed:
+            messages.warning(request, "Event is already completed.")
+    
+    # Rediriger vers la liste des événements
+    return HttpResponseRedirect(reverse('planner:event_list'))
+
+
+def delete_wear_history(request, entry_id):
+    """
+    Supprime une entrée de l'historique des portés
+    """
+    entry = get_object_or_404(WearHistory, id=entry_id, user=request.user)
+    
+    if request.method == 'POST':
+        entry.delete()
+        messages.success(request, "Wear history entry deleted successfully!")
+    
+    return redirect('planner:wear_history_list')

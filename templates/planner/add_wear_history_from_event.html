@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add to Wear History - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/planner.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Mark as Worn</h1>
+        <p class="page-subtitle">Add this outfit to your wear history</p>
+    </div>
+</div>
+
+<div class="content-section" style="max-width: 600px; margin: 0 auto;">
+    <div class="confirmation-card">
+        <h3>Confirm Wear History Entry</h3>
+        
+        <div class="event-details">
+            <h4>Event Details</h4>
+            <p><strong>Event:</strong> {{ event.title }}</p>
+            <p><strong>Date:</strong> {{ event.date|date:"F j, Y" }}</p>
+            <p><strong>Outfit:</strong> {{ event.outfit.name }}</p>
+            
+            {% if event.outfit.items.exists %}
+            <p><strong>Items:</strong> 
+                {% for item in event.outfit.items.all %}
+                    {{ item.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            {% endif %}
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions" style="margin-top: 20px;">
+                <button type="submit" class="btn btn-primary">Mark as Worn</button>
+                <a href="{% url 'planner:event_detail' event.id %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+        
+        <p class="form-help" style="text-align: center; margin-top: 15px;">
+            This will add the outfit to your wear history list
+        </p>
+    </div>
+</div>
+{% endblock %}

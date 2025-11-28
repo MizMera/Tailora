@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Wear History - Tailora{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Wear History</h1>
+        <p class="page-subtitle">Track what you've worn and when</p>
+    </div>
+    <div class="header-actions">
+        <!-- Bouton pour revenir à la liste des événements -->
+        <a href="{% url 'planner:event_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Events List
+        </a>
+    </div>
+</div>
+
+<!-- Navigation supplémentaire -->
+<div class="navigation-buttons" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+    <a href="{% url 'planner:event_list' %}" class="btn btn-outline-primary">
+        <i class="fas fa-list"></i> All Events
+    </a>
+    <a href="{% url 'planner:calendar' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-calendar"></i> View Calendar
+    </a>
+</div>
+
+<div class="content-section">
+    {% if wear_history %}
+        {% for entry in wear_history %}
+        <div class="wear-history-entry" style="border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin-bottom: 20px; background: #f8f9fa;">
+            <div class="entry-header" style="display: flex; justify-content: between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">
+                    {% if entry.outfit %}
+                        {{ entry.outfit.name }}
+                    {% else %}
+                        Custom Combination
+                    {% endif %}
+                </h3>
+                <span class="entry-date" style="color: #6c757d; font-size: 14px;">
+                    {{ entry.worn_date|date:"F j, Y" }}
+                </span>
+            </div>
+
+            {% if entry.event %}
+            <div class="event-info" style="margin-bottom: 10px;">
+                <strong>Event:</strong> {{ entry.event.title }}
+            </div>
+            {% endif %}
+
+            {% if entry.notes %}
+            <div class="notes" style="margin-bottom: 15px;">
+                <strong>Notes:</strong> {{ entry.notes }}
+            </div>
+            {% endif %}
+
+            <div class="items-worn">
+                <strong>Items worn:</strong>
+                <div class="items-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;">
+                    {% if entry.outfit %}
+                        {% for item in entry.outfit.items.all %}
+                        <div class="item-preview" style="text-align: center;">
+                            <div style="width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; margin: 0 auto 5px;">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div style="width: 100%; height: 100%; background: #e9ecef; display: flex; align-items: center; justify-content: center; color: #6c757d;">
+                                        <i class="fas fa-tshirt"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <small style="font-size: 12px;">{{ item.name }}</small>
+                        </div>
+                        {% endfor %}
+                    {% elif entry.items.all %}
+                        {% for item in entry.items.all %}
+                        <div class="item-preview" style="text-align: center;">
+                            <div style="width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; margin: 0 auto 5px;">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div style="width: 100%; height: 100%; background: #e9ecef; display: flex; align-items: center; justify-content: center; color: #6c757d;">
+                                        <i class="fas fa-tshirt"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <small style="font-size: 12px;">{{ item.name }}</small>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="entry-actions" style="margin-top: 15px; display: flex; gap: 10px;">
+                {% if entry.outfit %}
+                <a href="{% url 'outfits:outfit_detail' entry.outfit.id %}" class="btn btn-sm btn-outline-primary">
+                    View Outfit Details
+                </a>
+                {% endif %}
+                <form method="post" action="{% url 'planner:delete_wear_history' entry.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this wear history entry?')">
+                        Delete Entry
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state" style="text-align: center; padding: 40px;">
+            <i class="fas fa-history" style="font-size: 48px; color: #6c757d; margin-bottom: 20px;"></i>
+            <h3>No wear history yet</h3>
+            <p>Start by marking outfits as worn from your events!</p>
+            <a href="{% url 'planner:event_list' %}" class="btn btn-primary">
+                Go to Events
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

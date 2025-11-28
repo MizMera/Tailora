@@ -29,6 +29,11 @@ class Event(models.Model):
     time = models.TimeField(null=True, blank=True)
     occasion_type = models.CharField(max_length=50, choices=OCCASION_CHOICES, default='casual')
     location = models.CharField(max_length=200, blank=True)
+    
+    # Geolocation fields
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    
     notes = models.TextField(blank=True)
     
     # Outfit planning
@@ -52,6 +57,11 @@ class Event(models.Model):
     
     def __str__(self):
         return f"{self.title} - {self.date}"
+    
+    @property
+    def has_location(self):
+        """Check if event has geolocation data"""
+        return self.latitude is not None and self.longitude is not None
 
 
 class OutfitPlanning(models.Model):
@@ -181,3 +191,6 @@ class WearHistory(models.Model):
     def __str__(self):
         outfit_name = self.outfit.name if self.outfit else "Custom combination"
         return f"{self.user.email} - {self.worn_date} - {outfit_name}"
+
+# SUPPRIMEZ TOUTE FONCTION AVEC @login_required D'ICI
+# Les décorateurs @login_required vont uniquement dans views.py

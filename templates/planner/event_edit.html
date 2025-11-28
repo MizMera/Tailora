@@ -1,11 +1,60 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Edit {{ event.title }} - Tailora{% endblock %}
+{% block title %}Edit Event - Tailora{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/planner.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+#map { 
+    height: 300px; 
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+.map-container {
+    margin-bottom: 20px;
+}
+.coordinates-display {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    margin-top: 10px;
+    font-family: monospace;
+}
+.search-button {
+    margin-top: 5px;
+}
+.loading {
+    color: #007bff;
+}
+.error {
+    color: #dc3545;
+}
+.success {
+    color: #28a745;
+}
+.map-placeholder {
+    text-align: center;
+    padding: 20px;
+}
+.location-input-container {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+.location-input {
+    flex: 1;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -23,8 +72,12 @@
 {% endif %}
 
 <div class="content-section" style="max-width: 800px; margin: 0 auto;">
-    <form method="post" class="event-form">
+    <form method="post" class="event-form" id="eventForm">
         {% csrf_token %}
+        
+        <!-- HIDDEN COORDINATES FIELDS -->
+        <input type="hidden" id="latitude" name="latitude" value="{{ event.latitude|default:'' }}">
+        <input type="hidden" id="longitude" name="longitude" value="{{ event.longitude|default:'' }}">
         
         <div class="form-section">
             <h3 class="section-title">EVENT DETAILS</h3>
@@ -32,31 +85,74 @@
             <div class="form-grid">
                 <div class="form-group full-width">
                     <label for="title" class="form-label">Event Title *</label>
-                    <input type="text" id="title" name="title" class="input-control" required value="{{ event.title }}">
+                    <input type="text" id="title" name="title" class="input-control" value="{{ event.title }}" required>
                 </div>
                 
                 <div class="form-group">
                     <label for="date" class="form-label">Date *</label>
-                    <input type="date" id="date" name="date" class="input-control" required value="{{ event.date|date:'Y-m-d' }}">
+                    <input type="date" id="date" name="date" class="input-control" value="{{ event.date|date:'Y-m-d' }}" required>
                 </div>
                 
                 <div class="form-group">
                     <label for="time" class="form-label">Time</label>
-                    <input type="time" id="time" name="time" class="input-control" value="{% if event.time %}{{ event.time|date:'H:i' }}{% endif %}">
+                    <input type="time" id="time" name="time" class="input-control" value="{{ event.time|time:'H:i' }}">
                 </div>
                 
                 <div class="form-group full-width">
                     <label for="occasion_type" class="form-label">Occasion Type *</label>
                     <select id="occasion_type" name="occasion_type" class="input-control" required>
                         {% for value, label in occasion_choices %}
-                            <option value="{{ value }}" {% if event.occasion_type == value %}selected{% endif %}>{{ label }}</option>
+                            <option value="{{ value }}" {% if event.occasion_type == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
                         {% endfor %}
                     </select>
                 </div>
                 
+                <!-- LOCATION FIELD -->
                 <div class="form-group full-width">
                     <label for="location" class="form-label">Location</label>
-                    <input type="text" id="location" name="location" class="input-control" value="{{ event.location }}">
+                    <div class="location-input-container">
+                        <div class="location-input">
+                            <input type="text" id="location" name="location" class="input-control" 
+                                   value="{{ event.location }}" placeholder="e.g., Tunis, Sousse, Hammamet">
+                            <p class="form-help">Enter a Tunisian city name</p>
+                        </div>
+                        <button type="button" id="searchLocation" class="btn btn-primary">
+                            Find on Map
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- MAP -->
+                <div class="form-group full-width map-container">
+                    <label class="form-label">Location Map</label>
+                    <div id="map" class="map-placeholder">
+                        {% if event.latitude and event.longitude %}
+                            <div style="position: relative; height: 100%;">
+                                <img src="https://static-maps.yandex.ru/1.x/?ll={{ event.longitude }},{{ event.latitude }}&z=13&l=map&size=600,300&pt={{ event.longitude }},{{ event.latitude }},pm2rdl" 
+                                     alt="{{ event.location }}" 
+                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                                <div style="position: absolute; bottom: 10px; left: 10px; background: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                                    📍 {{ event.location }}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div>
+                                <div style="font-size: 48px; margin-bottom: 10px;">🗺️</div>
+                                <div>Enter a location and click "Find on Map"</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="coordinates-display">
+                        <small>Coordinates: <span id="coordinatesDisplay">
+                            {% if event.latitude and event.longitude %}
+                                {{ event.latitude|floatformat:6 }}, {{ event.longitude|floatformat:6 }}
+                            {% else %}
+                                Not set
+                            {% endif %}
+                        </span></small>
+                    </div>
                 </div>
                 
                 <div class="form-group full-width">
@@ -70,11 +166,11 @@
             <h3 class="section-title">OUTFIT PLANNING</h3>
             
             <div class="form-group">
-                <label for="outfit" class="form-label">Assigned Outfit</label>
+                <label for="outfit" class="form-label">Assign Outfit (Optional)</label>
                 <select id="outfit" name="outfit" class="input-control">
-                    <option value="">No outfit</option>
+                    <option value="">Select an outfit...</option>
                     {% for outfit in outfits %}
-                        <option value="{{ outfit.id }}" {% if event.outfit and event.outfit.id == outfit.id %}selected{% endif %}>
+                        <option value="{{ outfit.id }}" {% if event.outfit.id == outfit.id %}selected{% endif %}>
                             {{ outfit.name }} ({{ outfit.get_occasion_display }})
                         </option>
                     {% endfor %}
@@ -83,9 +179,109 @@
         </div>
         
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="submit" class="btn btn-primary">Update Event</button>
             <a href="{% url 'planner:event_detail' event.id %}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchButton = document.getElementById('searchLocation');
+    const locationInput = document.getElementById('location');
+    const coordinatesDisplay = document.getElementById('coordinatesDisplay');
+    const mapDiv = document.getElementById('map');
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+
+    // Tunisian cities list
+    const tunisianCities = [
+        'Tunis', 'Sousse', 'Sfax', 'Kairouan', 'Bizerte', 'Gabès', 
+        'Ariana', 'Gafsa', 'Monastir', 'Kasserine', 'Ben Arous', 
+        'Medenine', 'Nabeul', 'Tataouine', 'Beja', 'Jendouba', 
+        'Kef', 'Mahdia', 'Manouba', 'Sidi Bouzid', 'Siliana', 
+        'Tozeur', 'Zaghouan', 'Kelibia', 'Hammamet', 'Djerba',
+        'Sidi Bou Said', 'Carthage', 'La Marsa'
+    ];
+
+    searchButton.addEventListener('click', function() {
+        const location = locationInput.value.trim();
+        
+        if (!location) {
+            alert('Please enter a location name.');
+            return;
+        }
+
+        // Show loading
+        coordinatesDisplay.textContent = 'Searching...';
+        coordinatesDisplay.className = 'loading';
+        searchButton.disabled = true;
+        searchButton.textContent = 'Searching...';
+
+        // Call our Django view for geocoding
+        fetch(`{% url 'planner:geocode_location' %}?location=${encodeURIComponent(location)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Success - update coordinates
+                latitudeInput.value = data.latitude;
+                longitudeInput.value = data.longitude;
+                
+                coordinatesDisplay.textContent = `${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)} (${data.display_name})`;
+                coordinatesDisplay.className = 'success';
+                
+                // Update map with static image
+                updateMapWithStaticImage(data.latitude, data.longitude, data.display_name);
+                
+            } else {
+                // Error
+                coordinatesDisplay.textContent = `Error: ${data.error}`;
+                coordinatesDisplay.className = 'error';
+            }
+        })
+        .catch(error => {
+            coordinatesDisplay.textContent = 'Network error. Please try again.';
+            coordinatesDisplay.className = 'error';
+            console.error('Geocoding error:', error);
+        })
+        .finally(() => {
+            searchButton.disabled = false;
+            searchButton.textContent = 'Find on Map';
+        });
+    });
+
+    function updateMapWithStaticImage(lat, lng, placeName) {
+        const staticMapUrl = `https://static-maps.yandex.ru/1.x/?ll=${lng},${lat}&z=13&l=map&size=600,300&pt=${lng},${lat},pm2rdl`;
+        
+        mapDiv.innerHTML = `
+            <div style="position: relative; height: 100%;">
+                <img src="${staticMapUrl}" 
+                     alt="${placeName}" 
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                <div style="position: absolute; bottom: 10px; left: 10px; background: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    📍 ${placeName}
+                </div>
+            </div>
+        `;
+    }
+
+    // Auto-search with Enter
+    locationInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchButton.click();
+        }
+    });
+
+    // If coordinates already exist, show the map
+    {% if event.latitude and event.longitude %}
+        coordinatesDisplay.textContent = '{{ event.latitude|floatformat:6 }}, {{ event.longitude|floatformat:6 }}';
+        coordinatesDisplay.className = 'success';
+    {% endif %}
+});
+</script>
 {% endblock %}

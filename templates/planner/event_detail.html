@@ -6,6 +6,113 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/planner.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+.event-map { 
+    height: 300px; 
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+}
+.map-section {
+    margin-top: 20px;
+}
+.coordinates-display {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    margin-top: 10px;
+    font-family: monospace;
+}
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.btn-block {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+}
+.assigned-outfit {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+.outfit-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
+}
+.outfit-item-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+.outfit-item-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.item-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+.outfit-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.occasion-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.occasion-badge.casual { background: #e3f2fd; color: #1976d2; }
+.occasion-badge.formal { background: #f3e5f5; color: #7b1fa2; }
+.occasion-badge.business { background: #e8f5e8; color: #388e3c; }
+.occasion-badge.sport { background: #fff3e0; color: #f57c00; }
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.status-badge.completed { background: #e8f5e8; color: #388e3c; }
+.status-badge.upcoming { background: #fff3e0; color: #f57c00; }
+.danger-zone {
+    border: 1px solid #f5c6cb;
+    background: #f8d7da;
+}
+.danger-zone .section-title {
+    color: #721c24;
+}
+.suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 15px 0;
+}
+.suggestion-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -69,6 +176,26 @@
                 </div>
             </div>
             
+            <!-- MAP IN DETAILS -->
+            {% if event.latitude and event.longitude %}
+            <div class="map-section">
+                <h4 class="detail-label">Location Map</h4>
+                <div class="event-map">
+                    <div style="position: relative; height: 100%;">
+                        <img src="https://static-maps.yandex.ru/1.x/?ll={{ event.longitude }},{{ event.latitude }}&z=13&l=map&size=600,300&pt={{ event.longitude }},{{ event.latitude }},pm2rdl" 
+                             alt="{{ event.location }}" 
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        <div style="position: absolute; bottom: 10px; left: 10px; background: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                            📍 {{ event.location }}
+                        </div>
+                    </div>
+                </div>
+                <div class="coordinates-display">
+                    <small>Coordinates: {{ event.latitude|floatformat:6 }}, {{ event.longitude|floatformat:6 }}</small>
+                </div>
+            </div>
+            {% endif %}
+            
             {% if event.notes %}
             <div class="notes-section">
                 <h4 class="detail-label">Notes</h4>
@@ -93,7 +220,9 @@
                                     {% if item.image %}
                                         <img src="{{ item.image.url }}" alt="{{ item.name }}">
                                     {% else %}
-                                        <div class="item-placeholder"></div>
+                                        <div class="item-placeholder">
+                                            <i class="fas fa-tshirt"></i>
+                                        </div>
                                     {% endif %}
                                 </div>
                             {% endfor %}
@@ -136,25 +265,43 @@
     
     <!-- Sidebar Actions -->
     <div class="event-detail-sidebar">
+        <!-- Quick Actions Section -->
         <div class="content-section">
             <h3 class="section-title">QUICK ACTIONS</h3>
             
-            <div class="action-buttons">
-                <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary btn-block"> Edit Event</a>
+            <div class="quick-actions">
+                <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-outline-secondary btn-block">
+                    <i class="fas fa-edit"></i> Edit Event
+                </a>
                 
-                <form method="post" action="{% url 'planner:toggle_complete' event.id %}">
+                <!-- Bouton "Mark as Worn" -->
+                {% if event.outfit and not event.is_completed %}
+                <a href="{% url 'planner:add_wear_history_from_event' event.id %}" class="btn btn-outline-success btn-block">
+                    <i class="fas fa-check-circle"></i> Mark as Worn
+                </a>
+                {% endif %}
+                
+                <!-- Bouton pour voir l'historique complet -->
+                <a href="{% url 'planner:wear_history_list' %}" class="btn btn-outline-info btn-block">
+                    <i class="fas fa-list"></i> View All Wear History
+                </a>
+                
+                <!-- Bouton Toggle Complete -->
+                <form method="post" action="{% url 'planner:toggle_complete' event.id %}" style="display: inline; width: 100%;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-secondary btn-block">
-                        {% if event.is_completed %}
-                            Mark as Upcoming
-                        {% else %}
-                            Mark as Completed
-                        {% endif %}
+                    <button type="submit" class="btn btn-outline-{% if event.is_completed %}warning{% else %}success{% endif %} btn-block">
+                        <i class="fas fa-{% if event.is_completed %}redo{% else %}check{% endif %}"></i>
+                        {% if event.is_completed %}Reopen Event{% else %}Mark as Completed{% endif %}
                     </button>
                 </form>
                 
-                <a href="{% url 'planner:calendar' %}" class="btn btn-secondary btn-block">View Calendar</a>
-                <a href="{% url 'planner:event_list' %}" class="btn btn-secondary btn-block">All Events</a>
+                <a href="{% url 'planner:calendar' %}" class="btn btn-outline-primary btn-block">
+                    <i class="fas fa-calendar"></i> View Calendar
+                </a>
+                
+                <a href="{% url 'planner:event_list' %}" class="btn btn-outline-primary btn-block">
+                    <i class="fas fa-list"></i> All Events
+                </a>
             </div>
         </div>
         
@@ -168,4 +315,33 @@
         </div>
     </div>
 </div>
+
+<!-- JavaScript pour les confirmations de suppression -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des confirmations de suppression
+    const deleteTriggers = document.querySelectorAll('.delete-trigger');
+    
+    deleteTriggers.forEach(trigger => {
+        trigger.addEventListener('click', function() {
+            const formId = this.getAttribute('data-form-id');
+            const itemName = this.getAttribute('data-item-name');
+            
+            if (confirm(`Are you sure you want to delete ${itemName}? This action cannot be undone.`)) {
+                document.getElementById(formId).submit();
+            }
+        });
+    });
+    
+    // Confirmation pour "Mark as Worn"
+    const markAsWornBtn = document.querySelector('a[href*="add_wear_history_from_event"]');
+    if (markAsWornBtn) {
+        markAsWornBtn.addEventListener('click', function(e) {
+            if (!confirm('Mark this outfit as worn and add to wear history?')) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
