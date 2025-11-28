@@ -1,3 +1,6 @@
+<!-- [file name]: social/templates/social/_post_card.html -->
+{% load custom_filters %}  <!-- ⚠️ AJOUTER CETTE LIGNE -->
+
 <div class="post-card content-section">
     <div class="post-header">
         <a href="{% url 'social:profile' post.user.id %}" class="post-user">
@@ -9,16 +12,26 @@
         </a>
     </div>
     
+    <!-- SECTION GRILLE DES IMAGES -->
     <a href="{% url 'social:post_detail' post.id %}" class="post-outfit-link">
         <div class="post-outfit-grid">
             {% for item in post.outfit.items.all %}
-                <div class="post-outfit-item">
-                    {% if item.image %}
-                        <img src="{{ item.image.url }}" alt="{{ item.name }}">
-                    {% else %}
-                        <div class="item-placeholder"></div>
-                    {% endif %}
-                </div>
+            <div class="post-outfit-item" style="position: relative;">
+                {% if post.enhanced_images and item.id|stringformat:"s" in post.enhanced_images %}
+                    <!-- Afficher l'image améliorée par AI -->
+                    <img src="/media/{{ post.enhanced_images|get_item:item.id|stringformat:'s' }}" 
+                         alt="{{ item.name }}" 
+                         style="border: 2px solid #ff4081;">
+                    <div style="position: absolute; top: 5px; right: 5px; background: #ff4081; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: bold;">
+                        AI 🎨
+                    </div>
+                {% elif item.image %}
+                    <!-- Afficher l'image originale -->
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                {% else %}
+                    <div class="item-placeholder">No Image</div>
+                {% endif %}
+            </div>
             {% endfor %}
         </div>
     </a>
@@ -55,16 +68,18 @@
         {% endfor %}
     </div>
     {% endif %}
-     {% if post.user == request.user %}
-        <div class="post-owner-actions" style="margin-top: 15px; display: flex; gap: 10px;">
-             <a href="{% url 'social:edit_post' post.id %}" class="btn btn-secondary btn-sm">✏️ Edit Post</a>
-             <form method="post" action="{% url 'social:delete_post' post.id %}" style="display: inline;">
-                 {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this post?')">🗑️ Delete Post</button>
-             </form>
-         </div>
-      {% endif %}
+    
     <a href="{% url 'outfits:outfit_detail' post.outfit.id %}" class="post-outfit-name">
         View outfit: {{ post.outfit.name }}
     </a>
+
+    {% if post.user == request.user %}
+        <div class="post-owner-actions" style="margin-top: 15px; display: flex; gap: 10px;">
+            <a href="{% url 'social:edit_post' post.id %}" class="btn btn-secondary btn-sm">✏️ Edit Post</a>
+            <form method="post" action="{% url 'social:delete_post' post.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this post?')">🗑️ Delete Post</button>
+            </form>
+        </div>
+    {% endif %}
 </div>

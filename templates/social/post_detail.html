@@ -1,10 +1,33 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% load custom_filters %} 
 {% block title %}{{ post.outfit.name }} - Tailora{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/social.css' %}">
+<style>
+    .ai-enhanced-image {
+        border: 3px solid #ff4081;
+        box-shadow: 0 0 10px rgba(255, 64, 129, 0.3);
+    }
+    
+    .ai-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #ff4081;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: bold;
+        z-index: 10;
+    }
+    
+    .outfit-item-card {
+        position: relative;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -35,10 +58,17 @@
                 <div class="outfit-items-grid">
                     {% for item in post.outfit.items.all %}
                     <div class="outfit-item-card">
-                        {% if item.image %}
-                        <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                        {% if post.enhanced_images and item.id|stringformat:"s" in post.enhanced_images %}
+                            <!-- Image améliorée par AI -->
+                            <img src="/media/{{ post.enhanced_images|get_item:item.id|stringformat:'s' }}" 
+                                 alt="{{ item.name }}" 
+                                 class="ai-enhanced-image">
+                            <div class="ai-badge">AI 🎨</div>
+                        {% elif item.image %}
+                            <!-- Image originale -->
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}">
                         {% else %}
-                        <div class="item-placeholder"></div>
+                            <div class="item-placeholder"></div>
                         {% endif %}
                         <div class="item-info">
                             <p class="item-name">{{ item.name }}</p>
@@ -52,7 +82,7 @@
             <div class="post-actions">
                 <form method="post" action="{% url 'social:toggle_like' post.id %}" class="like-form">
                     {% csrf_token %}
-                    <button type="submit" class="action-btn {% if is_liked %}liked{% endif %}">
+                    <button type="submit" class="action-btn {% if post.is_liked %}liked{% endif %}">
                         <span class="action-icon">❤️</span>
                         <span class="action-count">{{ post.likes_count }}</span>
                     </button>
@@ -63,12 +93,12 @@
                 </div>
                 <form method="post" action="{% url 'social:toggle_save' post.id %}" class="save-form">
                     {% csrf_token %}
-                    <button type="submit" class="action-btn {% if is_saved %}saved{% endif %}">
+                    <button type="submit" class="action-btn {% if post.is_saved %}saved{% endif %}">
                         <span class="action-icon">🔖</span>
+                        <span class="action-count">{{ post.saves_count }}</span>
                     </button>
                 </form>
             </div>
-
 
             {% if post.caption %}
             <div class="post-caption">
@@ -78,7 +108,9 @@
 
             {% if post.hashtags %}
             <div class="post-hashtags">
-                {{ post.hashtags }}
+                {% for tag in post.hashtags %}
+                    <span class="hashtag">{{ tag }}</span>
+                {% endfor %}
             </div>
             {% endif %}
         </div>

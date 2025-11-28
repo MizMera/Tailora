@@ -53,6 +53,9 @@ class LookbookPost(models.Model):
     # Optional: Link to style challenge
     challenge = models.ForeignKey('StyleChallenge', on_delete=models.SET_NULL, null=True, blank=True, related_name='submissions')
     
+    # NOUVEAU: Stocker les chemins des images améliorées pour ce post
+    enhanced_images = models.JSONField(default=dict, blank=True)
+    
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -44,23 +44,10 @@
 
 <div class="profile-posts">
     {% if posts %}
-        <div class="posts-grid">
+        <!-- REMPLACER LA GRILLE PAR L'AFFICHAGE VERTICAL -->
+        <div class="posts-vertical">
             {% for post in posts %}
-                <a href="{% url 'social:post_detail' post.id %}" class="grid-post-item">
-                    <div class="grid-post-image">
-                        {% with post.outfit.items.all|first as first_item %}
-                            {% if first_item.image %}
-                                <img src="{{ first_item.image.url }}" alt="{{ post.outfit.name }}">
-                            {% else %}
-                                <div class="item-placeholder"></div>
-                            {% endif %}
-                        {% endwith %}
-                    </div>
-                    <div class="grid-post-overlay">
-                        <span>❤️ {{ post.likes_count }}</span>
-                        <span>💬 {{ post.comments_count }}</span>
-                    </div>
-                </a>
+                {% include "social/_post_card.html" with post=post %}
             {% endfor %}
         </div>
     {% else %}

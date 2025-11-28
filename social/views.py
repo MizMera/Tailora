@@ -11,6 +11,9 @@ from .feed_algorithm import FeedAlgorithm, HashtagSystem
 import re 
 from .ai_photo_enhancer import AIPhotoEnhancer
 import os
+from django.core.files.storage import default_storage
+import json
+from django.core.files import File
 
 # [file name]: views.py - AJOUTER CES FONCTIONS À LA FIN
 
@@ -94,99 +97,114 @@ def discover_view(request):
 
 @login_required
 def create_post(request):
-    """Create a new lookbook post"""
+    """Create a new lookbook post - VERSION DEBUG"""
     if request.method == 'POST':
         outfit_id = request.POST.get('outfit')
         caption = request.POST.get('caption', '')
         visibility = request.POST.get('visibility', 'public')
         hashtags = request.POST.get('hashtags', '').split()
-        enhance_photos = request.POST.get('enhance_photos', False)
-        photo_style = request.POST.get('photo_style', 'auto')       
+        enhance_photos = request.POST.get('enhance_photos') == 'true'
+        photo_style = request.POST.get('photo_style', 'auto')
+        
+        print("=" * 50)
+        print("🚀 DÉBUT CREATE_POST - DEBUG AI")
+        print(f"📝 Paramètres: AI={enhance_photos}, Style={photo_style}")
+        
         if not outfit_id:
             messages.error(request, 'Please select an outfit.')
             return redirect('social:create_post')
         
         outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
-        # 🎨 AI PHOTO ENHANCER - Améliorer les images de l'outfit
-        enhanced_images = []
+        print(f"👕 Outfit: {outfit.name} ({outfit.items.count()} items)")
+        
+        enhanced_images = {}
+        
         if enhance_photos:
+            print("🎨 DÉMARRAGE AI...")
             ai_enhancer = AIPhotoEnhancer()
             
-            for item in outfit.items.all():
-                if item.image:
-                    try:
-                        enhanced_image = ai_enhancer.enhance_fashion_photo(
-                            item.image.name, 
-                            style=photo_style
-                        )
-                        if enhanced_image:
-                            # Sauvegarder l'image améliorée
-                            enhanced_path = ai_enhancer.processor.save_image(
-                                enhanced_image, 
-                                directory='enhanced_items'
-                            )
-                            enhanced_images.append({
-                                'item': item,
-                                'original_image': item.image.name,
-                                'enhanced_image': enhanced_path
-                            })
-                    except Exception as e:
-                        print(f"AI Enhancement error for {item.name}: {e}")
-                        # Continuer même si une image échoue       
+            for i, item in enumerate(outfit.items.all()):
+                print(f"\n--- Item {i+1}: {item.name} ---")
+                
+                if not item.image:
+                    print("⏭️  Pas d'image - ignoré")
+                    continue
+                
+                print(f"📁 Image path: {item.image.name}")
+                print(f"📁 Image URL: {item.image.url}")
+                
+                # Vérifier existence fichier
+                if not default_storage.exists(item.image.name):
+                    print("❌ FICHIER INTROUVABLE dans storage!")
+                    continue
+                
+                print("✅ Fichier trouvé dans storage")
+                
+                try:
+                    # Étape 1: Ouvrir l'image
+                    original_img = ai_enhancer.processor.open_image(item.image.name)
+                    if not original_img:
+                        print("❌ Échec ouverture image")
+                        continue
+                    
+                    print(f"✅ Image ouverte: {original_img.size}")
+                    
+                    # Étape 2: Appliquer l'AI
+                    print("🔄 Application de l'AI...")
+                    enhanced_img = ai_enhancer.enhance_fashion_photo(item.image.name, photo_style)
+                    
+                    if not enhanced_img:
+                        print("❌ AI a retourné None")
+                        continue
+                    
+                    print(f"✅ AI réussie - Image améliorée: {enhanced_img.size}")
+                    
+                    # Étape 3: Sauvegarder
+                    print("💾 Sauvegarde...")
+                    saved_path = ai_enhancer.processor.save_image(enhanced_img, 'enhanced_posts')
+                    
+                    if saved_path:
+                        enhanced_images[str(item.id)] = saved_path
+                        print(f"✅ SAUVEGARDE RÉUSSIE: {saved_path}")
+                    else:
+                        print("❌ Échec sauvegarde")
+                        
+                except Exception as e:
+                    print(f"💥 ERREUR: {e}")
+                    import traceback
+                    traceback.print_exc()
+        
+        print(f"\n📊 RÉSULTAT FINAL: {len(enhanced_images)} images améliorées")
+        print(f"📦 enhanced_images: {enhanced_images}")
+        
+        # Créer le post
         post = LookbookPost.objects.create(
             user=request.user,
             outfit=outfit,
             caption=caption,
             visibility=visibility,
-            hashtags=hashtags
+            hashtags=hashtags,
+            enhanced_images=enhanced_images
         )
-        # Stocker les infos d'amélioration dans la session pour affichage
-        if enhanced_images:
-            request.session[f'enhanced_images_{post.id}'] = enhanced_images
         
-        messages.success(request, 'Post created successfully!')
+        print(f"💾 POST CRÉÉ: ID {post.id}")
+        print(f"🔍 enhanced_images dans BD: {post.enhanced_images}")
+        print("=" * 50)
+        
+        # Message utilisateur
+        if enhance_photos:
+            if enhanced_images:
+                messages.success(request, f'Post créé avec AI! 🎨 ({len(enhanced_images)} images améliorées)')
+            else:
+                messages.warning(request, 'Post créé mais AI non appliquée (voir logs)')
+        else:
+            messages.success(request, 'Post created successfully!')
+        
         return redirect('social:post_detail', post_id=post.id)
-
-    # GET: Show form
-    outfits = Outfit.objects.filter(user=request.user).order_by('-created_at')
     
-    context = {
-        'outfits': outfits,
-    }
-    
-    return render(request, 'social/create_post.html', context)
-
-# AJOUTER une vue pour la prévisualisation AI
-@login_required
-def ai_photo_preview(request, outfit_id):
-    """Prévisualisation des améliorations AI sur un outfit"""
-    outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
-    
-    if request.method == 'POST':
-        photo_style = request.POST.get('style', 'auto')
-        
-        ai_enhancer = AIPhotoEnhancer()
-        preview_results = []
-        
-        for item in outfit.items.all()[:3]:  # Limiter à 3 items pour la préview
-            if item.image:
-                try:
-                    enhanced = ai_enhancer.enhance_fashion_photo(item.image.name, photo_style)
-                    if enhanced:
-                        enhanced_path = ai_enhancer.processor.save_image(enhanced, 'previews')
-                        preview_results.append({
-                            'item': item,
-                            'original': item.image.url,
-                            'enhanced': default_storage.url(enhanced_path),
-                            'style': photo_style
-                        })
-                except Exception as e:
-                    print(f"Preview error: {e}")
-        
-        return JsonResponse({'previews': preview_results})
-    
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
-
+    # GET
+    outfits = Outfit.objects.filter(user=request.user)
+    return render(request, 'social/create_post.html', {'outfits': outfits})
 @login_required
 def post_detail(request, post_id):
     """View a single post with comments"""
@@ -555,3 +573,93 @@ class StyleChallengeViewSet(viewsets.ModelViewSet):
     queryset = StyleChallenge.objects.all()
     serializer_class = StyleChallengeSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+@login_required
+def ai_photo_preview(request, outfit_id):
+    """Prévisualisation AI - Version simplifiée"""
+    from outfits.models import Outfit
+    outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            photo_style = data.get('style', 'auto')
+            
+            print(f"🔍 AI Preview demandé - Outfit: {outfit.name}, Style: {photo_style}")
+            
+            ai_enhancer = AIPhotoEnhancer()
+            preview_results = []
+            items_with_images = [item for item in outfit.items.all() if item.image]
+            print(f"📸 Items avec images: {len(items_with_images)}")
+            for item in outfit.items.all()[:8]:  # Limiter à 2 items
+                if item.image:
+                    print(f"📸 Traitement de: {item.name}")
+                    
+                    try:
+                        enhanced = ai_enhancer.enhance_fashion_photo(item.image.name, photo_style)
+                        if enhanced:
+                            enhanced_path = ai_enhancer.processor.save_image(enhanced, 'previews')
+                            preview_results.append({
+                                'item': {'name': item.name, 'id': str(item.id)},
+                                'original': item.image.url,
+                                'enhanced': default_storage.url(enhanced_path),
+                                'style': photo_style
+                            })
+                            print(f"✅ Succès: {item.name}")
+                        else:
+                            print(f"❌ Échec amélioration: {item.name}")
+                    except Exception as e:
+                        print(f"❌ Erreur traitement {item.name}: {e}")
+            
+            print(f"📊 Résultat: {len(preview_results)} images améliorées")
+            return JsonResponse({'previews': preview_results})
+            
+        except Exception as e:
+            print(f"❌ Erreur générale AI Preview: {e}")
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+@login_required
+def debug_ai(request):
+    """Page de debug pour l'AI"""
+    outfit = Outfit.objects.filter(user=request.user).first()
+    debug_info = {}
+    
+    if outfit:
+        debug_info['outfit'] = {
+            'name': outfit.name,
+            'item_count': outfit.items.count(),
+            'items': []
+        }
+        
+        ai_enhancer = AIPhotoEnhancer()
+        
+        for item in outfit.items.all()[:2]:  # Test avec 2 items max
+            item_info = {
+                'name': item.name,
+                'has_image': bool(item.image),
+                'image_path': item.image.name if item.image else None,
+                'image_exists': False,
+                'ai_works': False,
+                'error': None
+            }
+            
+            if item.image:
+                # Vérifier si l'image existe dans le storage
+                item_info['image_exists'] = default_storage.exists(item.image.name)
+                
+                if item_info['image_exists']:
+                    try:
+                        # Tester l'AI
+                        enhanced = ai_enhancer.enhance_fashion_photo(item.image.name, 'vibrant')
+                        item_info['ai_works'] = bool(enhanced)
+                        if enhanced:
+                            # Tester la sauvegarde
+                            saved_path = ai_enhancer.processor.save_image(enhanced, 'debug_ai')
+                            item_info['saved_path'] = saved_path
+                    except Exception as e:
+                        item_info['error'] = str(e)
+            
+            debug_info['outfit']['items'].append(item_info)
+    
+    return JsonResponse(debug_info)
