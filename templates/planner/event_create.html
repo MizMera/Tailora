@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Event - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/planner.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Create New Event</h1>
+        <p class="page-subtitle">Plan an upcoming occasion</p>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="content-section" style="max-width: 800px; margin: 0 auto;">
+    <form method="post" class="event-form">
+        {% csrf_token %}
+        
+        <div class="form-section">
+            <h3 class="section-title">EVENT DETAILS</h3>
+            
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="title" class="form-label">Event Title *</label>
+                    <input type="text" id="title" name="title" class="input-control" required placeholder="e.g., Business Meeting, Friend's Wedding">
+                </div>
+                
+                <div class="form-group">
+                    <label for="date" class="form-label">Date *</label>
+                    <input type="date" id="date" name="date" class="input-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="time" class="form-label">Time</label>
+                    <input type="time" id="time" name="time" class="input-control">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="occasion_type" class="form-label">Occasion Type *</label>
+                    <select id="occasion_type" name="occasion_type" class="input-control" required>
+                        {% for value, label in occasion_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="location" class="form-label">Location</label>
+                    <input type="text" id="location" name="location" class="input-control" placeholder="e.g., Office, Restaurant Name, City">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="notes" class="form-label">Notes</label>
+                    <textarea id="notes" name="notes" class="input-control" rows="3" placeholder="Any additional details about the event..."></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3 class="section-title">OUTFIT PLANNING</h3>
+            
+            <div class="form-group">
+                <label for="outfit" class="form-label">Assign Outfit (Optional)</label>
+                <select id="outfit" name="outfit" class="input-control">
+                    <option value="">Select an outfit...</option>
+                    {% for outfit in outfits %}
+                        <option value="{{ outfit.id }}">{{ outfit.name }} ({{ outfit.get_occasion_display }})</option>
+                    {% endfor %}
+                </select>
+                <p class="form-help">You can assign or change the outfit later</p>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create Event</button>
+            <a href="{% url 'planner:calendar' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

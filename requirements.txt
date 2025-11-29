@@ -1,0 +1,40 @@
+# Core Django
+Django==5.0
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+
+# Authentication & Security
+djangorestframework-simplejwt==5.3.1
+django-allauth==0.57.0
+
+# Database
+psycopg2-binary==2.9.9
+
+# Image Processing
+Pillow==10.1.0
+django-imagekit==5.0.0
+
+# API Documentation
+drf-yasg==1.21.7
+
+# Environment Variables
+python-decouple==3.8
+
+# Weather API
+requests==2.31.0
+
+# AI/ML for Recommendations
+scikit-learn==1.3.2
+numpy==1.26.2
+
+# Celery for async tasks
+celery==5.3.4
+redis==5.0.1
+
+# Testing
+pytest==7.4.3
+pytest-django==4.7.0
+
+# Optional: OpenAI-compatible client for Qwen VL integration
+openai>=1.51.0
+python-dotenv==1.0.1

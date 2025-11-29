@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calendar - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/planner.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Calendar & Events</h1>
+        <p class="page-subtitle">Plan your outfits for upcoming occasions</p>
+    </div>
+    <a href="{% url 'planner:event_create' %}" class="btn btn-primary">
+        <span>+ New Event</span>
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="planner-layout">
+    <!-- Calendar -->
+    <div class="calendar-section content-section">
+        <div class="calendar-header">
+            <h2 class="section-title">{{ month_name }} {{ year }}</h2>
+            <div class="calendar-nav">
+                <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-secondary btn-sm">← Prev</a>
+                <a href="?year={{ today.year }}&month={{ today.month }}" class="btn btn-secondary btn-sm">Today</a>
+                <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-secondary btn-sm">Next →</a>
+            </div>
+        </div>
+
+        <div class="calendar-grid">
+            <!-- Weekday headers -->
+            {% for day in weekday_names %}
+                <div class="calendar-weekday">{{ day }}</div>
+            {% endfor %}
+
+            <!-- Calendar days -->
+            {% for week in month_calendar %}
+                {% for day in week %}
+                    {% if day == 0 %}
+                        <div class="calendar-day empty"></div>
+                    {% else %}
+                        <div class="calendar-day {% if day == today.day and month == today.month and year == today.year %}today{% endif %}">
+                            <span class="day-number">{{ day }}</span>
+                            {% if day in events_by_date %}
+                                <div class="day-events">
+                                    {% for event in events_by_date|dictsort:day %}
+                                        <a href="{% url 'planner:event_detail' event.id %}" class="event-dot" title="{{ event.title }}">
+                                            <span class="event-indicator {{ event.occasion_type }}"></span>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Upcoming Events Sidebar -->
+    <div class="sidebar-section">
+        <div class="content-section">
+            <h3 class="section-title">UPCOMING EVENTS</h3>
+            {% if upcoming_events %}
+                <div class="upcoming-list">
+                    {% for event in upcoming_events %}
+                        <a href="{% url 'planner:event_detail' event.id %}" class="upcoming-item">
+                            <div class="event-date">
+                                <span class="date-day">{{ event.date.day }}</span>
+                                <span class="date-month">{{ event.date|date:"M" }}</span>
+                            </div>
+                            <div class="event-info">
+                                <div class="event-title">{{ event.title }}</div>
+                                {% if event.time %}
+                                    <div class="event-time">{{ event.time|date:"g:i A" }}</div>
+                                {% endif %}
+                                {% if event.outfit %}
+                                    <div class="event-outfit">✓ Outfit planned</div>
+                                {% else %}
+                                    <div class="event-no-outfit">No outfit yet</div>
+                                {% endif %}
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">No upcoming events in the next 7 days</p>
+            {% endif %}
+
+            <div class="sidebar-actions">
+                <a href="{% url 'planner:event_list' %}" class="btn btn-secondary btn-block">View All Events</a>
+                <a href="{% url 'planner:event_stats' %}" class="btn btn-secondary btn-block">View Statistics</a>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="content-section">
+            <h4 class="section-title">EVENT TYPES</h4>
+            <div class="event-legend">
+                <div class="legend-item"><span class="legend-dot work"></span> Work</div>
+                <div class="legend-item"><span class="legend-dot casual"></span> Casual</div>
+                <div class="legend-item"><span class="legend-dot formal"></span> Formal</div>
+                <div class="legend-item"><span class="legend-dot party"></span> Party</div>
+                <div class="legend-item"><span class="legend-dot date"></span> Date</div>
+                <div class="legend-item"><span class="legend-dot sports"></span> Sports</div>
+                <div class="legend-item"><span class="legend-dot travel"></span> Travel</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
