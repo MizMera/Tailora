@@ -24,6 +24,19 @@ body {
     padding: 0;
 }
 
+/* Main Container - White Box */
+.tailora-container {
+    width: 100%;
+    max-width: 950px;
+    background: #ffffff;
+    border-radius: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
 /* Header - Tailora Logo + Navigation */
 .tailora-header {
     background: #ffffff;
@@ -128,11 +141,11 @@ body {
 }
 
 /* Section spacing */
-.content-section+.content-section {
+.content-section + .content-section {
     margin-top: 24px;
 }
 
-.filter-section+.content-section {
+.filter-section + .content-section {
     margin-top: 24px;
 }
 
@@ -259,7 +272,6 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -277,8 +289,7 @@ body {
     content: '';
     position: absolute;
     inset: 0;
-    background: #f4e9cf;
-    /* same as content background for a clean wipe */
+    background: #f4e9cf; /* same as content background for a clean wipe */
     transform: translateX(0%);
     animation: tailoraWipe 650ms cubic-bezier(0.4, 0.0, 0.2, 1) both;
     pointer-events: none;
@@ -306,45 +317,23 @@ body {
 }
 
 @keyframes tailoraWipe {
-    from {
-        transform: translateX(0%);
-    }
-
-    to {
-        transform: translateX(100%);
-    }
+    from { transform: translateX(0%); }
+    to { transform: translateX(100%); }
 }
 
 @keyframes riseIn {
-    from {
-        transform: translateY(12px);
-    }
-
-    to {
-        transform: translateY(0);
-    }
+    from { transform: translateY(12px); }
+    to { transform: translateY(0); }
 }
 
 @keyframes logoPop {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.92);
-    }
-
-    35% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.0);
-    }
-
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(1.06);
-    }
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+    35% { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.06); }
 }
 
 /* Accessibility: Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
-
     .page-reveal::after,
     .page-reveal::before,
     .page-reveal .tailora-header,

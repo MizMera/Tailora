@@ -8,52 +8,56 @@
 {% endblock %}
 
 {% block content %}
-<div class="profile-header content-section">
-    <div class="profile-info">
-        <div class="profile-avatar-large">{{ profile_user.first_name|slice:":1"|upper }}</div>
-        <div class="profile-meta">
-            <h1 class="profile-name">{{ profile_user.get_full_name }}</h1>
-            <p class="profile-email">@{{ profile_user.email|split:"@"|first }}</p>
-            
-            <div class="profile-stats">
-                <div class="profile-stat">
-                    <span class="stat-value">{{ posts_count }}</span>
-                    <span class="stat-label">Posts</span>
-                </div>
-                <a href="{% url 'social:followers_list' profile_user.id %}" class="profile-stat">
-                    <span class="stat-value">{{ followers_count }}</span>
-                    <span class="stat-label">Followers</span>
-                </a>
-                <a href="{% url 'social:following_list' profile_user.id %}" class="profile-stat">
-                    <span class="stat-value">{{ following_count }}</span>
-                    <span class="stat-label">Following</span>
-                </a>
-            </div>
-            
-            {% if not is_own_profile %}
-            <form method="post" action="{% url 'social:toggle_follow' profile_user.id %}" style="margin-top: 20px;">
-                {% csrf_token %}
-                <button type="submit" class="btn {% if is_following %}btn-secondary{% else %}btn-primary{% endif %}">
-                    {% if is_following %}Unfollow{% else %}Follow{% endif %}
-                </button>
-            </form>
-            {% endif %}
-        </div>
-    </div>
-</div>
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div class="content-section">
+        <div class="profile-header">
+            <div class="profile-info">
+                <div class="profile-avatar-large">{{ profile_user.first_name|slice:":1"|upper }}</div>
+                <div class="profile-meta">
+                    <h1 class="profile-name">{{ profile_user.get_full_name }}</h1>
+                    <p class="profile-email">@{{ username }}</p>
 
-<div class="profile-posts">
-    {% if posts %}
-        <div class="posts-grid">
-            {% for post in posts %}
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <span class="stat-value">{{ posts_count }}</span>
+                            <span class="stat-label">Posts</span>
+                        </div>
+                        <a href="{% url 'social:followers_list' profile_user.id %}" class="profile-stat">
+                            <span class="stat-value">{{ followers_count }}</span>
+                            <span class="stat-label">Followers</span>
+                        </a>
+                        <a href="{% url 'social:following_list' profile_user.id %}" class="profile-stat">
+                            <span class="stat-value">{{ following_count }}</span>
+                            <span class="stat-label">Following</span>
+                        </a>
+                    </div>
+
+                    {% if not is_own_profile %}
+                    <form method="post" action="{% url 'social:toggle_follow' profile_user.id %}"
+                        style="margin-top: 20px;">
+                        {% csrf_token %}
+                        <button type="submit"
+                            class="btn {% if is_following %}btn-secondary{% else %}btn-primary{% endif %}">
+                            {% if is_following %}Unfollow{% else %}Follow{% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-posts">
+            {% if posts %}
+            <div class="posts-grid">
+                {% for post in posts %}
                 <a href="{% url 'social:post_detail' post.id %}" class="grid-post-item">
                     <div class="grid-post-image">
                         {% with post.outfit.items.all|first as first_item %}
-                            {% if first_item.image %}
-                                <img src="{{ first_item.image.url }}" alt="{{ post.outfit.name }}">
-                            {% else %}
-                                <div class="item-placeholder"></div>
-                            {% endif %}
+                        {% if first_item.image %}
+                        <img src="{{ first_item.image.url }}" alt="{{ post.outfit.name }}">
+                        {% else %}
+                        <div class="item-placeholder"></div>
+                        {% endif %}
                         {% endwith %}
                     </div>
                     <div class="grid-post-overlay">
@@ -61,12 +65,14 @@
                         <span>{{ post.comments_count }} comments</span>
                     </div>
                 </a>
-            {% endfor %}
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No posts yet</p>
+            </div>
+            {% endif %}
         </div>
-    {% else %}
-        <div class="empty-state">
-            <p>No posts yet</p>
-        </div>
-    {% endif %}
+    </div>
 </div>
 {% endblock %}

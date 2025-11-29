@@ -20,7 +20,7 @@ class WeatherService:
     BASE_URL = "https://api.openweathermap.org/data/2.5"
     
     def __init__(self):
-        self.api_key = getattr(settings, 'OPENWEATHER_API_KEY', None)
+        self.api_key = getattr(settings, 'WEATHER_API_KEY', None)
         if not self.api_key:
             logger.warning("OpenWeatherMap API key not configured")
     
@@ -250,5 +250,5 @@ class WeatherService:
         return suitable_outfits
 
 
-# Global instance
+# Global instance (needed by planner.views)
 weather_service = WeatherService()

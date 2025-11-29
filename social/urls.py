@@ -1,7 +1,15 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
 app_name = 'social'
+
+# REST API router
+router = DefaultRouter()
+router.register(r'api/posts', views.LookbookPostViewSet, basename='post-api')
+router.register(r'api/comments', views.PostCommentViewSet, basename='comment-api')
+router.register(r'api/follows', views.UserFollowViewSet, basename='follow-api')
+router.register(r'api/challenges', views.StyleChallengeViewSet, basename='challenge-api')
 
 urlpatterns = [
     # Feed
@@ -32,4 +40,7 @@ urlpatterns = [
     # Style challenges
     path('challenges/', views.challenges_list, name='challenges_list'),
     path('challenge/<uuid:challenge_id>/', views.challenge_detail, name='challenge_detail'),
+    
+    # REST API routes
+    path('', include(router.urls)),
 ]

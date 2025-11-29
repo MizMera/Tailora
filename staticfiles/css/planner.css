@@ -81,7 +81,8 @@
 }
 
 .calendar-day.today {
-    background: linear-gradient(135deg, #fffbe6 0%, #fff9d6 100%);
+    background: #fffbe6;
+    /* Solid light yellow */
     box-shadow: inset 0 0 0 2px #2c2c2c;
 }
 
@@ -109,7 +110,8 @@
     display: block;
     height: 8px;
     margin: 2px 0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    box-shadow: none;
+    /* Removed shadow */
     transition: transform 0.2s;
 }
 
@@ -117,14 +119,37 @@
     transform: scaleY(1.2);
 }
 
-.event-indicator.work { background: linear-gradient(90deg, #4a90e2, #5ba3f5); }
-.event-indicator.casual { background: linear-gradient(90deg, #7ed321, #94e945); }
-.event-indicator.formal { background: linear-gradient(90deg, #bd10e0, #d035f3); }
-.event-indicator.party { background: linear-gradient(90deg, #f5a623, #ffb846); }
-.event-indicator.date { background: linear-gradient(90deg, #e94b3c, #ff6b5f); }
-.event-indicator.sports { background: linear-gradient(90deg, #50e3c2, #6ff5d5); }
-.event-indicator.travel { background: linear-gradient(90deg, #9013fe, #a739ff); }
-.event-indicator.other { background: linear-gradient(90deg, #8b8b8b, #a0a0a0); }
+.event-indicator.work {
+    background: #4a90e2;
+}
+
+.event-indicator.casual {
+    background: #7ed321;
+}
+
+.event-indicator.formal {
+    background: #bd10e0;
+}
+
+.event-indicator.party {
+    background: #f5a623;
+}
+
+.event-indicator.date {
+    background: #e94b3c;
+}
+
+.event-indicator.sports {
+    background: #50e3c2;
+}
+
+.event-indicator.travel {
+    background: #9013fe;
+}
+
+.event-indicator.other {
+    background: #8b8b8b;
+}
 
 /* Upcoming Events Sidebar */
 .upcoming-list {
@@ -145,157 +170,9 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.upcoming-item:hover {
-    background: #fff;
-    border-color: #2c2c2c;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
-}
-
-.event-date {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 52px;
-    padding: 10px;
-    background: linear-gradient(135deg, #2c2c2c 0%, #3a3a3a 100%);
-    color: #f4e9cf;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.date-day {
-    font-size: 22px;
-    font-weight: 800;
-    line-height: 1;
-}
-
-.date-month {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-}
-
-.event-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.event-title {
-    font-weight: 700;
-    font-size: 15px;
-    margin-bottom: 2px;
-    color: #2c2c2c;
-    line-height: 1.3;
-}
-
-.event-time {
-    font-size: 13px;
-    color: #666;
-    font-weight: 500;
-}
-
-.event-outfit {
-    font-size: 12px;
-    color: #4a90e2;
-    font-weight: 600;
-}
-
-.event-no-outfit {
-    font-size: 12px;
-    color: #999;
-    font-style: italic;
-}
-
-/* Event Legend */
-.event-legend {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #666;
-}
-
-.legend-dot {
-    width: 18px;
-    height: 18px;
-    
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-    flex-shrink: 0;
-}
-
-.legend-dot.work { background: linear-gradient(135deg, #4a90e2, #5ba3f5); }
-.legend-dot.casual { background: linear-gradient(135deg, #7ed321, #94e945); }
-.legend-dot.formal { background: linear-gradient(135deg, #bd10e0, #d035f3); }
-.legend-dot.party { background: linear-gradient(135deg, #f5a623, #ffb846); }
-.legend-dot.date { background: linear-gradient(135deg, #e94b3c, #ff6b5f); }
-.legend-dot.sports { background: linear-gradient(135deg, #50e3c2, #6ff5d5); }
-.legend-dot.travel { background: linear-gradient(135deg, #9013fe, #a739ff); }
-
-/* Events List */
-.events-list {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.event-card {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-   
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-    transition: all 0.2s;
-}
-
-.event-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
-}
-
-.event-card-header {
-    display: flex;
-    gap: 18px;
-    padding: 22px;
-    border-bottom: 1px solid #f0f0f0;
-    background: linear-gradient(to bottom, #fafafa 0%, #fff 100%);
-}
-
-.event-date-badge {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 68px;
-    padding: 14px;
-    background: linear-gradient(135deg, #2c2c2c 0%, #3a3a3a 100%);
-    color: #f4e9cf;
-    
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-}
-
-.badge-day {
-    font-size: 32px;
-    font-weight: 800;
-    line-height: 1;
-}
-
-.badge-month {
-    font-size: 13px;
-    text-transform: uppercase;
-    margin-top: 6px;
-    letter-spacing: 1px;
-    font-weight: 700;
+margin-top: 6px;
+letter-spacing: 1px;
+font-weight: 700;
 }
 
 .event-main-info {
@@ -317,26 +194,10 @@
 
 .occasion-badge {
     padding: 6px 14px;
-    
+
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.occasion-badge.work { background: linear-gradient(135deg, #4a90e2, #5ba3f5); }
-.occasion-badge.casual { background: linear-gradient(135deg, #7ed321, #94e945); }
-.occasion-badge.formal { background: linear-gradient(135deg, #bd10e0, #d035f3); }
-.occasion-badge.party { background: linear-gradient(135deg, #f5a623, #ffb846); }
-.occasion-badge.date { background: linear-gradient(135deg, #e94b3c, #ff6b5f); }
-.occasion-badge.sports { background: linear-gradient(135deg, #50e3c2, #6ff5d5); }
-.occasion-badge.travel { background: linear-gradient(135deg, #9013fe, #a739ff); }
-.other { background: linear-gradient(135deg, #8b8b8b, #a0a0a0); }
-
-.event-time, .event-location {
-    font-size: 14px;
     color: #666;
     margin: 4px 0;
 }
@@ -373,26 +234,6 @@
     padding: 6px 14px;
     font-size: 11px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.status-badge.completed {
-    background: linear-gradient(135deg, #e6f7e6, #d4f0d4);
-    color: #2d7a2d;
-    border: 1px solid #b8e6b8;
-}
-
-.status-badge.upcoming {
-    background: linear-gradient(135deg, #e6f0ff, #d4e4ff);
-    color: #2d5a9a;
-    border: 1px solid #b8d4ff;
-}
-
-.event-card-actions {
-    padding: 16px 20px;
-    border-top: 1px solid #f0f0f0;
     display: flex;
     gap: 8px;
 }
@@ -626,24 +467,6 @@
 /* Quick Stats */
 .quick-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-    margin: 24px 0;
-}
-
-.stat-box {
-    padding: 24px;
-    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
-    border: 1px solid #e0e0e0;
-  
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-    transition: all 0.2s;
-}
-
-.stat-box:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
 }
 
 .stat-value {
@@ -697,29 +520,12 @@
 .occasion-bar {
     height: 10px;
     background: #f5f5f5;
-  
+
     overflow: hidden;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .occasion-bar-fill {
-    height: 100%;
-    transition: width 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-
-.occasion-bar-fill.work { background: linear-gradient(90deg, #4a90e2, #5ba3f5); }
-.occasion-bar-fill.casual { background: linear-gradient(90deg, #7ed321, #94e945); }
-.occasion-bar-fill.formal { background: linear-gradient(90deg, #bd10e0, #d035f3); }
-.occasion-bar-fill.party { background: linear-gradient(90deg, #f5a623, #ffb846); }
-.occasion-bar-fill.date { background: linear-gradient(90deg, #e94b3c, #ff6b5f); }
-.occasion-bar-fill.sports { background: linear-gradient(90deg, #50e3c2, #6ff5d5); }
-.occasion-bar-fill.travel { background: linear-gradient(90deg, #9013fe, #a739ff); }
-.occasion-bar-fill.other { background: linear-gradient(90deg, #8b8b8b, #a0a0a0); }
-
-.popular-outfits-list,
-.next-events-list {
-    display: flex;
     flex-direction: column;
     gap: 14px;
 }
@@ -766,27 +572,6 @@
 }
 
 .next-event-item:hover {
-    background: #fff;
-    border-color: #2c2c2c;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-.event-date-mini {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 44px;
-    padding: 10px;
-    background: linear-gradient(135deg, #2c2c2c 0%, #3a3a3a 100%);
-    color: #f4e9cf;
-    
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.mini-day {
-    font-size: 18px;
-    font-weight: 800;
     line-height: 1;
 }
 
@@ -815,48 +600,6 @@
 }
 
 .event-mini-occasion {
-    font-size: 12px;
-    color: #666;
-}
-
-/* Monthly Chart */
-.monthly-chart {
-    display: flex;
-    justify-content: space-around;
-    align-items: flex-end;
-    height: 220px;
-    padding: 24px 0;
-    border-bottom: 3px solid #2c2c2c;
-    background: linear-gradient(to top, #fafafa 0%, transparent 100%);
-   
-}
-
-.month-bar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-}
-
-.month-bar-fill {
-    width: 44px;
-    background: linear-gradient(to top, #4a90e2, #5ba3f5);
-  
-    min-height: 4px;
-    transition: all 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
-    box-shadow: 0 -2px 8px rgba(42, 83, 129, 0.3);
-}
-
-.month-bar:hover .month-bar-fill {
-    background: linear-gradient(to top, #2c2c2c, #3a3a3a);
-    box-shadow: 0 -4px 12px rgba(44, 44, 44, 0.4);
-}
-
-.month-label {
-    font-size: 12px;
-    color: #666;
-    font-weight: 700;
     text-transform: uppercase;
 }
 
@@ -889,6 +632,7 @@
 
 /* Responsive */
 @media (max-width: 1200px) {
+
     .planner-layout,
     .event-detail-layout {
         grid-template-columns: 1fr 300px;
@@ -896,28 +640,29 @@
 }
 
 @media (max-width: 1024px) {
+
     .planner-layout,
     .event-detail-layout {
         grid-template-columns: 1fr;
     }
-    
+
     .sidebar-section,
     .event-detail-sidebar {
         order: -1;
     }
-    
+
     .calendar-grid {
         font-size: 14px;
     }
-    
+
     .calendar-day {
         min-height: 90px;
     }
-    
+
     .stats-two-column {
         grid-template-columns: 1fr;
     }
-    
+
     .event-legend {
         grid-template-columns: 1fr;
     }
@@ -927,78 +672,78 @@
     .quick-stats {
         grid-template-columns: 1fr;
     }
-    
+
     .form-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .calendar-header {
         flex-direction: column;
         gap: 16px;
         align-items: flex-start;
     }
-    
+
     .calendar-nav {
         width: 100%;
     }
-    
+
     .calendar-nav .btn {
         flex: 1;
     }
-    
+
     .calendar-weekday {
         font-size: 11px;
         padding: 10px 6px;
     }
-    
+
     .calendar-day {
         min-height: 70px;
         padding: 6px;
     }
-    
+
     .day-number {
         font-size: 14px;
     }
-    
+
     .event-indicator {
         height: 6px;
     }
-    
+
     .suggestions-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .event-card-header {
         flex-direction: column;
         gap: 12px;
     }
-    
+
     .event-date-badge,
     .badge-day {
         align-self: flex-start;
     }
-    
+
     .outfit-items-grid {
         grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
     }
-    
+
     .page-header {
         flex-direction: column;
         gap: 16px;
         align-items: flex-start;
     }
-    
+
     .page-header .btn {
         width: 100%;
     }
-    
+
     .header-actions {
         width: 100%;
         display: flex;
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .header-actions .btn {
         width: 100%;
     }

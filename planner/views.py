@@ -7,11 +7,12 @@ from datetime import datetime, timedelta
 import calendar as cal
 from .models import Event
 from outfits.models import Outfit
+from .weather_service import WeatherService
 
 
 @login_required
 def calendar_view(request):
-    """Display calendar with events"""
+    """Display calendar with events and weather"""
     # Get current month/year or from query params
     today = timezone.now().date()
     year = int(request.GET.get('year', today.year))
@@ -55,6 +56,14 @@ def calendar_view(request):
         date__lte=today + timedelta(days=7)
     ).select_related('outfit').order_by('date', 'time')[:5]
     
+    # Get Weather Data
+    weather_service = WeatherService()
+    # Default location (Tunis) if user doesn't have one - in real app, get from user profile
+    location = "Tunis,TN" 
+    
+    current_weather = weather_service.get_current_weather(location)
+    forecast = weather_service.get_forecast(location)
+    
     context = {
         'year': year,
         'month': month,
@@ -68,6 +77,8 @@ def calendar_view(request):
         'next_year': next_year,
         'upcoming_events': upcoming_events,
         'weekday_names': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        'current_weather': current_weather,
+        'weather_forecast': forecast[:5] if forecast else [], # Next 5 forecast items
     }
     
     return render(request, 'planner/calendar.html', context)

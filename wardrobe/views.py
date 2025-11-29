@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Sum
 from django.core.paginator import Paginator
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -353,6 +353,9 @@ def wardrobe_stats_view(request):
         'most_worn': [],
         'recent_additions': [],
         'wardrobe_limit': user.get_max_wardrobe_items(),
+        'underutilized_items': [],
+        'total_value': 0,
+        'secondhand_percentage': 0,
     }
     
     # Group by category
@@ -362,16 +365,48 @@ def wardrobe_stats_view(request):
             stats['by_category'][item['category__name']] = item['count']
     
     # Group by color
-    color_counts = items.values('color').annotate(count=Count('id'))
+    color_counts = items.values('color').annotate(count=Count('id')).order_by('-count')[:10]
     for item in color_counts:
         stats['by_color'][item['color']] = item['count']
     
-    # Most worn items
-    stats['most_worn'] = list(
-        items.filter(times_worn__gt=0)
-        .order_by('-times_worn')[:5]
-        .values('name', 'times_worn', 'image')
-    )
+    # Calculate total value and second-hand percentage
+    items_with_prices = items.exclude(purchase_price__isnull=True)
+    if items_with_prices.exists():
+        stats['total_value'] = items_with_prices.aggregate(total=Sum('purchase_price'))['total'] or 0
+    
+    secondhand_count = items.filter(is_secondhand=True).count()
+    if stats['total_items'] > 0:
+        stats['secondhand_percentage'] = round((secondhand_count / stats['total_items']) * 100, 1)
+    # Most worn items with cost per wear
+    most_worn_items = items.filter(times_worn__gt=0).order_by('-times_worn')[:5]
+    stats['most_worn'] = []
+    for item in most_worn_items:
+        cost_per_wear = None
+        if item.purchase_price and item.times_worn > 0:
+            cost_per_wear = round(float(item.purchase_price) / item.times_worn, 2)
+        stats['most_worn'].append({
+            'name': item.name,
+            'times_worn': item.times_worn,
+            'image': item.image.url if item.image else None,
+            'cost_per_wear': cost_per_wear,
+        })
+    
+    # Underutilized items (low wear count, purchased more than 30 days ago)
+    from django.utils import timezone
+    from datetime import timedelta
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    underutilized = items.filter(
+        times_worn__lte=2,
+        created_at__lte=thirty_days_ago
+    ).order_by('times_worn', '-created_at')[:5]
+    stats['underutilized_items'] = []
+    for item in underutilized:
+        stats['underutilized_items'].append({
+            'name': item.name,
+            'times_worn': item.times_worn,
+            'image': item.image.url if item.image else None,
+            'days_owned': (timezone.now().date() - item.created_at.date()).days,
+        })
     
     # Recent additions
     stats['recent_additions'] = list(
@@ -571,24 +606,18 @@ def api_analyze_image(request):
         analyzer = get_image_analyzer()
         analysis = analyzer.analyze_image(image_file)
 
-        # Get suggested category based on AI detection
-        suggested_category = CategoryMapper.get_category_for_ai_detection(
-            ai_category=analysis.get('category'),
-            item_type=analysis.get('item_type'),
-            user=request.user
-        )
+        # AUTO-DETECT category using new detector
+        from .category_detector import CategoryDetector
         
-        # Get list of category name suggestions
-        category_suggestions = CategoryMapper.get_suggested_categories(
-            ai_category=analysis.get('category'),
-            item_type=analysis.get('item_type')
-        )
-
+        # Try to detect from item_type or category
+        ai_text = analysis.get('item_type', '') + ' ' + analysis.get('category', '')
+        detected_category = CategoryDetector.detect_category(ai_text, user=request.user)
+        
         response_data = {
             'analysis': analysis,
-            'suggested_category_id': str(suggested_category.id) if suggested_category else None,
-            'suggested_category_name': suggested_category.name if suggested_category else None,
-            'category_suggestions': category_suggestions,
+            'suggested_category_id': str(detected_category.id) if detected_category else None,
+            'suggested_category_name': detected_category.name if detected_category else None,
+            'auto_detected': detected_category is not None,
             'success': True
         }
 

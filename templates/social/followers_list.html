@@ -1,40 +1,50 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ list_type|title }} - Tailora{% endblock %}
+{% block title %}{{ profile_user.get_full_name }}'s {{ list_type|title }} - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/social.css' %}">
+<link rel="stylesheet" href="{% static 'css/social_v2.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header content-section" style="margin-bottom: 40px;">
+    <a href="{% url 'social:profile' profile_user.id %}" class="text-muted"
+        style="text-decoration: none; display: inline-block; margin-bottom: 10px;">
+        ← Back to Profile
+    </a>
     <h1>{{ profile_user.get_full_name }}'s {{ list_type|title }}</h1>
+    <p class="text-muted">{{ users|length }} {{ list_type }}</p>
 </div>
 
-<div class="users-list content-section">
+<div class="users-list-container content-section">
     {% if users %}
+    <div class="users-list">
         {% for user in users %}
         <div class="user-item">
             <a href="{% url 'social:profile' user.id %}" class="user-link">
                 <div class="user-avatar">{{ user.first_name|slice:":1"|upper }}</div>
                 <div class="user-info">
-                    <strong>{{ user.get_full_name }}</strong>
-                    <span class="text-muted">@{{ user.email|split:"@"|first }}</span>
+                    <strong class="user-name">{{ user.get_full_name }}</strong>
+                    <span class="user-handle">{{ user.email }}</span>
                 </div>
             </a>
             {% if user != request.user %}
-            <form method="post" action="{% url 'social:toggle_follow' user.id %}">
+            <form method="post" action="{% url 'social:toggle_follow' user.id %}" class="follow-form">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-sm {% if user.id in following_ids %}btn-secondary{% else %}btn-primary{% endif %}">
+                <button type="submit"
+                    class="btn btn-sm {% if user.id in following_ids %}btn-secondary{% else %}btn-primary{% endif %}">
                     {% if user.id in following_ids %}Unfollow{% else %}Follow{% endif %}
                 </button>
             </form>
             {% endif %}
         </div>
         {% endfor %}
+    </div>
     {% else %}
+    <div class="empty-state">
         <p class="text-muted">No {{ list_type }} yet.</p>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

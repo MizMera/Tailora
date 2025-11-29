@@ -20,9 +20,9 @@
 </div>
 
 {% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+{% endfor %}
 {% endif %}
 
 <div class="planner-layout">
@@ -40,61 +40,96 @@
         <div class="calendar-grid">
             <!-- Weekday headers -->
             {% for day in weekday_names %}
-                <div class="calendar-weekday">{{ day }}</div>
+            <div class="calendar-weekday">{{ day }}</div>
             {% endfor %}
 
             <!-- Calendar days -->
             {% for week in month_calendar %}
-                {% for day in week %}
-                    {% if day == 0 %}
-                        <div class="calendar-day empty"></div>
-                    {% else %}
-                        <div class="calendar-day {% if day == today.day and month == today.month and year == today.year %}today{% endif %}">
-                            <span class="day-number">{{ day }}</span>
-                            {% if day in events_by_date %}
-                                <div class="day-events">
-                                    {% for event in events_by_date|dictsort:day %}
-                                        <a href="{% url 'planner:event_detail' event.id %}" class="event-dot" title="{{ event.title }}">
-                                            <span class="event-indicator {{ event.occasion_type }}"></span>
-                                        </a>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                {% endfor %}
+            {% for day in week %}
+            {% if day == 0 %}
+            <div class="calendar-day empty"></div>
+            {% else %}
+            <div
+                class="calendar-day {% if day == today.day and month == today.month and year == today.year %}today{% endif %}">
+                <span class="day-number">{{ day }}</span>
+                {% if day in events_by_date %}
+                <div class="day-events">
+                    {% for event in events_by_date|dictsort:day %}
+                    <a href="{% url 'planner:event_detail' event.id %}" class="event-dot" title="{{ event.title }}">
+                        <span class="event-indicator {{ event.occasion_type }}"></span>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
             {% endfor %}
         </div>
     </div>
 
     <!-- Upcoming Events Sidebar -->
     <div class="sidebar-section">
+        <!-- Weather Widget -->
+        <div class="content-section" style="margin-bottom: 1.5rem;">
+            <h3 class="section-title">WEATHER FORECAST</h3>
+            {% if current_weather %}
+            <div class="weather-widget">
+                <div class="current-weather">
+                    <div class="weather-main">
+                        <span class="weather-temp">{{ current_weather.temperature }}°C</span>
+                        <span class="weather-desc">{{ current_weather.condition }}</span>
+                    </div>
+                    <div class="weather-details">
+                        <small>Feels like {{ current_weather.feels_like }}°C</small>
+                        <small>Humidity: {{ current_weather.humidity }}%</small>
+                    </div>
+                </div>
+
+                {% if weather_forecast %}
+                <div class="forecast-list" style="margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">
+                    {% for day in weather_forecast %}
+                    <div class="forecast-item"
+                        style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+                        <span>{{ day.date|date:"D" }}</span>
+                        <span>{{ day.condition }}</span>
+                        <strong>{{ day.temperature }}°C</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="empty-state" style="padding: 1rem;">Weather data unavailable</p>
+            {% endif %}
+        </div>
+
         <div class="content-section">
             <h3 class="section-title">UPCOMING EVENTS</h3>
             {% if upcoming_events %}
-                <div class="upcoming-list">
-                    {% for event in upcoming_events %}
-                        <a href="{% url 'planner:event_detail' event.id %}" class="upcoming-item">
-                            <div class="event-date">
-                                <span class="date-day">{{ event.date.day }}</span>
-                                <span class="date-month">{{ event.date|date:"M" }}</span>
-                            </div>
-                            <div class="event-info">
-                                <div class="event-title">{{ event.title }}</div>
-                                {% if event.time %}
-                                    <div class="event-time">{{ event.time|date:"g:i A" }}</div>
-                                {% endif %}
-                                {% if event.outfit %}
-                                    <div class="event-outfit">✓ Outfit planned</div>
-                                {% else %}
-                                    <div class="event-no-outfit">No outfit yet</div>
-                                {% endif %}
-                            </div>
-                        </a>
-                    {% endfor %}
-                </div>
+            <div class="upcoming-list">
+                {% for event in upcoming_events %}
+                <a href="{% url 'planner:event_detail' event.id %}" class="upcoming-item">
+                    <div class="event-date">
+                        <span class="date-day">{{ event.date.day }}</span>
+                        <span class="date-month">{{ event.date|date:"M" }}</span>
+                    </div>
+                    <div class="event-info">
+                        <div class="event-title">{{ event.title }}</div>
+                        {% if event.time %}
+                        <div class="event-time">{{ event.time|date:"g:i A" }}</div>
+                        {% endif %}
+                        {% if event.outfit %}
+                        <div class="event-outfit">Outfit Planned</div>
+                        {% else %}
+                        <div class="event-no-outfit">No outfit yet</div>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
             {% else %}
-                <p class="empty-state">No upcoming events in the next 7 days</p>
+            <p class="empty-state">No upcoming events in the next 7 days</p>
             {% endif %}
 
             <div class="sidebar-actions">

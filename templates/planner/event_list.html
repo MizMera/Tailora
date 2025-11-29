@@ -21,32 +21,33 @@
 </div>
 
 {% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+{% endfor %}
 {% endif %}
 
 <!-- Filters -->
 <div class="filter-section">
     <form method="get" class="filter-form">
         <div class="filter-group">
-            <input type="text" name="search" placeholder="Search events..." value="{{ search_query }}" class="input-control">
-            
+            <input type="text" name="search" placeholder="Search events..." value="{{ search_query }}"
+                class="input-control">
+
             <select name="occasion" class="input-control">
                 <option value="">All Occasions</option>
                 {% for value, label in occasion_choices %}
-                    <option value="{{ value }}" {% if selected_occasion == value %}selected{% endif %}>{{ label }}</option>
+                <option value="{{ value }}" {% if selected_occasion==value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
-            
+
             <select name="status" class="input-control">
                 <option value="">All Status</option>
-                <option value="upcoming" {% if selected_status == 'upcoming' %}selected{% endif %}>Upcoming</option>
-                <option value="past" {% if selected_status == 'past' %}selected{% endif %}>Past</option>
-                <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
-                <option value="no_outfit" {% if selected_status == 'no_outfit' %}selected{% endif %}>No Outfit</option>
+                <option value="upcoming" {% if selected_status=='upcoming' %}selected{% endif %}>Upcoming</option>
+                <option value="past" {% if selected_status=='past' %}selected{% endif %}>Past</option>
+                <option value="completed" {% if selected_status=='completed' %}selected{% endif %}>Completed</option>
+                <option value="no_outfit" {% if selected_status=='no_outfit' %}selected{% endif %}>No Outfit</option>
             </select>
-            
+
             <button type="submit" class="btn btn-primary">Filter</button>
             <a href="{% url 'planner:event_list' %}" class="btn btn-secondary">Clear</a>
         </div>
@@ -72,60 +73,64 @@
 <!-- Events List -->
 <div class="content-section">
     {% if events %}
-        <div class="events-list">
-            {% for event in events %}
-                <div class="event-card">
-                    <div class="event-card-header">
-                        <div class="event-date-badge">
-                            <span class="badge-day">{{ event.date.day }}</span>
-                            <span class="badge-month">{{ event.date|date:"M" }}</span>
-                        </div>
-                        <div class="event-main-info">
-                            <div class="event-title-row">
-                                <h3 class="event-card-title">{{ event.title }}</h3>
-                                <span class="occasion-badge {{ event.occasion_type }}">{{ event.get_occasion_type_display }}</span>
-                            </div>
-                            {% if event.time %}
-                                <p class="event-time">🕒 {{ event.time|date:"g:i A" }}</p>
-                            {% endif %}
-                            {% if event.location %}
-                                <p class="event-location">📍 {{ event.location }}</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="event-card-body">
-                        {% if event.outfit %}
-                            <div class="event-outfit">
-                                <span class="outfit-label">Planned Outfit:</span>
-                                <a href="{% url 'outfits:outfit_detail' event.outfit.id %}" class="outfit-link">{{ event.outfit.name }}</a>
-                            </div>
-                        {% else %}
-                            <div class="event-no-outfit">
-                                <span>No outfit assigned</span>
-                                <a href="{% url 'planner:event_detail' event.id %}" class="btn btn-sm btn-secondary">Assign Outfit</a>
-                            </div>
-                        {% endif %}
-                        
-                        {% if event.is_completed %}
-                            <span class="status-badge completed">✓ Completed</span>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="event-card-actions">
-                        <a href="{% url 'planner:event_detail' event.id %}" class="btn btn-sm btn-secondary">View Details</a>
-                        <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-sm btn-secondary">Edit</a>
-                    </div>
+    <div class="events-list">
+        {% for event in events %}
+        <div class="event-card">
+            <div class="event-card-header">
+                <div class="event-date-badge">
+                    <span class="badge-day">{{ event.date.day }}</span>
+                    <span class="badge-month">{{ event.date|date:"M" }}</span>
                 </div>
-            {% endfor %}
+                <div class="event-main-info">
+                    <div class="event-title-row">
+                        <h3 class="event-card-title">{{ event.title }}</h3>
+                        <span class="occasion-badge {{ event.occasion_type }}">{{ event.get_occasion_type_display
+                            }}</span>
+                    </div>
+                    {% if event.time %}
+                    <p class="event-time">🕒 {{ event.time|date:"g:i A" }}</p>
+                    {% endif %}
+                    {% if event.location %}
+                    <p class="event-location">{{ event.location }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="event-card-body">
+                {% if event.outfit %}
+                <div class="event-outfit">
+                    <span class="outfit-label">Planned Outfit:</span>
+                    <a href="{% url 'outfits:outfit_detail' event.outfit.id %}" class="outfit-link">{{ event.outfit.name
+                        }}</a>
+                </div>
+                {% else %}
+                <div class="event-no-outfit">
+                    <span>No outfit assigned</span>
+                    <a href="{% url 'planner:event_detail' event.id %}" class="btn btn-sm btn-secondary">Assign
+                        Outfit</a>
+                </div>
+                {% endif %}
+
+                {% if event.is_completed %}
+                <span class="status-badge completed">Completed</span>
+                {% endif %}
+            </div>
+
+            <div class="event-card-actions">
+                <a href="{% url 'planner:event_detail' event.id %}" class="btn btn-sm btn-secondary">View Details</a>
+                <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-sm btn-secondary">Edit</a>
+            </div>
         </div>
+        {% endfor %}
+    </div>
     {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">📅</div>
-            <h3>No Events Found</h3>
-            <p>{% if search_query or selected_occasion or selected_status %}Try adjusting your filters{% else %}Create your first event to get started{% endif %}</p>
-            <a href="{% url 'planner:event_create' %}" class="btn btn-primary">Create Event</a>
-        </div>
+    <div class="empty-state">
+        <div class="empty-icon">📅</div>
+        <h3>No Events Found</h3>
+        <p>{% if search_query or selected_occasion or selected_status %}Try adjusting your filters{% else %}Create your
+            first event to get started{% endif %}</p>
+        <a href="{% url 'planner:event_create' %}" class="btn btn-primary">Create Event</a>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

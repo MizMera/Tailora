@@ -190,10 +190,14 @@
 }
 
 .warning-banner {
-    background: #2c2c2c;
-    color: #ffffff;
+    background: #f5f5f5;
+    /* Neutral background */
+    color: #2c2c2c;
     padding: 24px 40px;
     border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .warning-title {
@@ -202,20 +206,22 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
+    color: #2c2c2c;
 }
 
 .warning-text {
     font-family: 'Inter', sans-serif;
     font-size: 14px;
-    color: #e0e0e0;
-    margin-bottom: 16px;
+    color: #757575;
+    margin-bottom: 0;
 }
 
 .warning-btn {
-    background: #ffffff;
-    color: #2c2c2c;
-    padding: 12px 24px;
+    background: #2c2c2c;
+    /* Black button */
+    color: #ffffff;
+    padding: 10px 20px;
     font-family: 'Inter', sans-serif;
     font-size: 12px;
     font-weight: 600;
@@ -230,18 +236,19 @@
 }
 
 .warning-btn:hover {
-    background: #f0f0f0;
+    background: #000000;
+    transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .stats-section {
         border-right: none;
     }
-    
+
     .actions-grid {
         grid-template-columns: 1fr;
     }
@@ -249,7 +256,8 @@
 
 .dashboard-container {
     min-height: 100vh;
-    background: #f4e9cf; /* Figma primary background */
+    background: #f4e9cf;
+    /* Figma primary background */
     font-family: 'Inter', sans-serif;
 }
 
@@ -491,7 +499,7 @@
     transition: all 0.2s;
 }
 
-.color-item input[type="checkbox"]:checked + .color-box {
+.color-item input[type="checkbox"]:checked+.color-box {
     border-color: #7b513b;
     box-shadow: 0 0 0 2px #dad3c2;
 }
@@ -502,16 +510,46 @@
 }
 
 /* Color Classes */
-.color-black { background: #000000; }
-.color-white { background: #FFFFFF; border: 1px solid #ddd; }
-.color-gray { background: #808080; }
-.color-blue { background: #0000FF; }
-.color-red { background: #FF0000; }
-.color-green { background: #008000; }
-.color-yellow { background: #FFFF00; }
-.color-pink { background: #FFC0CB; }
-.color-brown { background: #A52A2A; }
-.color-beige { background: #F5DEB3; }
+.color-black {
+    background: #000000;
+}
+
+.color-white {
+    background: #FFFFFF;
+    border: 1px solid #ddd;
+}
+
+.color-gray {
+    background: #808080;
+}
+
+.color-blue {
+    background: #0000FF;
+}
+
+.color-red {
+    background: #FF0000;
+}
+
+.color-green {
+    background: #008000;
+}
+
+.color-yellow {
+    background: #FFFF00;
+}
+
+.color-pink {
+    background: #FFC0CB;
+}
+
+.color-brown {
+    background: #A52A2A;
+}
+
+.color-beige {
+    background: #F5DEB3;
+}
 
 /* Form Actions */
 .form-actions {
@@ -628,50 +666,50 @@
         text-align: center;
         padding: 20px;
     }
-    
+
     .header-actions {
         flex-direction: column;
         width: 100%;
     }
-    
+
     .header-actions .btn,
     .header-actions .logout-btn {
         width: 100%;
     }
-    
+
     .dashboard-content {
         padding: 20px;
     }
-    
+
     .form-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .checkbox-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .color-grid {
         grid-template-columns: repeat(3, 1fr);
     }
-    
+
     .settings-section {
         padding: 16px;
     }
-    
+
     .page-title {
         font-size: 24px;
     }
-    
+
     .section-title {
         font-size: 18px;
     }
-    
+
     .form-actions {
         flex-direction: column;
         gap: 12px;
     }
-    
+
     .form-actions .btn {
         width: 100%;
     }

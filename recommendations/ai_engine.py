@@ -302,8 +302,8 @@ class OutfitRecommendationEngine:
         # 3. Style Consistency Score (20% weight)
         if self.style_profile and hasattr(self.style_profile, 'preferred_styles') and self.style_profile.preferred_styles:
             # Simple heuristic: items with tags matching any preferred style
-            matching_items = sum(1 for item in items if item.style_tags and 
-                               any(style.lower() in [t.lower() for t in item.style_tags] 
+            matching_items = sum(1 for item in items if item.tags and 
+                               any(style.lower() in [t.lower() for t in item.tags] 
                                    for style in self.style_profile.preferred_styles))
             scores['style_consistency'] = (matching_items / len(items)) * 0.2
         
@@ -417,7 +417,32 @@ class OutfitRecommendationEngine:
                 position=idx
             )
         
-        return outfit
+        try:
+            return outfit
+        except Exception as e:
+            print(f"Error creating outfit: {e}")
+            return None
+    
+    def generate_weather_recommendations(self, date=None, location=None, count=3):
+        """
+        Generate weather-aware outfit recommendations
+        
+        Args:
+            date: Date for weather forecast (default: today)
+            location: Location string (e.g., "Tunis,TN")
+            count: Number of recommendations
+            
+        Returns:
+            List of DailyRecommendation objects
+        """
+        if date is None:
+            date = timezone.now().date()
+        
+        # For now, just call the regular daily recommendations
+        # TODO: Integrate actual weather API data for weather-aware suggestions
+        recommendations = self.generate_daily_recommendations(date=date, count=count)
+        
+        return recommendations
     
     def record_feedback(self, recommendation, status, rating=None, feedback_text=''):
         """

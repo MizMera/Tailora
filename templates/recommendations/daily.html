@@ -1,486 +1,777 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Daily Recommendations - Tailora{% endblock %}
+{% block title %}AI Recommendations - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/outfits.css' %}">
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <style>
-    .recommendations-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem;
+    /* Override: Match Exact Dashboard Design */
+    .rec-container {
+        background: #ffffff;
+        min-height: calc(100vh - 200px);
     }
 
-    .recommendations-header {
-        margin-bottom: 3rem;
-        text-align: center;
+    .rec-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 0;
     }
 
-    .recommendations-header h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        color: var(--text-color);
+    .rec-main {
+        padding: 40px;
+        border-right: 1px solid #e0e0e0;
     }
 
-    .recommendations-header p {
-        font-size: 1.1rem;
-        color: var(--text-secondary);
+    .rec-sidebar {
+        background: #fafafa;
+        padding: 40px;
     }
 
-    .recommendations-section {
-        margin-bottom: 3rem;
-    }
-
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        color: var(--text-color);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .recommendation-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .recommendation-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .recommendation-card.accepted {
-        border: 2px solid #28a745;
-        background: #f0f9f4;
-    }
-
-    .recommendation-card.rejected {
-        opacity: 0.6;
-        border: 2px solid #dc3545;
-    }
-
-    .recommendation-card.worn {
-        border: 2px solid #007bff;
-        background: #f0f7ff;
-    }
-
-    .recommendation-header {
+    /* Weather Banner - Minimal Style */
+    .weather-banner {
+        background: #2c2c2c;
+        color: #ffffff;
+        padding: 24px 40px;
+        margin: -40px -40px 40px -40px;
+        border-bottom: 1px solid #e0e0e0;
         display: flex;
         justify-content: space-between;
-        align-items: start;
-        margin-bottom: 1rem;
+        align-items: center;
     }
 
-    .recommendation-title {
-        font-size: 1.3rem;
+    .weather-temp {
+        font-family: 'Inter', sans-serif;
+        font-size: 48px;
         font-weight: 600;
-        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+
+    .weather-details {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #e0e0e0;
+        margin-top: 8px;
+    }
+
+    /* Section Titles - Match Dashboard */
+    .rec-section-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        color: #252320;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #2c2c2c;
+    }
+
+    /* Outfit Cards - Minimal */
+    .outfit-card {
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+        padding: 32px;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+
+    .outfit-card:hover {
+        background: #f0f0f0;
+    }
+
+    .outfit-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        color: #252320;
+        margin-bottom: 8px;
+    }
+
+    .weather-tag {
+        display: inline-block;
+        padding: 4px 12px;
+        background: #e0e0e0;
+        color: #252320;
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 16px;
     }
 
     .confidence-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
+        float: right;
+        padding: 4px 12px;
+        background: #2c2c2c;
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
         font-weight: 600;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    .confidence-badge.high {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    }
-
-    .confidence-badge.medium {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    }
-
-    .confidence-badge.low {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-    }
-
-    .outfit-preview {
+    /* Items Grid */
+    .items-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 1rem;
-        margin: 1.5rem 0;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin: 24px 0;
     }
 
-    .item-preview {
+    .item-box {
         text-align: center;
     }
 
-    .item-preview img {
+    .item-box img {
         width: 100%;
-        height: 150px;
+        height: 140px;
         object-fit: cover;
-        border-radius: 8px;
-        margin-bottom: 0.5rem;
+        border: 1px solid #d9d9d9;
     }
 
-    .item-preview .item-name {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
+    .item-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #757575;
+        margin-top: 8px;
     }
 
-    .reasoning-section {
-        background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0;
+    /* Reason Box */
+    .reason-box {
+        background: #ffffff;
+        padding: 20px;
+        border-left: 3px solid #2c2c2c;
+        margin: 24px 0;
     }
 
-    .reasoning-section h4 {
-        font-size: 1rem;
+    .reason-box strong {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
         font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: var(--text-color);
+        color: #252320;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
-    .reasoning-section p {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
+    .reason-box p {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #252320;
+        margin: 8px 0 0 0;
         line-height: 1.6;
     }
 
-    .score-breakdown {
+    /* Action Buttons - Match Dashboard Style */
+    .action-btns {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin: 1rem 0;
-    }
-
-    .score-item {
-        text-align: center;
-    }
-
-    .score-label {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        margin-bottom: 0.25rem;
-    }
-
-    .score-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary-color);
-    }
-
-    .recommendation-actions {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1.5rem;
-    }
-
-    .action-btn {
-        flex: 1;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        font-weight: 600;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.2s;
-        border: none;
-        font-size: 1rem;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 24px;
     }
 
     .btn-accept {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        color: white;
+        background: #2c2c2c;
+        color: #ffffff;
+        padding: 12px 24px;
+        border: none;
+        font-family: 'Istok Web', sans-serif;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
     }
 
     .btn-accept:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(17, 153, 142, 0.3);
+        background: #1a1a1a;
+        transform: translateY(-1px);
     }
 
     .btn-reject {
-        background: white;
-        color: #dc3545;
-        border: 2px solid #dc3545;
+        background: #cdcdcd;
+        color: #252320;
+        padding: 12px 24px;
+        border: none;
+        font-family: 'Istok Web', sans-serif;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
     }
 
     .btn-reject:hover {
-        background: #dc3545;
-        color: white;
+        background: #b8b8b8;
     }
 
-    .btn-rate {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+    /* Sidebar Widgets */
+    .widget {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 24px;
+        margin-bottom: 24px;
     }
 
-    .rating-form {
-        margin-top: 1rem;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        display: none;
-    }
-
-    .rating-form.active {
-        display: block;
-    }
-
-    .star-rating {
-        display: flex;
-        gap: 0.5rem;
-        font-size: 2rem;
-        margin: 1rem 0;
-    }
-
-    .star {
-        cursor: pointer;
-        color: #ddd;
-        transition: color 0.2s;
-    }
-
-    .star:hover,
-    .star.active {
-        color: #ffc107;
-    }
-
-    .generate-btn {
-        display: inline-block;
-        padding: 1rem 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 8px;
+    .widget-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
         font-weight: 600;
+        color: #252320;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+    }
+
+    /* Health Score */
+    .health-score {
         text-align: center;
-        text-decoration: none;
-        transition: transform 0.2s;
-        border: none;
-        cursor: pointer;
+        padding: 24px;
+        background: #fafafa;
+        margin-bottom: 20px;
     }
 
-    .generate-btn:hover {
-        transform: scale(1.05);
+    .score-value {
+        font-family: 'Inter', sans-serif;
+        font-size: 48px;
+        font-weight: 600;
+        color: #252320;
+        line-height: 1;
     }
 
+    .score-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 8px;
+    }
+
+    /* Stats */
+    .mini-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin: 16px 0;
+    }
+
+    .mini-stat {
+        text-align: center;
+        padding: 16px;
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+    }
+
+    .mini-stat-value {
+        font-family: 'Inter', sans-serif;
+        font-size: 32px;
+        font-weight: 600;
+        color: #252320;
+    }
+
+    .mini-stat-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+    }
+
+    /* Item List */
+    .item-list {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0 0 0;
+    }
+
+    .item-list li {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #252320;
+    }
+
+    .item-list li:last-child {
+        border-bottom: none;
+    }
+
+    .item-list .count {
+        color: #757575;
+        font-size: 12px;
+    }
+
+    /* Shopping Cards */
+    .shop-card {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .shop-card:hover {
+        border-color: #2c2c2c;
+    }
+
+    .priority-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .priority-5 {
+        background: #2c2c2c;
+        color: #ffffff;
+    }
+
+    .priority-4 {
+        background: #757575;
+        color: #ffffff;
+    }
+
+    .priority-3 {
+        background: #cdcdcd;
+        color: #252320;
+    }
+
+    .priority-2 {
+        background: #e0e0e0;
+        color: #252320;
+    }
+
+    .shop-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        color: #252320;
+        margin-bottom: 8px;
+    }
+
+    .shop-reason {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #757575;
+        line-height: 1.5;
+    }
+
+    /* Empty State */
     .empty-state {
         text-align: center;
-        padding: 4rem 2rem;
+        padding: 64px 32px;
+        background: #fafafa;
+        border: 2px dashed #d9d9d9;
     }
 
     .empty-state h3 {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        color: var(--text-secondary);
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        color: #252320;
+        margin-bottom: 8px;
     }
 
-    .past-recommendations {
-        margin-top: 3rem;
+    .empty-state p {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #757575;
+        margin-bottom: 24px;
     }
 
-    .past-recommendation-item {
-        background: white;
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 0.5rem;
+    @media (max-width: 1024px) {
+        .rec-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rec-main {
+            border-right: none;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+```
+    }
+
+    /* Sidebar Widgets */
+    .widget {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .widget-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #252320;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+    }
+
+    /* Health Score */
+    .health-score {
+        text-align: center;
+        padding: 24px;
+        background: #fafafa;
+        margin-bottom: 20px;
+    }
+
+    .score-value {
+        font-family: 'Inter', sans-serif;
+        font-size: 48px;
+        font-weight: 600;
+        color: #252320;
+        line-height: 1;
+    }
+
+    .score-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 8px;
+    }
+
+    /* Stats */
+    .mini-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin: 16px 0;
+    }
+
+    .mini-stat {
+        text-align: center;
+        padding: 16px;
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+    }
+
+    .mini-stat-value {
+        font-family: 'Inter', sans-serif;
+        font-size: 32px;
+        font-weight: 600;
+        color: #252320;
+    }
+
+    .mini-stat-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+    }
+
+    /* Item List */
+    .item-list {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0 0 0;
+    }
+
+    .item-list li {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #252320;
     }
 
-    .status-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
+    .item-list li:last-child {
+        border-bottom: none;
+    }
+
+    .item-list .count {
+        color: #757575;
+        font-size: 12px;
+    }
+
+    /* Shopping Cards */
+    .shop-card {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .shop-card:hover {
+        border-color: #2c2c2c;
+    }
+
+    .priority-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
         font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
     }
 
-    .status-badge.accepted {
-        background: #d4edda;
-        color: #155724;
+    .priority-5 {
+        background: #2c2c2c;
+        color: #ffffff;
     }
 
-    .status-badge.worn {
-        background: #d1ecf1;
-        color: #0c5460;
+    .priority-4 {
+        background: #757575;
+        color: #ffffff;
+    }
+
+    .priority-3 {
+        background: #cdcdcd;
+        color: #252320;
+    }
+
+    .priority-2 {
+        background: #e0e0e0;
+        color: #252320;
+    }
+
+    .shop-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        color: #252320;
+        margin-bottom: 8px;
+    }
+
+    .shop-reason {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #757575;
+        line-height: 1.5;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 64px 32px;
+        background: #fafafa;
+        border: 2px dashed #d9d9d9;
+    }
+
+    .empty-state h3 {
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        color: #252320;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #757575;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .rec-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rec-main {
+            border-right: none;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .items-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="recommendations-container">
-    <div class="recommendations-header">
-        <h1>Your Daily Outfit Recommendations</h1>
-        <p>AI-powered outfit suggestions based on your wardrobe and preferences</p>
-    </div>
-
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    <div class="recommendations-section">
-        <div class="section-title">
-            <span>✨</span> Today's Recommendations ({{ today }})
-            <form method="post" action="{% url 'recommendations:generate' %}" style="margin-left: auto;">
-                {% csrf_token %}
-                <button type="submit" class="generate-btn">🔄 Generate New</button>
-            </form>
+<!-- Page Header -->
+<div class="page-header">
+    <div class="header-content"
+        style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div>
+            <h1 class="page-title">Daily Recommendations</h1>
+            <p class="page-subtitle">AI-powered outfit suggestions</p>
         </div>
+        <form method="post" action="{% url 'recommendations:generate' %}" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="force" value="true">
+            <button type="submit" class="btn btn-secondary">
+                Regenerate
+            </button>
+        </form>
+    </div>
+</div>
 
-        {% if recommendations %}
-            {% for rec in recommendations %}
-                <div class="recommendation-card {% if rec.status == 'accepted' %}accepted{% elif rec.status == 'rejected' %}rejected{% elif rec.status == 'worn' %}worn{% endif %}">
-                    <div class="recommendation-header">
-                        <div>
-                            <div class="recommendation-title">
-                                {{ rec.outfit.name }}
-                            </div>
-                            <span class="confidence-badge {% if rec.confidence_score >= 0.8 %}high{% elif rec.confidence_score >= 0.6 %}medium{% else %}low{% endif %}">
-                                {{ rec.confidence_score|floatformat:0 }}% Confidence
-                            </span>
-                        </div>
-                        <div>
-                            <span class="status-badge {{ rec.status }}">{{ rec.get_status_display }}</span>
-                        </div>
+<div style="max-width: 1200px; margin: 0 auto;">
+<div class="content-section">
+    <div class="rec-grid">
+        <!-- Main Content -->
+        <div class="rec-main" style="padding: 0; border-right: 1px solid #e0e0e0;">
+            <!-- Weather Banner -->
+            {% if current_weather %}
+            <div class="weather-banner" style="margin: 0 0 40px 0;">
+                <div>
+                    <div
+                        style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                        TUNIS, TUNISIA</div>
+                    <div class="weather-temp">{{ current_weather.temperature }}°C</div>
+                    <div class="weather-details">
+                        {{ current_weather.description|title }} • Feels like {{ current_weather.feels_like }}°C
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div style="padding: 0 40px 40px;">
+                <div class="rec-section-title">Today's Outfits</div>
+
+                {% if recommendations %}
+                {% for rec in recommendations %}
+                <div class="outfit-card">
+                    <div style="clearfix; margin-bottom: 16px;">
+                        <h3 class="outfit-title">{{ rec.outfit.name }}</h3>
+                        <span class="confidence-badge">{{ rec.confidence_score|floatformat:0 }}% Match</span>
                     </div>
 
-                    <!-- Outfit Preview -->
-                    <div class="outfit-preview">
-                        {% for item in rec.outfit.items.all %}
-                            <div class="item-preview">
-                                {% if item.photo %}
-                                    <img src="{{ item.photo.url }}" alt="{{ item.name }}">
-                                {% else %}
-                                    <div style="width: 100%; height: 150px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                        No image
-                                    </div>
-                                {% endif %}
-                                <div class="item-name">{{ item.name }}</div>
-                                <div class="item-name" style="font-size: 0.75rem; color: #999;">{{ item.category.name }}</div>
+                    {% if rec.weather_factor %}
+                    <span class="weather-tag">
+                        {{ rec.weather_factor.temperature }}°C • {{ rec.weather_factor.condition|upper }}
+                    </span>
+                    {% endif %}
+
+                    <!-- Items -->
+                    <div class="items-grid">
+                        {% for item in rec.outfit.items.all|slice:":4" %}
+                        <div class="item-box">
+                            {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                            {% else %}
+                            <div
+                                style="width:100%; height:140px; background:#e0e0e0; border:1px solid #d9d9d9; display:flex; align-items:center; justify-content:center; color:#757575; font-size:12px;">
+                                NO IMAGE
                             </div>
+                            {% endif %}
+                            <div class="item-name">{{ item.name }}</div>
+                        </div>
                         {% endfor %}
                     </div>
 
-                    <!-- Score Breakdown -->
-                    <div class="score-breakdown">
-                        <div class="score-item">
-                            <div class="score-label">Color Harmony</div>
-                            <div class="score-value">{{ rec.color_harmony_score|floatformat:0 }}%</div>
-                        </div>
-                        <div class="score-item">
-                            <div class="score-label">Style Match</div>
-                            <div class="score-value">{{ rec.style_consistency_score|floatformat:0 }}%</div>
-                        </div>
-                        <div class="score-item">
-                            <div class="score-label">Personal Preference</div>
-                            <div class="score-value">{{ rec.personal_preference_score|floatformat:0 }}%</div>
-                        </div>
-                        <div class="score-item">
-                            <div class="score-label">Season Match</div>
-                            <div class="score-value">{{ rec.season_appropriateness_score|floatformat:0 }}%</div>
-                        </div>
+                    <!-- Reason -->
+                    <div class="reason-box">
+                        <strong>Why This Outfit</strong>
+                        <p>{{ rec.reason }}</p>
                     </div>
-
-                    <!-- Reasoning -->
-                    {% if rec.reasoning %}
-                        <div class="reasoning-section">
-                            <h4>Why we recommend this:</h4>
-                            <p>{{ rec.reasoning }}</p>
-                        </div>
-                    {% endif %}
 
                     <!-- Actions -->
                     {% if rec.status == 'pending' %}
-                        <div class="recommendation-actions">
-                            <form method="post" action="{% url 'recommendations:accept' rec.id %}" style="flex: 1;">
-                                {% csrf_token %}
-                                <button type="submit" class="action-btn btn-accept">✓ Accept & Wear</button>
-                            </form>
-                            <form method="post" action="{% url 'recommendations:reject' rec.id %}" style="flex: 1;">
-                                {% csrf_token %}
-                                <button type="submit" class="action-btn btn-reject">✗ Not for me</button>
-                            </form>
-                            <button type="button" class="action-btn btn-rate" onclick="toggleRating({{ rec.id }})">Rate</button>
-                        </div>
-
-                        <div class="rating-form" id="rating-form-{{ rec.id }}">
-                            <form method="post" action="{% url 'recommendations:rate' rec.id %}">
-                                {% csrf_token %}
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Rate this recommendation:</label>
-                                <div class="star-rating" id="stars-{{ rec.id }}">
-                                    <span class="star" data-rating="1" onclick="setRating({{ rec.id }}, 1)">★</span>
-                                    <span class="star" data-rating="2" onclick="setRating({{ rec.id }}, 2)">★</span>
-                                    <span class="star" data-rating="3" onclick="setRating({{ rec.id }}, 3)">★</span>
-                                    <span class="star" data-rating="4" onclick="setRating({{ rec.id }}, 4)">★</span>
-                                    <span class="star" data-rating="5" onclick="setRating({{ rec.id }}, 5)">★</span>
-                                </div>
-                                <input type="hidden" name="rating" id="rating-input-{{ rec.id }}" required>
-                                <textarea name="feedback" placeholder="Optional: Tell us what you think..." style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 1rem;"></textarea>
-                                <button type="submit" class="action-btn btn-accept" style="width: 100%;">Submit Rating</button>
-                            </form>
-                        </div>
+                    <div class="action-btns">
+                        <form method="post" action="{% url 'recommendations:accept' rec.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-accept" style="width: 100%;">Wear Today</button>
+                        </form>
+                        <form method="post" action="{% url 'recommendations:reject' rec.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-reject" style="width: 100%;">Not for Me</button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div
+                        style="text-align: center; padding: 12px; background: #e0e0e0; color: #252320; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                        {{ rec.get_status_display }}
+                    </div>
                     {% endif %}
                 </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-state">
-                <h3>No recommendations yet!</h3>
-                <p>We'll generate personalized outfit recommendations based on your wardrobe.</p>
-                <form method="post" action="{% url 'recommendations:generate' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="generate-btn">Generate My First Recommendations</button>
-                </form>
-            </div>
-        {% endif %}
-    </div>
-
-    {% if past_recommendations %}
-        <div class="past-recommendations">
-            <div class="section-title">
-                Recent Recommendations
-                <a href="{% url 'recommendations:history' %}" style="margin-left: auto; font-size: 0.9rem; color: var(--primary-color);">View All →</a>
-            </div>
-            {% for rec in past_recommendations %}
-                <div class="past-recommendation-item">
-                    <div>
-                        <strong>{{ rec.outfit.name }}</strong>
-                        <span style="color: #999; margin-left: 1rem;">{{ rec.recommendation_date }}</span>
-                    </div>
-                    <span class="status-badge {{ rec.status }}">{{ rec.get_status_display }}</span>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <h3>No Recommendations Available</h3>
+                    <p>Add at least 2 tops and 2 bottoms to your wardrobe</p>
+                    <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">Add Clothes</a>
                 </div>
-            {% endfor %}
+                {% endif %}
+            </div>
         </div>
-    {% endif %}
+
+        <!-- Sidebar -->
+        <div class="rec-sidebar" style="padding: 40px;">
+            <!-- Wardrobe Health -->
+            <div class="widget">
+                <div class="widget-title">Wardrobe Health</div>
+
+                <div class="health-score">
+                    <div class="score-value">{{ wardrobe_analysis.versatility_score }}%</div>
+                    <div class="score-label">{{ wardrobe_analysis.wardrobe_health }}</div>
+                </div>
+
+                <div class="mini-stats">
+                    <div class="mini-stat">
+                        <div class="mini-stat-value">{{ wardrobe_analysis.total_items }}</div>
+                        <div class="mini-stat-label">Items</div>
+                    </div>
+                    <div class="mini-stat">
+                        <div class="mini-stat-value">{{ wardrobe_analysis.category_distribution|length }}</div>
+                        <div class="mini-stat-label">Categories</div>
+                    </div>
+                </div>
+
+                {% if wardrobe_analysis.underutilized_items %}
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e0e0e0;">
+                    <strong
+                        style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">Never
+                        Worn</strong>
+                    <ul class="item-list">
+                        {% for item in wardrobe_analysis.underutilized_items|slice:":3" %}
+                        <li>
+                            <span>{{ item.name }}</span>
+                            <span class="count">0 wears</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Shopping Suggestions -->
+            <div class="widget">
+                <div class="widget-title">Shopping Suggestions</div>
+
+                {% if shopping_suggestions %}
+                {% for sug in shopping_suggestions|slice:":3" %}
+                <div class="shop-card">
+                    <span class="priority-badge priority-{{ sug.priority }}">
+                        Priority {{ sug.priority }}
+                    </span>
+                    <div class="shop-name">{{ sug.suggested_name }}</div>
+                    <div class="shop-reason">{{ sug.reason }}</div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p
+                    style="text-align: center; color: #757575; font-family: 'Inter', sans-serif; font-size: 13px; padding: 24px 0;">
+                    Your wardrobe is well-balanced
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 {% endblock %}
-
-{% block extra_js %}
-<script>
-function toggleRating(recId) {
-    const form = document.getElementById(`rating-form-${recId}`);
-    form.classList.toggle('active');
-}
-
-function setRating(recId, rating) {
-    const input = document.getElementById(`rating-input-${recId}`);
-    const stars = document.querySelectorAll(`#stars-${recId} .star`);
-    
-    input.value = rating;
-    
-    stars.forEach((star, index) => {
-        if (index < rating) {
-            star.classList.add('active');
-        } else {
-            star.classList.remove('active');
-        }
-    });
-}
-</script>
-{% endblock %}
+```
