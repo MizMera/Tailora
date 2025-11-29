@@ -1,7 +1,6 @@
-<!-- [file name]: social/templates/social/_post_card.html -->
-{% load custom_filters %}  <!-- ⚠️ AJOUTER CETTE LIGNE -->
+{% load custom_filters %}
 
-<div class="post-card content-section">
+<div class="post-card content-section" style="position: relative;">
     <div class="post-header">
         <a href="{% url 'social:profile' post.user.id %}" class="post-user">
             <div class="user-avatar">{{ post.user.first_name|slice:":1"|upper }}</div>
@@ -11,6 +10,25 @@
             </div>
         </a>
     </div>
+    
+    <!-- BADGE DU POST - CORRIGÉ -->
+    {% if post.likes_count >= 200 %}
+    <div class="post-badge" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; z-index: 10; border: 2px solid gold;">
+        💎 Iconic
+    </div>
+    {% elif post.likes_count >= 100 %}
+    <div class="post-badge" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; z-index: 10; border: 2px solid silver;">
+        🌟 Star
+    </div>
+    {% elif post.likes_count >= 50 %}
+    <div class="post-badge" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; z-index: 10; border: 2px solid #FF5722;">
+        🔥 Viral
+    </div>
+    {% elif post.likes_count >= 25 %}
+    <div class="post-badge" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; z-index: 10; border: 2px solid #E91E63;">
+        ❤️ Appreciated
+    </div>
+    {% endif %}
     
     <!-- SECTION GRILLE DES IMAGES -->
     <a href="{% url 'social:post_detail' post.id %}" class="post-outfit-link">

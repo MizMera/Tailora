@@ -645,3 +645,78 @@
         gap: 15px;
     }
 }
+/* Badges Styles */
+.badges-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.badge-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid #FFD700;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.badge-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.badge-icon {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.badge-info {
+    flex: 1;
+}
+
+.badge-info strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.badge-info small {
+    color: #666;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.badge-time {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.no-badges {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+}
+
+.no-badges p {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}

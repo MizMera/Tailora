@@ -13,7 +13,8 @@
         <div class="profile-avatar-large">{{ profile_user.first_name|slice:":1"|upper }}</div>
         <div class="profile-meta">
             <h1 class="profile-name">{{ profile_user.get_full_name }}</h1>
-            <p class="profile-email">@{{ profile_user.email|split:"@"|first }}</p>
+            <!-- SOLUTION SIMPLE : Afficher directement l'email ou un texte fixe -->
+            <p class="profile-email">Fashion Enthusiast</p>
             
             <div class="profile-stats">
                 <div class="profile-stat">
@@ -42,9 +43,9 @@
     </div>
 </div>
 
+
 <div class="profile-posts">
     {% if posts %}
-        <!-- REMPLACER LA GRILLE PAR L'AFFICHAGE VERTICAL -->
         <div class="posts-vertical">
             {% for post in posts %}
                 {% include "social/_post_card.html" with post=post %}

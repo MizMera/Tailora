@@ -14,6 +14,7 @@ import os
 from django.core.files.storage import default_storage
 import json
 from django.core.files import File
+from .utils.badge_checker import BadgeChecker
 
 # [file name]: views.py - AJOUTER CES FONCTIONS À LA FIN
 
@@ -190,7 +191,11 @@ def create_post(request):
         print(f"💾 POST CRÉÉ: ID {post.id}")
         print(f"🔍 enhanced_images dans BD: {post.enhanced_images}")
         print("=" * 50)
-        
+            # Vérifier les badges
+        new_badges = check_and_award_badges(request.user)
+        if new_badges:
+            badges_names = ", ".join([badge.name for badge in new_badges])
+            messages.info(request, f'🏆 Nouveau badge débloqué: {badges_names}')
         # Message utilisateur
         if enhance_photos:
             if enhanced_images:
@@ -663,3 +668,9 @@ def debug_ai(request):
             debug_info['outfit']['items'].append(item_info)
     
     return JsonResponse(debug_info)
+# Ajoutez cette fonction utilitaire
+def check_and_award_badges(user):
+    """Vérifie et attribue les badges pour un utilisateur"""
+    checker = BadgeChecker(user)
+    new_badges = checker.check_all_badges()
+    return new_badges
