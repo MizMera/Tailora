@@ -4,85 +4,43 @@
 {% block title %}My Wardrobe - Tailora{% endblock %}
 
 {% block extra_css %}
-<!-- We add the CSS directly here to ensure the grid works immediately -->
+<link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
 <style>
-    /* 1. THE GRID LAYOUT FIX */
+    /* DIRECT CSS FIX TO ENSURE GRID WORKS */
     .wardrobe-grid {
         display: grid;
-        /* This creates columns that auto-fit. minmax(240px, 1fr) means items won't get smaller than 240px */
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
         gap: 24px;
         margin-top: 24px;
     }
 
-    /* 2. ITEM CARD STYLING */
     .wardrobe-item {
         background: #fff;
         border: 1px solid #e0e0e0;
-        border-radius: 8px; /* Optional: Rounded corners */
         overflow: hidden;
-        transition: transform 0.2s, box-shadow 0.2s;
         position: relative;
         display: flex;
         flex-direction: column;
     }
 
-    .wardrobe-item:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    /* 3. IMAGE SIZING FIX */
+    /* Fixed Aspect Ratio for Images */
     .item-image {
         position: relative;
         width: 100%;
-        padding-top: 133%; /* Creates a 3:4 Aspect Ratio (standard for fashion) */
-        background-color: #f5f5f5;
+        padding-top: 133%; /* 3:4 Aspect Ratio */
+        background: #f5f5f5;
         overflow: hidden;
     }
 
     .item-image img {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover; /* Ensures image covers the area without stretching */
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
     }
 
-    /* Badges */
-    .favorite-badge {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: rgba(255, 255, 255, 0.9);
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #ffc107;
-        font-size: 16px;
-        z-index: 2;
-    }
-
-    .status-badge {
-        position: absolute;
-        bottom: 8px;
-        left: 8px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 4px 8px;
-        font-size: 11px;
-        border-radius: 4px;
-        text-transform: uppercase;
-    }
-
-    /* Info Section */
     .item-info {
         padding: 16px;
-        flex: 1;
     }
 
     .item-name {
@@ -96,29 +54,12 @@
         text-overflow: ellipsis;
     }
 
-    .item-details {
+    .item-details, .item-meta {
         font-size: 13px;
         color: #757575;
-        margin: 0 0 8px 0;
+        margin-bottom: 4px;
     }
 
-    .item-meta {
-        font-size: 12px;
-        color: #9e9e9e;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .color-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        border: 1px solid #ddd;
-        display: inline-block;
-    }
-
-    /* Actions Footer */
     .item-actions {
         padding: 12px;
         border-top: 1px solid #f0f0f0;
@@ -127,18 +68,26 @@
         background: #fafafa;
     }
 
-    .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #757575;
-        padding: 4px;
+    /* Status Badges */
+    .status-badge {
+        position: absolute;
+        bottom: 8px; left: 8px;
+        background: rgba(0,0,0,0.7);
+        color: #fff;
+        padding: 4px 8px;
+        font-size: 11px;
+        text-transform: uppercase;
     }
-    .btn-icon:hover { color: #252320; }
-    .btn-icon.btn-danger:hover { color: #d32f2f; }
-
-    /* Links */
-    .item-link { text-decoration: none; color: inherit; display: block; height: 100%; }
+    
+    .favorite-badge {
+        position: absolute;
+        top: 8px; right: 8px;
+        background: rgba(255,255,255,0.9);
+        width: 24px; height: 24px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%;
+        color: #ffc107;
+    }
 </style>
 {% endblock %}
 
@@ -151,11 +100,18 @@
         <div>
             <h1 class="page-title">Wardrobe Management</h1>
             <p style="font-family: 'Inter', sans-serif; font-size: 16px; color: #757575; margin-top: 8px;">
-                {{ total_items }} / {{ max_items }} items
+                {{ user.wardrobe_items_count|default:"0" }} / {{ user.get_max_wardrobe_items }} items
             </p>
         </div>
         <div style="display: flex; gap: 12px;">
+            {% if user.wardrobe_items_count >= user.get_max_wardrobe_items %}
+            <button class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed;"
+                title="You've reached your limit of {{ user.get_max_wardrobe_items }} items. {% if not user.is_premium_user %}Upgrade to Premium for up to 1000 items!{% endif %}">
+                Add item (Limit Reached)
+            </button>
+            {% else %}
             <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">Add item</a>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -188,7 +144,7 @@
 
         <!-- Filters Grid -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-            <!-- Category Select -->
+            <!-- Category -->
             <select name="category" class="input-control">
                 <option value="">All categories</option>
                 {% for category in categories %}
@@ -198,7 +154,7 @@
                 {% endfor %}
             </select>
 
-            <!-- Color Select -->
+            <!-- Color -->
             <select name="color" class="input-control">
                 <option value="">All colors</option>
                 {% for color in colors %}
@@ -208,7 +164,7 @@
                 {% endfor %}
             </select>
 
-            <!-- Season Select -->
+            <!-- Season -->
             <select name="season" class="input-control">
                 <option value="">All seasons</option>
                 <option value="spring" {% if selected_season == 'spring' %}selected{% endif %}>Spring</option>
@@ -218,7 +174,7 @@
                 <option value="all_seasons" {% if selected_season == 'all_seasons' %}selected{% endif %}>All seasons</option>
             </select>
 
-            <!-- Status Select -->
+            <!-- Status -->
             <select name="status" class="input-control">
                 <option value="">All statuses</option>
                 <option value="available" {% if selected_status == 'available' %}selected{% endif %}>Available</option>
@@ -228,7 +184,7 @@
                 <option value="repair" {% if selected_status == 'repair' %}selected{% endif %}>In repair</option>
             </select>
 
-            <!-- Favorites Checkbox -->
+            <!-- Favorites -->
             <label style="display: flex; align-items: center; gap: 8px; padding: 12px; background: #fafafa; border: 1px solid #d9d9d9; cursor: pointer;">
                 <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %}>
                 <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #252320;">Favorites only</span>
@@ -249,14 +205,13 @@
     </form>
 </div>
 
-<!-- Wardrobe Grid Content -->
+<!-- Wardrobe Grid -->
 {% if items %}
 <div style="background: #ffffff; padding: 40px;">
-    <!-- This div applies the grid CSS defined at the top -->
     <div class="wardrobe-grid">
         {% for item in items %}
         <div class="wardrobe-item">
-            <a href="{% url 'wardrobe_detail' item.id %}" class="item-link">
+            <a href="{% url 'wardrobe_detail' item.id %}" class="item-link" style="text-decoration: none; color: inherit;">
                 <div class="item-image">
                     <img src="{{ item.image.url }}" alt="{{ item.name }}">
                     {% if item.favorite %}
@@ -279,17 +234,17 @@
                         {% if item.brand %} · {{ item.brand }}{% endif %}
                     </p>
                     <p class="item-meta">
-                        <span class="color-dot" style="background-color: {{ item.color_hex|default:'#ccc' }};"></span>
+                        <span class="color-dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color: {{ item.color_hex|default:'#ccc' }}; border:1px solid #ddd;"></span>
                         {{ item.color }}
                         {% if item.times_worn > 0 %} · Worn {{ item.times_worn }}×{% endif %}
                     </p>
                 </div>
             </a>
             <div class="item-actions">
-                <a href="{% url 'wardrobe_toggle_favorite' item.id %}" class="btn-icon" title="Favorite">
+                <a href="{% url 'wardrobe_toggle_favorite' item.id %}" class="btn-icon" title="Favorite" style="color: #555;">
                     {% if item.favorite %}★{% else %}☆{% endif %}
                 </a>
-                <a href="{% url 'wardrobe_edit' item.id %}" class="btn-icon" title="Edit">
+                <a href="{% url 'wardrobe_edit' item.id %}" class="btn-icon" title="Edit" style="color: #555;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke-width="2" />
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-width="2" />
@@ -298,7 +253,7 @@
                 <form id="delete-form-{{ item.id }}" method="post" action="{% url 'wardrobe_delete' item.id %}" style="display: inline;">
                     {% csrf_token %}
                     <button type="button" class="btn-icon btn-danger delete-trigger"
-                        data-form-id="delete-form-{{ item.id }}" data-item-name="{{ item.name }}" title="Delete" aria-label="Delete">
+                        data-form-id="delete-form-{{ item.id }}" data-item-name="{{ item.name }}" title="Delete" aria-label="Delete" style="border:none; background:none; cursor:pointer; color:#d32f2f;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke-width="2" />
                         </svg>
@@ -376,7 +331,7 @@
 {% endif %}
 
 <script>
-    // Updated selector to match the HTML class 'input-control'
+    // Updated selector to target .input-control
     document.querySelectorAll('.input-control, input[name="favorites"]').forEach(element => {
         element.addEventListener('change', function () {
             this.closest('form').submit();

@@ -497,6 +497,16 @@ def api_wardrobe_list(request):
 @permission_classes([IsAuthenticated])
 def api_wardrobe_create(request):
     """API: Create new wardrobe item"""
+    user = request.user
+    current_count = ClothingItem.objects.filter(user=user).count()
+    max_items = user.get_max_wardrobe_items()
+
+    if current_count >= max_items:
+        return Response(
+            {'error': f"You've reached your wardrobe limit of {max_items} items. Upgrade to Premium to add more!"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
     serializer = ClothingItemCreateSerializer(data=request.data, context={'request': request})
     
     if serializer.is_valid():

@@ -54,6 +54,10 @@ class User(AbstractUser):
     # Last activity
     last_active = models.DateTimeField(auto_now=True)
     
+    # Deletion
+    deletion_code = models.CharField(max_length=6, blank=True, null=True)
+    deletion_code_expires_at = models.DateTimeField(blank=True, null=True)
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     
@@ -66,6 +70,16 @@ class User(AbstractUser):
             models.Index(fields=['status']),
             models.Index(fields=['is_verified']),
         ]
+        
+    def generate_deletion_code(self):
+        """
+        Generate a 6-digit deletion code and set an expiration time (15 minutes).
+        """
+        from django.utils import timezone
+        import random
+        self.deletion_code = str(random.randint(100000, 999999))
+        self.deletion_code_expires_at = timezone.now() + timezone.timedelta(minutes=15)
+        self.save()
     
     def __str__(self):
         return self.email

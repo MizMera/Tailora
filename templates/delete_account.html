@@ -1,365 +1,50 @@
+
 {% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Delete Account - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<style>
-    .danger-container {
-        max-width: 700px;
-        margin: 0 auto;
-    }
-
-    .danger-header {
-        text-align: center;
-        padding: 60px 0 40px;
-    }
-
-    .danger-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 24px;
-        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-
-        0%,
-        100% {
-            box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
-        }
-
-        50% {
-            box-shadow: 0 0 0 20px rgba(255, 107, 107, 0);
-        }
-    }
-
-    .danger-title {
-        font-family: 'Inter', sans-serif;
-        font-size: 32px;
-        font-weight: 600;
-        color: #252320;
-        margin-bottom: 12px;
-    }
-
-    .danger-subtitle {
-        font-family: 'Inter', sans-serif;
-        font-size: 16px;
-        color: #757575;
-        line-height: 1.6;
-    }
-
-    .warning-card {
-        background: #fff5f5;
-        border: 2px solid #ff6b6b;
-        padding: 32px;
-        margin-bottom: 32px;
-    }
-
-    .warning-card-title {
-        font-family: 'Inter', sans-serif;
-        font-size: 18px;
-        font-weight: 600;
-        color: #c62828;
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .warning-card-text {
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        color: #721c24;
-        line-height: 1.6;
-        margin-bottom: 20px;
-    }
-
-    .warning-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .warning-list li {
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        color: #721c24;
-        padding: 12px 0;
-        padding-left: 32px;
-        position: relative;
-        border-bottom: 1px solid #f5c6cb;
-    }
-
-    .warning-list li:last-child {
-        border-bottom: none;
-    }
-
-    .warning-list li:before {
-        content: '✕';
-        position: absolute;
-        left: 8px;
-        color: #ff6b6b;
-        font-weight: bold;
-        font-size: 16px;
-    }
-
-    .delete-form {
-        background: #ffffff;
-        border: 1px solid #e0e0e0;
-        padding: 32px;
-        margin-bottom: 24px;
-    }
-
-    .form-section-title {
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        color: #252320;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 24px;
-        padding-bottom: 12px;
-        border-bottom: 2px solid #2c2c2c;
-    }
-
-    .info-box {
-        background: #f0f7ff;
-        border-left: 4px solid #2196F3;
-        padding: 16px;
-        margin-bottom: 24px;
-    }
-
-    .info-box p {
-        font-family: 'Inter', sans-serif;
-        font-size: 13px;
-        color: #1565C0;
-        margin: 0;
-        line-height: 1.6;
-    }
-
-    .form-actions-danger {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-top: 32px;
-    }
-
-    .btn-cancel {
-        background: #cdcdcd;
-        color: #252320;
-        padding: 14px 24px;
-        border: none;
-        font-family: 'Istok Web', sans-serif;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        text-align: center;
-        display: inline-block;
-    }
-
-    .btn-cancel:hover {
-        background: #b8b8b8;
-    }
-
-    .countdown-notice {
-        background: #fff3cd;
-        border: 1px solid #ffc107;
-        padding: 16px;
-        margin-top: 24px;
-        text-align: center;
-        display: none;
-    }
-
-    .countdown-notice p {
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        color: #856404;
-        margin: 0;
-    }
-
-    .countdown-timer {
-        font-size: 24px;
-        font-weight: 700;
-        color: #ff6b6b;
-    }
-</style>
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
 {% endblock %}
+
+{% block container_class %}page-reveal{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <div class="header-content">
-        <h1 class="page-title">Delete Account</h1>
-        <p class="page-subtitle">Permanent account deletion</p>
-    </div>
-</div>
-
-<div class="content-section">
-    <div class="danger-container">
-        <div class="danger-header">
-            <div class="danger-icon">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-            </div>
-            <h2 class="danger-title">We're Sorry to See You Go</h2>
-            <p class="danger-subtitle">
-                Before you proceed, please understand that this action cannot be undone.
-            </p>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 class="page-title">Delete Account</h1>
+            <p class="page-subtitle">Request to permanently delete your account</p>
         </div>
-
-        <div class="warning-card">
-            <div class="warning-card-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
-                    </path>
-                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-                This action is permanent and irreversible
-            </div>
-            <p class="warning-card-text">
-                <strong>All of your data will be permanently deleted</strong>, including but not limited to:
-            </p>
-            <ul class="warning-list">
-                <li>Your complete wardrobe and all clothing items</li>
-                <li>All created outfits and combinations</li>
-                <li>Your style preferences and AI recommendations</li>
-                <li>Calendar events and outfit planning</li>
-                <li>Social posts, comments, and interactions</li>
-                <li>Account settings and personal information</li>
-            </ul>
-        </div>
-
-        {% if messages %}
-        <div style="margin-bottom: 24px;">
-            {% for message in messages %}
-            <div class="{% if message.tags == 'error' %}form-errors{% else %}success-message{% endif %}">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <div class="info-box">
-            <p>
-                <strong>💡 Consider alternatives:</strong> You can temporarily deactivate your account or clear your
-                wardrobe instead of permanently deleting everything. <a href="{% url 'profile_settings' %}"
-                    style="color: #1565C0; text-decoration: underline;">Go to Settings</a>
-            </p>
-        </div>
-
-        <div class="delete-form">
-            <div class="form-section-title">Confirm Account Deletion</div>
-
-            <form method="post" id="deleteForm">
-                {% csrf_token %}
-
-                <div class="input-field">
-                    <label for="password" class="input-label">Confirm Your Password</label>
-                    <input type="password" id="password" name="password" class="input-control" required
-                        autocomplete="current-password" placeholder="Enter your password">
-                    <small class="input-hint">We need to verify it's really you</small>
-                </div>
-
-                <div class="input-field">
-                    <label for="confirmation" class="input-label">
-                        Type "DELETE" to Confirm
-                    </label>
-                    <input type="text" id="confirmation" name="confirmation" class="input-control" required
-                        placeholder="DELETE" autocomplete="off">
-                    <small class="input-hint">This confirms that you understand the consequences</small>
-                </div>
-
-                <div class="form-actions-danger">
-                    <a href="{% url 'profile_settings' %}" class="btn-cancel">
-                        Cancel
-                    </a>
-                    <button type="button" class="btn btn-danger btn-lg delete-trigger" data-form-id="deleteForm"
-                        data-item-name="your account">
-                        Delete My Account
-                    </button>
-                </div>
-            </form>
-
-            <div class="countdown-notice" id="countdownNotice">
-                <p>
-                    Your account will be deleted in <span class="countdown-timer" id="countdown">10</span>
-                    seconds...<br>
-                    <small>Click anywhere or press ESC to cancel</small>
-                </p>
-            </div>
+        <div>
+            <a href="{% url 'profile_settings' %}" class="btn btn-secondary">Back to settings</a>
         </div>
     </div>
 </div>
 
-<script src="{% static 'js/confirm-modal.js' %}"></script>
-<script>
-    // Enhanced form validation
-    document.getElementById('deleteForm').addEventListener('submit', function (e) {
-        const confirmation = document.getElementById('confirmation').value;
+<div class="settings-wrapper">
+    <div class="settings-main">
+        <div class="settings-section">
+            <div class="security-card" style="border-color: #c62828;">
+                <h3 class="security-title" style="color: #c62828;">Danger Zone: Account Deletion</h3>
+                <p>This is a critical action that will permanently delete your account, including all your data, outfits, and wardrobe items. This process is irreversible.</p>
+                <p>To proceed, we will send a verification code to your registered email address. By clicking the button below, you acknowledge that you are initiating this final step.</p>
+                <form method="post" action="{% url 'request_account_deletion' %}" class="mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary" style="background: #c62828; border-color: #c62828;">Request Deletion Code</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-        if (confirmation !== 'DELETE') {
-            e.preventDefault();
-            alert('You must type "DELETE" exactly to confirm deletion.');
-            return false;
-        }
-
-        // Show countdown before actual deletion
-        e.preventDefault();
-        showCountdown();
-    });
-
-    function showCountdown() {
-        const notice = document.getElementById('countdownNotice');
-        const countdownEl = document.getElementById('countdown');
-        let timeLeft = 10;
-
-        notice.style.display = 'block';
-
-        const interval = setInterval(() => {
-            timeLeft--;
-            countdownEl.textContent = timeLeft;
-
-            if (timeLeft <= 0) {
-                clearInterval(interval);
-                document.getElementById('deleteForm').submit();
-            }
-        }, 1000);
-
-        // Allow cancellation
-        const cancelCountdown = () => {
-            clearInterval(interval);
-            notice.style.display = 'none';
-            document.getElementById('confirmation').value = '';
-        };
-
-        document.addEventListener('click', cancelCountdown, { once: true });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                cancelCountdown();
-            }
-        }, { once: true });
-    }
-
-    // Prevent accidental form submission
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-        input.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-            }
-        });
-    });
-</script>
+    <div class="settings-sidebar">
+        <div class="security-card">
+            <h3 class="security-title">Need Help?</h3>
+            <p>If you are having trouble or have any questions, please contact our support team before taking any irreversible actions.</p>
+            <a href="#" class="btn btn-secondary" style="width: 100%; text-align: center;">Contact Support</a>
+        </div>
+    </div>
+</div>
 {% endblock %}
+

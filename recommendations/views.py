@@ -19,6 +19,11 @@ def daily_recommendations_view(request):
     shopping suggestions, and wardrobe analysis
     """
     user = request.user
+
+    if not user.is_premium_user():
+        messages.warning(request, 'You need a Premium account to access AI recommendations.')
+        return redirect('upgrade_account')
+
     today = timezone.now().date()
     
     # Get today's recommendations (weather-aware)
@@ -320,6 +325,7 @@ from .serializers import (
     StyleRuleSerializer
 )
 from .ai_engine import OutfitRecommendationEngine
+from .permissions import IsPremiumUser
 
 
 class RecommendationPagination(PageNumberPagination):
@@ -343,7 +349,7 @@ class RecommendationViewSet(viewsets.ModelViewSet):
     - POST /api/recommendations/{id}/reject/ - Reject recommendation
     - POST /api/recommendations/{id}/rate/ - Rate recommendation
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsPremiumUser]
     serializer_class = DailyRecommendationSerializer
     pagination_class = RecommendationPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]

@@ -62,6 +62,17 @@ def outfit_create_view(request):
     """
     user = request.user
     
+    # Check outfit limit
+    outfit_count = Outfit.objects.filter(user=user).count()
+    max_outfits = user.get_max_outfits()
+    if outfit_count >= max_outfits:
+        messages.warning(
+            request, 
+            f"You have reached your limit of {max_outfits} outfits. "
+            f"Upgrade to Premium to create more."
+        )
+        return redirect('outfits:outfit_gallery')
+
     if request.method == 'POST':
         # Get form data
         name = request.POST.get('name')
@@ -286,6 +297,7 @@ from .serializers import (
     OutfitUpdateSerializer,
     OutfitItemSerializer
 )
+from rest_framework.exceptions import ValidationError
 
 
 class OutfitPagination(PageNumberPagination):
@@ -341,7 +353,15 @@ class OutfitViewSet(viewsets.ModelViewSet):
         return OutfitDetailSerializer
     
     def perform_create(self, serializer):
-        """Automatically associate outfit with current user"""
+        """Automatically associate outfit with current user and check limits"""
+        user = self.request.user
+        outfit_count = Outfit.objects.filter(user=user).count()
+        max_outfits = user.get_max_outfits()
+        if outfit_count >= max_outfits:
+            raise ValidationError(
+                f"You have reached your limit of {max_outfits} outfits. "
+                f"Upgrade to Premium to create more."
+            )
         serializer.save()
     
     def perform_destroy(self, instance):

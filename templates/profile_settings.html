@@ -291,7 +291,16 @@
                         </div>
                         <div class="security-info">
                             <div class="security-label">Role</div>
-                            <div class="security-value">{{ user.get_role_display|default:"User" }}</div>
+                            <div class="security-value">
+                                {% if user.is_premium_user %}
+                                    ⭐ Premium
+                                    {% if user.role != 'premium' and user.premium_until %}
+                                        (Trial)
+                                    {% endif %}
+                                {% else %}
+                                    {{ user.get_role_display|default:"User" }}
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
 
@@ -306,13 +315,43 @@
                         </div>
                     </div>
 
+                    <!-- Subscription Management -->
+                    {% if user.is_premium_user %}
+                        <div class="security-card" style="border-color: #4CAF50;">
+                            <h3 class="security-title" style="color: #4CAF50;">Manage Subscription</h3>
+                            {% if user.role == 'premium' %}
+                                <p>You are a full Premium member. Thank you for your support!</p>
+                                <form method="post" action="{% url 'cancel_subscription' %}" style="margin-top: 16px;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-secondary" style="width: 100%;">Cancel Subscription</button>
+                                </form>
+                            {% elif user.premium_until %}
+                                <p>You are on a Premium trial until <strong>{{ user.premium_until|date:"F d, Y" }}</strong>.</p>
+                                <a href="{% url 'upgrade_account' %}" class="btn btn-primary" style="width: 100%; text-align: center; background: #4CAF50; border-color: #4CAF50; margin-top: 16px;">Upgrade to Full Premium</a>
+                                <form method="post" action="{% url 'cancel_subscription' %}" style="margin-top: 10px;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-secondary" style="width: 100%;">Cancel Trial</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <!-- Upgrade to Premium -->
+                        <div class="security-card" style="border-color: #4CAF50;">
+                            <h3 class="security-title" style="color: #4CAF50;">Upgrade to Premium</h3>
+                            <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin-bottom: 16px;">
+                                Unlock exclusive features by upgrading your account.
+                            </p>
+                            <a href="{% url 'upgrade_account' %}" class="btn btn-primary" style="width: 100%; text-align: center; background: #4CAF50; border-color: #4CAF50;">Upgrade Now</a>
+                        </div>
+                    {% endif %}
+
                     <!-- Danger Zone -->
                     <div class="security-card" style="border-color: #c62828;">
                         <h3 class="security-title" style="color: #c62828;">Danger zone</h3>
                         <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin-bottom: 16px;">
                             Deleting your account is irreversible.
                         </p>
-                        <a href="{% url 'delete_account' %}" class="btn btn-primary" style="width: 100%; text-align: center; background: #c62828; border-color: #c62828;">Delete my account</a>
+                        <a href="{% url 'request_account_deletion' %}" class="btn btn-primary" style="width: 100%; text-align: center; background: #c62828; border-color: #c62828;">Delete my account</a>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,58 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirm Account Deletion - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
+{% block container_class %}page-reveal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Confirm Account Deletion</h1>
+        <p class="page-subtitle">Enter the code sent to your email to finalize deletion</p>
+    </div>
+</div>
+
+<div class="settings-wrapper">
+    <div class="settings-main">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {% if message.tags == 'error' %}message-error{% else %}message-success{% endif %}" style="margin-bottom: 24px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="security-card" style="border-color: #c62828;">
+            <h3 class="security-title" style="color: #c62828;">Enter Deletion Code</h3>
+            <p>An email with a 6-digit deletion code has been sent to your email address. Please enter the code below to permanently delete your account. The code is valid for 15 minutes.</p>
+            
+            <form method="post" action="{% url 'confirm_account_deletion' %}" class="mt-4">
+                {% csrf_token %}
+                <div class="input-field">
+                    <label for="deletion_code" class="input-label">Deletion Code</label>
+                    <input type="text" class="input-control" id="deletion_code" name="deletion_code" required maxlength="6" pattern="\d{6}" title="Enter the 6-digit code.">
+                </div>
+                <div class="form-actions" style="margin-top: 24px;">
+                    <button type="submit" class="btn btn-primary" style="background: #c62828; border-color: #c62828;">Delete My Account Permanently</button>
+                    <a href="{% url 'profile_settings' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="settings-sidebar">
+        <div class="security-card">
+            <h3 class="security-title">Is This a Mistake?</h3>
+            <p>If you did not request to delete your account, you can safely ignore this page. Your account will remain active. For additional security, you may want to change your password.</p>
+            <a href="{% url 'change_password' %}" class="btn btn-secondary" style="width: 100%; text-align: center;">Change Password</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

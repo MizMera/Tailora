@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upgrade to Premium - Tailora{% endblock %}
+
+{% block container_class %}page-reveal{% endblock %}
+
+{% block content %}
+<div class="tailora-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Upgrade to Premium</h1>
+            <p class="page-subtitle">Unlock exclusive features and benefits</p>
+        </div>
+        <div>
+            <a href="{% url 'profile_settings' %}" class="btn btn-secondary">Back to settings</a>
+        </div>
+    </div>
+
+    <div class="settings-wrapper">
+        <div class="settings-main">
+            <div class="settings-section">
+                <h3 class="section-title">Premium Benefits</h3>
+                <ul class="benefit-list">
+                    <li><span class="icon">✓</span> Create unlimited outfits (vs. 20 for free)</li>
+                    <li><span class="icon">✓</span> Access all AI-powered recommendations</li>
+                    <li><span class="icon">✓</span> Upload up to 1000 wardrobe items (vs. 50 for free)</li>
+                    <li><span class="icon">✓</span> Get a special '⭐ Premium' badge on your profile</li>
+                </ul>
+            </div>
+
+            <div class="settings-grid" style="grid-template-columns: 1fr 1fr; gap: 24px;">
+                <!-- 7-Day Free Trial -->
+                <div class="settings-section">
+                    <h3 class="section-title">Try it for Free</h3>
+                    <p>Start a 7-day free trial to experience all the premium features. No credit card required.</p>
+                    <form method="post" action="{% url 'upgrade_account' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="trial">
+                        <button type="submit" class="btn btn-secondary" style="width: 100%;">Start 7-Day Free Trial</button>
+                    </form>
+                </div>
+
+                <!-- Full Premium Upgrade -->
+                <div class="settings-section">
+                    <h3 class="section-title">Go Premium Now</h3>
+                    <p>Get immediate and unlimited access to all premium features.</p>
+                    <form method="post" action="{% url 'upgrade_account' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="upgrade">
+                        
+                        <div class="input-field">
+                            <label for="card_number" class="input-label">Card Number</label>
+                            <input type="text" id="card_number" name="card_number" class="input-control" placeholder="**** **** **** 1234" required>
+                        </div>
+                        <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="input-field">
+                                <label for="expiry_date" class="input-label">Expiry Date</label>
+                                <input type="text" id="expiry_date" name="expiry_date" class="input-control" placeholder="MM/YY" required>
+                            </div>
+                            <div class="input-field">
+                                <label for="cvc" class="input-label">CVC</label>
+                                <input type="text" id="cvc" name="cvc" class="input-control" placeholder="123" required>
+                            </div>
+                        </div>
+                        <div class="form-actions" style="margin-top: 24px;">
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Upgrade & Pay (Simulated)</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

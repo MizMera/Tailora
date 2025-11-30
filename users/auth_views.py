@@ -492,28 +492,131 @@ def change_password_view(request):
 
 
 @login_required
-def delete_account_view(request):
+def request_account_deletion_view(request):
     """
-    Delete user account view
+    Handles the initial request for account deletion by sending a confirmation code.
     """
     if request.method == 'POST':
-        password = request.POST.get('password')
-        confirm = request.POST.get('confirm')
-        
-        if confirm != 'DELETE':
-            messages.error(request, 'Please type "DELETE" to confirm.')
-            return render(request, 'delete_account.html')
-        
-        if not request.user.check_password(password):
-            messages.error(request, 'Incorrect password.')
-            return render(request, 'delete_account.html')
-        
-        # Delete user account
         user = request.user
-        auth_logout(request)
-        user.delete()
-        
-        messages.success(request, 'Your account has been deleted.')
-        return redirect('login')
-    
+        user.generate_deletion_code()
+
+        # Send email with deletion code
+        subject = 'Your Account Deletion Code'
+        message = f"""
+Hello {user.username},
+
+You requested to delete your account. Please use the following 6-digit code to confirm:
+
+{user.deletion_code}
+
+This code will expire in 15 minutes.
+
+If you did not request this, please ignore this email.
+
+Best regards,
+The Tailora Team
+"""
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+            messages.success(request, 'A deletion code has been sent to your email.')
+            return redirect('confirm_account_deletion')
+        except Exception as e:
+            messages.error(request, f'Failed to send deletion email: {e}')
+            return redirect('profile_settings')
+
     return render(request, 'delete_account.html')
+
+
+@login_required
+def confirm_account_deletion_view(request):
+    """
+    Handles the final confirmation of account deletion with a code.
+    """
+    user = request.user
+    if request.method == 'POST':
+        code = request.POST.get('deletion_code')
+        if not code:
+            messages.error(request, 'Please enter the deletion code.')
+            return render(request, 'delete_account_confirm.html')
+
+        if user.deletion_code == code:
+            from django.utils import timezone
+            if user.deletion_code_expires_at > timezone.now():
+                # Correct code and not expired, delete account
+                user_email = user.email  # Save for message
+                auth_logout(request)
+                user.delete()
+                messages.success(request, f'Account for {user_email} has been successfully deleted.')
+                return redirect('login')
+            else:
+                messages.error(request, 'The deletion code has expired. Please request a new one.')
+        else:
+            messages.error(request, 'The deletion code is incorrect.')
+
+    return render(request, 'delete_account_confirm.html')
+
+
+@login_required
+def upgrade_account_view(request):
+    """
+    Handles the user request to upgrade their account to Premium.
+    """
+    user = request.user
+    from django.utils import timezone
+
+    if user.role == 'premium':
+        messages.info(request, 'You are already a full Premium member.')
+        return redirect('profile_settings')
+    
+    if user.premium_until and user.premium_until > timezone.now():
+        messages.info(request, f'You are currently on a Premium trial until {user.premium_until.strftime("%Y-%m-%d")}.')
+        return redirect('profile_settings')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'trial':
+            user.premium_until = timezone.now() + timezone.timedelta(days=7)
+            user.save()
+            messages.success(request, 'Congratulations! You have started a 7-day Premium trial.')
+            return redirect('profile_settings')
+
+        elif action == 'upgrade':
+            card_number = request.POST.get('card_number')
+            expiry_date = request.POST.get('expiry_date')
+            cvc = request.POST.get('cvc')
+
+            if card_number and expiry_date and cvc:
+                # Simulate successful payment
+                user.role = 'premium'
+                user.premium_until = None  # Clear trial date if it exists
+                user.save()
+                messages.success(request, 'Congratulations! Your account has been upgraded to Premium.')
+                return redirect('profile_settings')
+            else:
+                messages.error(request, 'Please fill in all payment details.')
+
+    return render(request, 'upgrade_account.html')
+
+
+@login_required
+def cancel_subscription_view(request):
+    """
+    Handles the user request to cancel their Premium subscription.
+    """
+    if request.method == 'POST':
+        user = request.user
+        user.role = 'user'
+        user.premium_until = None
+        user.save()
+        messages.success(request, 'Your Premium subscription has been canceled.')
+        return redirect('profile_settings')
+    
+    # Redirect if accessed via GET
+    return redirect('profile_settings')
