@@ -3,6 +3,10 @@
 
 {% block title %}Upgrade to Premium - Tailora{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
 {% block container_class %}page-reveal{% endblock %}
 
 {% block content %}
@@ -29,7 +33,7 @@
                 </ul>
             </div>
 
-            <div class="settings-grid" style="grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div class="single-column-layout">
                 <!-- 7-Day Free Trial -->
                 <div class="settings-section">
                     <h3 class="section-title">Try it for Free</h3>

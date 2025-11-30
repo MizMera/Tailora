@@ -1,4 +1,3 @@
-
 {% extends 'base.html' %}
 {% load static %}
 
@@ -11,40 +10,89 @@
 {% block container_class %}page-reveal{% endblock %}
 
 {% block content %}
+<!-- Page Header -->
 <div class="page-header">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
             <h1 class="page-title">Delete Account</h1>
             <p class="page-subtitle">Request to permanently delete your account</p>
         </div>
-        <div>
-            <a href="{% url 'profile_settings' %}" class="btn btn-secondary">Back to settings</a>
+        <div style="display: flex; gap: 12px;">
+            <a href="{% url 'profile_settings' %}" class="btn btn-secondary">Back</a>
+            <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary" style="border: none; cursor: pointer;">Log out</button>
+            </form>
         </div>
     </div>
 </div>
 
-<div class="settings-wrapper">
-    <div class="settings-main">
-        <div class="settings-section">
-            <div class="security-card" style="border-color: #c62828;">
-                <h3 class="security-title" style="color: #c62828;">Danger Zone: Account Deletion</h3>
-                <p>This is a critical action that will permanently delete your account, including all your data, outfits, and wardrobe items. This process is irreversible.</p>
-                <p>To proceed, we will send a verification code to your registered email address. By clicking the button below, you acknowledge that you are initiating this final step.</p>
-                <form method="post" action="{% url 'request_account_deletion' %}" class="mt-4">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary" style="background: #c62828; border-color: #c62828;">Request Deletion Code</button>
-                </form>
-            </div>
+<!-- Messages -->
+{% if messages %}
+<div style="padding: 0 40px;">
+    {% for message in messages %}
+        <div class="message {% if message.tags == 'error' %}message-error{% else %}message-success{% endif %}" 
+             style="margin: 0 0 24px 0; border-left: none; border-bottom: 1px solid #e0e0e0;">
+            {{ message }}
         </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Main Content Area (Matches Dashboard Style) -->
+<div style="background: #ffffff; padding: 40px; border-bottom: 1px solid #e0e0e0;">
+    
+    <!-- Danger Zone Card -->
+    <div style="max-width: 800px; border: 1px solid #c62828; padding: 32px;">
+        <h3 class="security-title" style="color: #c62828; margin-top: 0; font-family: 'Istok Web', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 16px;">
+            Danger zone
+        </h3>
+        
+        <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #252320; line-height: 1.6; margin-bottom: 16px;">
+            This action will <strong>permanently delete your account</strong> and all associated data, including wardrobes, outfits, and settings. This cannot be undone.
+        </p>
+
+        <!-- Step 1: Request Code -->
+        {% if not code_sent %}
+            <p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #757575; margin-bottom: 24px;">
+                To confirm deletion, we will send a verification code to your registered email address: <strong>{{ user.email }}</strong>.
+            </p>
+            
+            <form method="post" action="{% url 'request_account_deletion' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary" style="background: #c62828; border-color: #c62828; width: auto; padding: 10px 24px;">
+                    Request deletion code
+                </button>
+            </form>
+
+        <!-- Step 2: Confirm Code -->
+        {% else %}
+            <div style="background: #fff3e0; padding: 16px; margin-bottom: 24px; border-left: 4px solid #ff9800;">
+                <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #e65100; margin: 0;">
+                    A verification code has been sent to <strong>{{ user.email }}</strong>.
+                </p>
+            </div>
+
+            <form method="post" action="{% url 'confirm_account_deletion' %}">
+                {% csrf_token %}
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label for="code" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px;">
+                        Enter Verification Code
+                    </label>
+                    <input type="text" name="code" id="code" required 
+                           style="width: 100%; max-width: 300px; padding: 12px; border: 1px solid #d9d9d9; font-size: 16px; border-radius: 0;" 
+                           placeholder="e.g. 123456">
+                </div>
+                
+                <div style="display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-primary" style="background: #c62828; border-color: #c62828; width: auto; padding: 10px 24px;">
+                        Permanently Delete Account
+                    </button>
+                    <a href="{% url 'request_account_deletion' %}" class="btn btn-secondary">Resend Code</a>
+                </div>
+            </form>
+        {% endif %}
     </div>
 
-    <div class="settings-sidebar">
-        <div class="security-card">
-            <h3 class="security-title">Need Help?</h3>
-            <p>If you are having trouble or have any questions, please contact our support team before taking any irreversible actions.</p>
-            <a href="#" class="btn btn-secondary" style="width: 100%; text-align: center;">Contact Support</a>
-        </div>
-    </div>
 </div>
 {% endblock %}
-

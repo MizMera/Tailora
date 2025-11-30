@@ -389,6 +389,18 @@ select.input-control {
     color: #0d47a1;
 }
 
+.single-column-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* Maintain gap between sections */
+}
+
+/* Ensure settings-main in a single column layout takes full width */
+.single-column-layout .settings-section {
+    width: 100%;
+}
+
+
 /* Responsive */
 @media (max-width: 768px) {
     .settings-grid {
