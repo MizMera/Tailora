@@ -386,11 +386,34 @@ def dashboard_view(request):
     """
     Dashboard view - main page after login
     """
+    from outfits.models import Outfit
+    from wardrobe.models import ClothingItem
+    from social.models import UserFollow
+    
     # Get or create style profile
     try:
         style_profile = request.user.style_profile
     except StyleProfile.DoesNotExist:
         style_profile = StyleProfile.objects.create(user=request.user)
+    
+    # Calculate actual counts from database
+    user = request.user
+    actual_wardrobe_count = ClothingItem.objects.filter(user=user).count()
+    actual_outfits_count = Outfit.objects.filter(user=user).count()
+    actual_followers_count = UserFollow.objects.filter(following=user).count()
+    
+    # Sync counts if they differ
+    if user.wardrobe_items_count != actual_wardrobe_count:
+        user.wardrobe_items_count = actual_wardrobe_count
+        user.save(update_fields=['wardrobe_items_count'])
+    
+    if user.outfits_created_count != actual_outfits_count:
+        user.outfits_created_count = actual_outfits_count
+        user.save(update_fields=['outfits_created_count'])
+    
+    if user.followers_count != actual_followers_count:
+        user.followers_count = actual_followers_count
+        user.save(update_fields=['followers_count'])
     
     context = {
         'user': request.user,

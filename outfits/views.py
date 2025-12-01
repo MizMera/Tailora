@@ -30,7 +30,7 @@ def outfit_gallery_view(request):
         outfits = outfits.filter(
             Q(name__icontains=search_query) |
             Q(description__icontains=search_query) |
-            Q(style_tags__contains=[search_query])
+            Q(style_tags__icontains=search_query)
         )
     
     # Pagination
@@ -110,6 +110,9 @@ def outfit_create_view(request):
                     )
                 except ClothingItem.DoesNotExist:
                     pass
+            
+            # Update user's outfit count
+            user.increment_outfits_count()
             
             messages.success(request, f'{name} has been created successfully!')
             return redirect('outfits:outfit_detail', outfit_id=outfit.id)
@@ -221,6 +224,13 @@ def outfit_delete_view(request, outfit_id):
     if request.method == 'POST':
         outfit_name = outfit.name
         outfit.delete()
+        
+        # Update user's outfit count
+        user = request.user
+        if user.outfits_created_count > 0:
+            user.outfits_created_count -= 1
+            user.save(update_fields=['outfits_created_count'])
+        
         messages.success(request, f'{outfit_name} has been deleted.')
         return redirect('outfits:outfit_gallery')
     

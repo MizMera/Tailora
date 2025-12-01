@@ -51,7 +51,9 @@ def wardrobe_gallery_view(request):
         items = items.filter(color__icontains=color_filter)
     
     if season_filter:
-        items = items.filter(seasons__contains=[season_filter])
+        # SQLite doesn't support JSON contains, so we filter in Python if needed
+        # or use icontains on the JSON field as a string workaround
+        items = items.filter(seasons__icontains=season_filter)
     
     if status_filter:
         items = items.filter(status=status_filter)
@@ -64,7 +66,8 @@ def wardrobe_gallery_view(request):
             Q(name__icontains=search_query) |
             Q(brand__icontains=search_query) |
             Q(description__icontains=search_query) |
-            Q(tags__contains=[search_query])
+            Q(color__icontains=search_query) |
+            Q(category__name__icontains=search_query)
         )
     
     # Get filter options for dropdowns
@@ -408,11 +411,16 @@ def wardrobe_stats_view(request):
             'days_owned': (timezone.now().date() - item.created_at.date()).days,
         })
     
-    # Recent additions
-    stats['recent_additions'] = list(
-        items.order_by('-created_at')[:5]
-        .values('name', 'created_at', 'image')
-    )
+    # Recent additions - need image URLs not just paths
+    recent_items = items.order_by('-created_at')[:5]
+    stats['recent_additions'] = []
+    for item in recent_items:
+        stats['recent_additions'].append({
+            'id': str(item.id),
+            'name': item.name,
+            'created_at': item.created_at,
+            'image': item.image.url if item.image else None,
+        })
     
     stats['remaining_slots'] = stats['wardrobe_limit'] - stats['total_items']
     

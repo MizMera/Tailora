@@ -39,10 +39,10 @@ def daily_recommendations_view(request):
             recommendations = engine.generate_weather_recommendations(
                 date=today,
                 location="Tunis,TN",
-                count=3
+                count=5  # Generate 5 suggestions
             )
             if recommendations:
-                messages.success(request, f'Generated {len(recommendations)} weather-aware recommendations!')
+                messages.success(request, f'Generated {len(recommendations)} outfit suggestions for you!')
         except Exception as e:
             messages.error(request, f'Could not generate recommendations: {str(e)}')
             recommendations = []
@@ -133,7 +133,7 @@ def daily_recommendations_view(request):
 @require_POST
 def accept_recommendation_view(request, recommendation_id):
     """
-    User accepts a recommendation
+    User confirms they want to wear this outfit - creates the actual outfit
     """
     recommendation = get_object_or_404(
         DailyRecommendation,
@@ -142,15 +142,22 @@ def accept_recommendation_view(request, recommendation_id):
     )
     
     engine = OutfitRecommendationEngine(request.user)
-    engine.record_feedback(recommendation, 'accepted')
     
-    messages.success(request, f'Great choice! "{recommendation.outfit.name}" added to your outfits.')
+    # Confirm the recommendation - this creates the actual outfit
+    outfit = engine.confirm_recommendation(recommendation)
+    
+    if outfit:
+        messages.success(request, f'Great choice! "{outfit.name}" has been added to your outfits.')
+    else:
+        messages.error(request, 'Could not create outfit. Please try again.')
     
     # Check if request is AJAX
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
-            'status': 'success',
-            'message': 'Recommendation accepted'
+            'status': 'success' if outfit else 'error',
+            'message': 'Outfit created' if outfit else 'Failed to create outfit',
+            'outfit_id': str(outfit.id) if outfit else None,
+            'outfit_name': outfit.name if outfit else None,
         })
     
     return redirect('recommendations:daily')
@@ -291,21 +298,22 @@ def generate_new_recommendations_view(request):
     user = request.user
     today = timezone.now().date()
     
-    # Check if recommendations already exist
+    # Delete existing pending recommendations for today
     existing = DailyRecommendation.objects.filter(
         user=user,
-        recommendation_date=today
+        recommendation_date=today,
+        status='pending'  # Only delete pending ones, keep accepted/rejected
     )
     
-    if existing.exists():
-        existing.delete()
+    deleted_count = existing.count()
+    existing.delete()
     
     try:
         engine = OutfitRecommendationEngine(user)
-        recommendations = engine.generate_daily_recommendations(date=today, count=3)
-        messages.success(request, f'Generated {len(recommendations)} fresh recommendations!')
+        recommendations = engine.generate_daily_recommendations(date=today, count=5)
+        messages.success(request, f'Generated {len(recommendations)} fresh outfit suggestions!')
     except Exception as e:
-        messages.error(request, f'Error generating recommendations: {str(e)}')
+        messages.error(request, f'Error generating suggestions: {str(e)}')
     
     return redirect('recommendations:daily')
 

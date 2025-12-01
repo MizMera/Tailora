@@ -6,6 +6,215 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/planner.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+    /* Enhanced Event List Styles */
+    .filter-section {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+    
+    .filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        width: 100%;
+        align-items: center;
+    }
+    
+    .filter-group input[type="text"] {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .filter-group select {
+        min-width: 150px;
+    }
+    
+    .quick-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .stat-box {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    
+    .stat-box:hover {
+        border-color: #2c2c2c;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .events-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .event-card {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        overflow: hidden;
+        transition: all 0.2s;
+    }
+    
+    .event-card:hover {
+        border-color: #2c2c2c;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .event-card-header {
+        display: flex;
+        gap: 16px;
+        padding: 20px;
+        background: #fafafa;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .event-date-badge {
+        background: #2c2c2c;
+        color: #fff;
+        padding: 12px 16px;
+        text-align: center;
+        min-width: 70px;
+    }
+    
+    .badge-day {
+        display: block;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1;
+    }
+    
+    .badge-month {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-top: 4px;
+        opacity: 0.8;
+    }
+    
+    .event-time {
+        font-size: 13px;
+        color: #666;
+        margin-top: 4px;
+    }
+    
+    .event-location {
+        font-size: 13px;
+        color: #888;
+        margin-top: 4px;
+    }
+    
+    .event-location::before {
+        content: "📍 ";
+    }
+    
+    .occasion-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-radius: 3px;
+        color: #fff;
+    }
+    
+    .occasion-badge.work { background: #4a90e2; }
+    .occasion-badge.casual { background: #7ed321; }
+    .occasion-badge.formal { background: #bd10e0; }
+    .occasion-badge.party { background: #f5a623; }
+    .occasion-badge.date { background: #e94b3c; }
+    .occasion-badge.sports { background: #50e3c2; color: #2c2c2c; }
+    .occasion-badge.travel { background: #9013fe; }
+    .occasion-badge.other { background: #8b8b8b; }
+    
+    .event-card-body {
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .event-no-outfit {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #888;
+        font-size: 13px;
+    }
+    
+    .status-badge.completed {
+        background: #7ed321;
+        color: #fff;
+        padding: 4px 10px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        border-radius: 3px;
+    }
+    
+    .event-card-actions {
+        display: flex;
+        gap: 8px;
+        padding: 16px 20px;
+        background: #fafafa;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    .search-results-info {
+        padding: 12px 16px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        color: #666;
+    }
+    
+    @media (max-width: 768px) {
+        .quick-stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-group {
+            flex-direction: column;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+        }
+        
+        .event-card-header {
+            flex-direction: column;
+        }
+        
+        .event-date-badge {
+            align-self: flex-start;
+        }
+        
+        .event-card-body {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -36,16 +245,16 @@
             <select name="occasion" class="input-control">
                 <option value="">All Occasions</option>
                 {% for value, label in occasion_choices %}
-                <option value="{{ value }}" {% if selected_occasion==value %}selected{% endif %}>{{ label }}</option>
+                <option value="{{ value }}" {% if selected_occasion == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
 
             <select name="status" class="input-control">
                 <option value="">All Status</option>
-                <option value="upcoming" {% if selected_status=='upcoming' %}selected{% endif %}>Upcoming</option>
-                <option value="past" {% if selected_status=='past' %}selected{% endif %}>Past</option>
-                <option value="completed" {% if selected_status=='completed' %}selected{% endif %}>Completed</option>
-                <option value="no_outfit" {% if selected_status=='no_outfit' %}selected{% endif %}>No Outfit</option>
+                <option value="upcoming" {% if selected_status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                <option value="past" {% if selected_status == 'past' %}selected{% endif %}>Past</option>
+                <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="no_outfit" {% if selected_status == 'no_outfit' %}selected{% endif %}>No Outfit</option>
             </select>
 
             <button type="submit" class="btn btn-primary">Filter</button>
@@ -84,8 +293,7 @@
                 <div class="event-main-info">
                     <div class="event-title-row">
                         <h3 class="event-card-title">{{ event.title }}</h3>
-                        <span class="occasion-badge {{ event.occasion_type }}">{{ event.get_occasion_type_display
-                            }}</span>
+                        <span class="occasion-badge {{ event.occasion_type }}">{{ event.get_occasion_type_display }}</span>
                     </div>
                     {% if event.time %}
                     <p class="event-time">🕒 {{ event.time|date:"g:i A" }}</p>
@@ -100,8 +308,7 @@
                 {% if event.outfit %}
                 <div class="event-outfit">
                     <span class="outfit-label">Planned Outfit:</span>
-                    <a href="{% url 'outfits:outfit_detail' event.outfit.id %}" class="outfit-link">{{ event.outfit.name
-                        }}</a>
+                    <a href="{% url 'outfits:outfit_detail' event.outfit.id %}" class="outfit-link">{{ event.outfit.name }}</a>
                 </div>
                 {% else %}
                 <div class="event-no-outfit">

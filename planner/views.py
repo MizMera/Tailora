@@ -18,6 +18,11 @@ def calendar_view(request):
     year = int(request.GET.get('year', today.year))
     month = int(request.GET.get('month', today.month))
     
+    # Get location from query params or session
+    location = request.GET.get('location', request.session.get('weather_location', 'Tunis'))
+    # Save location to session for persistence
+    request.session['weather_location'] = location
+    
     # Get first and last day of month
     first_day = datetime(year, month, 1).date()
     if month == 12:
@@ -58,8 +63,6 @@ def calendar_view(request):
     
     # Get Weather Data
     weather_service = WeatherService()
-    # Default location (Tunis) if user doesn't have one - in real app, get from user profile
-    location = "Tunis,TN" 
     
     current_weather = weather_service.get_current_weather(location)
     forecast = weather_service.get_forecast(location)
@@ -78,7 +81,8 @@ def calendar_view(request):
         'upcoming_events': upcoming_events,
         'weekday_names': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         'current_weather': current_weather,
-        'weather_forecast': forecast[:5] if forecast else [], # Next 5 forecast items
+        'weather_forecast': forecast[:5] if forecast else [],  # Next 5 forecast items
+        'weather_location': location,
     }
     
     return render(request, 'planner/calendar.html', context)

@@ -24,6 +24,18 @@ body {
     padding: 0;
 }
 
+/* Main Container - Controls app width */
+.tailora-container {
+    width: 100%;
+    max-width: 1200px;
+    min-height: 100vh;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+}
+
 /* Header - Tailora Logo + Navigation */
 .tailora-header {
     background: #ffffff;
@@ -89,8 +101,6 @@ body {
     background: #f4e9cf;
     padding: 0;
     overflow-y: auto;
-    max-width: 1200px;
-    margin: 0 auto;
 }
 
 /* Page Title Section */

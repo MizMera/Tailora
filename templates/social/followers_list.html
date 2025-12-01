@@ -5,46 +5,175 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/social_v2.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+    .followers-content-wrapper {
+        background: #ffffff;
+        padding: 60px 40px;
+        min-height: calc(100vh - 200px);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    
+    .followers-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .followers-section {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+    }
+    
+    .followers-header {
+        padding: 20px;
+        border-bottom: 1px solid #e8e8e8;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .followers-title {
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #2c2c2c;
+    }
+    
+    .followers-count {
+        font-size: 13px;
+        color: #888;
+    }
+    
+    .users-list-enhanced {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .user-list-item {
+        display: flex;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s;
+    }
+    
+    .user-list-item:last-child {
+        border-bottom: none;
+    }
+    
+    .user-list-item:hover {
+        background: #fafafa;
+    }
+    
+    .user-avatar-md {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2c2c2c 0%, #555 100%);
+        color: #f4e9cf;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-right: 16px;
+        flex-shrink: 0;
+    }
+    
+    .user-details-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .user-fullname {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c2c2c;
+        margin-bottom: 2px;
+    }
+    
+    .user-email {
+        font-size: 13px;
+        color: #888;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .user-link-wrapper {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        flex: 1;
+    }
+    
+    .empty-users {
+        text-align: center;
+        padding: 60px 40px;
+        color: #888;
+    }
+    
+    .empty-users-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header content-section" style="margin-bottom: 40px;">
-    <a href="{% url 'social:profile' profile_user.id %}" class="text-muted"
-        style="text-decoration: none; display: inline-block; margin-bottom: 10px;">
-        ← Back to Profile
-    </a>
-    <h1>{{ profile_user.get_full_name }}'s {{ list_type|title }}</h1>
-    <p class="text-muted">{{ users|length }} {{ list_type }}</p>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ list_type|title }}</h1>
+        <p class="page-subtitle">{{ profile_user.get_full_name }}'s {{ list_type }}</p>
+    </div>
+    <a href="{% url 'social:profile' profile_user.id %}" class="btn btn-secondary">← Back to Profile</a>
 </div>
 
-<div class="users-list-container content-section">
-    {% if users %}
-    <div class="users-list">
-        {% for user in users %}
-        <div class="user-item">
-            <a href="{% url 'social:profile' user.id %}" class="user-link">
-                <div class="user-avatar">{{ user.first_name|slice:":1"|upper }}</div>
-                <div class="user-info">
-                    <strong class="user-name">{{ user.get_full_name }}</strong>
-                    <span class="user-handle">{{ user.email }}</span>
-                </div>
-            </a>
-            {% if user != request.user %}
-            <form method="post" action="{% url 'social:toggle_follow' user.id %}" class="follow-form">
-                {% csrf_token %}
-                <button type="submit"
-                    class="btn btn-sm {% if user.id in following_ids %}btn-secondary{% else %}btn-primary{% endif %}">
-                    {% if user.id in following_ids %}Unfollow{% else %}Follow{% endif %}
-                </button>
-            </form>
-            {% endif %}
+<div class="followers-content-wrapper">
+<div class="followers-container">
+    <div class="followers-section">
+        <div class="followers-header">
+            <h3 class="followers-title">{{ list_type|title }}</h3>
+            <span class="followers-count">{{ users|length }} {{ list_type }}</span>
         </div>
-        {% endfor %}
+        
+        {% if users %}
+        <ul class="users-list-enhanced">
+            {% for user in users %}
+            <li class="user-list-item">
+                <a href="{% url 'social:profile' user.id %}" class="user-link-wrapper">
+                    <div class="user-avatar-md">{{ user.first_name|slice:":1" }}</div>
+                    <div class="user-details-info">
+                        <div class="user-fullname">{{ user.get_full_name }}</div>
+                        <div class="user-email">{{ user.email }}</div>
+                    </div>
+                </a>
+                {% if user != request.user %}
+                <form method="post" action="{% url 'social:toggle_follow' user.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm {% if user.id in following_ids %}btn-secondary{% else %}btn-primary{% endif %}">
+                        {% if user.id in following_ids %}Following{% else %}Follow{% endif %}
+                    </button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-users">
+            <div class="empty-users-icon">👥</div>
+            <h3>No {{ list_type }} yet</h3>
+            <p>{% if list_type == 'followers' %}No one is following {{ profile_user.first_name }} yet.{% else %}{{ profile_user.first_name }} isn't following anyone yet.{% endif %}</p>
+        </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="empty-state">
-        <p class="text-muted">No {{ list_type }} yet.</p>
-    </div>
-    {% endif %}
+</div>
 </div>
 {% endblock %}

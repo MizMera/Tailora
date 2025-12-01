@@ -13,7 +13,7 @@
     .outfit-container-wrapper {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 40px 20px;
     }
 
     /* 2. GRID FIX: Force items to be card-sized, not full width */
@@ -28,7 +28,7 @@
     .wardrobe-item {
         background: #fff;
         border: 1px solid #e0e0e0;
-        border-radius: 8px;
+        border-radius: 0; /* Squared corners */
         overflow: hidden;
         transition: transform 0.2s, box-shadow 0.2s;
         display: flex;
@@ -44,8 +44,7 @@
     .item-image {
         position: relative;
         width: 100%;
-        padding-top: 133%;
-        /* Creates standard fashion aspect ratio */
+        padding-top: 133%; /* Creates standard fashion aspect ratio */
         background: #f5f5f5;
         overflow: hidden;
     }
@@ -61,10 +60,7 @@
 
     .item-placeholder {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        top: 0; left: 0; right: 0; bottom: 0;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -119,165 +115,243 @@
         color: #000;
     }
 </style>
-<div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}"
-    style="padding: 12px 16px; margin-bottom: 8px; border-radius: 4px; border: 1px solid transparent; 
-                    {% if message.tags == 'error' %}background:#fde8e8; color:#9b1c1c; border-color:#f8b4b4;{% else %}background:#def7ec; color:#03543f; border-color:#84e1bc;{% endif %}">
-    {{ message }}
-</div>
-{% endfor %}
-</div>
-{% endif %}
+{% endblock %}
 
-<!-- Filter Section -->
-<div class="filter-section"
-    style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 32px;">
-    <form method="get" action="{% url 'outfits:outfit_gallery' %}">
-        <!-- Search Bar -->
-        <div style="display: flex; gap: 16px; margin-bottom: 20px;">
-            <input type="text" name="search" value="{{ search_query }}"
-                placeholder="Search by name, description, tags..." class="input-control"
-                style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-            <button type="submit" class="btn btn-primary">Search</button>
-        </div>
+{% block content %}
 
-        <!-- Filter Grid -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-            <!-- Occasion Filter -->
-            <div class="input-field">
-                <label for="occasion" class="input-label"
-                    style="display:block; margin-bottom:8px; font-size:12px; font-weight:600; color:#555;">OCCASION</label>
-                <select name="occasion" id="occasion" class="input-control" onchange="this.form.submit()"
-                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                    <option value="">All occasions</option>
-                    {% for value, label in occasions %}
-                    <option value="{{ value }}" {% if selected_occasion==value %}selected{% endif %}>{{ label }}
-                    </option>
-                    {% endfor %}
-                </select>
+<!-- Main Wrapper -->
+<div class="outfit-container-wrapper">
+
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom: 32px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+                <h1 class="page-title" style="margin: 0 0 8px 0;">My Outfits</h1>
+                <p class="page-subtitle" style="margin: 0; color: #757575;">
+                    {{ total_outfits }} outfit{{ total_outfits|pluralize }} • {{ favorite_count }} favorite{{ favorite_count|pluralize }}
+                </p>
             </div>
-
-            <!-- Favorites Filter -->
-            <div class="input-field" style="display: flex; align-items: end;">
-                <label class="checkbox-item-inline"
-                    style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding-bottom: 10px;">
-                    <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %}
-                        onchange="this.form.submit()">
-                    <span
-                        style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.5px;">★
-                        Favorites only</span>
-                </label>
+            <div style="display: flex; gap: 12px;">
+                <a href="{% url 'outfits:outfit_stats' %}" class="btn btn-secondary" style="border-radius: 0;">Statistics</a>
+                <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary" style="border-radius: 0;">Create Outfit</a>
             </div>
         </div>
+    </div>
 
-        <!-- Action Buttons -->
-        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
-            <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">Reset Filters</a>
-        </div>
-    </form>
-</div>
-
-<!-- Outfits Grid -->
-<div class="content-section">
-    {% if outfits %}
-    <div class="wardrobe-grid">
-        {% for outfit in outfits %}
-        <div class="wardrobe-item">
-            <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="item-link"
-                style="text-decoration: none; color: inherit;">
-                <div class="item-image">
-                    {% if outfit.outfit_image %}
-                    <img src="{{ outfit.outfit_image.url }}" alt="{{ outfit.name }}">
-                    {% else %}
-                    <!-- Placeholder: show first item or text -->
-                    {% with outfit.items.first as first_item %}
-                    {% if first_item and first_item.image %}
-                    <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}">
-                    {% else %}
-                    <div class="item-placeholder">No Image</div>
-                    {% endif %}
-                    {% endwith %}
-                    {% endif %}
-                </div>
-
-                <div class="item-info">
-                    <h3 class="item-name">{{ outfit.name }}</h3>
-                    <p class="item-category">{{ outfit.get_occasion_display }}</p>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                        <span
-                            style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase;">
-                            {{ outfit.items.count }} item{{ outfit.items.count|pluralize }}
-                        </span>
-                        {% if outfit.favorite %}
-                        <span style="color: #ffc107; font-size: 16px;">★</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </a>
-
-            <div class="item-actions">
-                <form method="post" action="{% url 'outfits:outfit_toggle_favorite' outfit.id %}"
-                    style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-icon"
-                        title="{% if outfit.favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">
-                        {% if outfit.favorite %}★ Favorite{% else %}☆ Favorite{% endif %}
-                    </button>
-                </form>
-                <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn-icon" title="View">View Details →</a>
-            </div>
+    <!-- Messages -->
+    {% if messages %}
+    <div style="margin-bottom: 24px;">
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}"
+            style="padding: 12px 16px; margin-bottom: 8px; border-radius: 0; border: 1px solid transparent; 
+                   {% if message.tags == 'error' %}background:#fde8e8; color:#9b1c1c; border-color:#f8b4b4;{% else %}background:#def7ec; color:#03543f; border-color:#84e1bc;{% endif %}">
+            {{ message }}
         </div>
         {% endfor %}
     </div>
-
-    <!-- Pagination -->
-    {% if outfits.has_other_pages %}
-    <div class="pagination"
-        style="display: flex; justify-content: center; gap: 12px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
-        {% if outfits.has_previous %}
-        <a href="?page={{ outfits.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}"
-            class="btn btn-secondary">← Previous</a>
-        {% endif %}
-
-        <span
-            style="display: flex; align-items: center; font-family: 'Inter', sans-serif; font-size: 14px; color: #757575;">
-            Page {{ outfits.number }} of {{ outfits.paginator.num_pages }}
-        </span>
-
-        {% if outfits.has_next %}
-        <a href="?page={{ outfits.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}"
-            class="btn btn-secondary">Next →</a>
-        {% endif %}
-    </div>
     {% endif %}
 
-    {% else %}
-    <!-- Empty State -->
-    <div class="empty-state"
-        style="text-align: center; padding: 60px 20px; background: #fff; border: 1px dashed #ccc; border-radius: 8px;">
-        <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;">👕</div>
-        <h3
-            style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">
-            {% if search_query or selected_occasion or show_favorites %}
-            No outfits found
-            {% else %}
-            You don't have any outfits yet
+    <!-- Filter Section -->
+    <div class="filter-section" style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0; margin-bottom: 32px;">
+        <form method="get" action="{% url 'outfits:outfit_gallery' %}" id="outfit-filter-form">
+            <!-- Search Bar -->
+            <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+                <div style="flex: 1; position: relative;">
+                    <input type="text" name="search" id="outfit-search" value="{{ search_query }}"
+                        placeholder="Search by name, description, tags..." class="input-control"
+                        style="width: 100%; padding: 10px; padding-right: 40px; border: 1px solid #ddd; border-radius: 0;" autocomplete="off">
+                    <div id="search-spinner" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#757575" style="animation: spin 1s linear infinite;">
+                            <circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="32" stroke-dashoffset="32" />
+                        </svg>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="border-radius: 0;">Search</button>
+            </div>
+
+            <!-- Filter Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <!-- Occasion Filter -->
+                <div class="input-field">
+                    <label for="occasion" class="input-label" style="display:block; margin-bottom:8px; font-size:12px; font-weight:600; color:#555;">OCCASION</label>
+                    <select name="occasion" id="occasion" class="input-control" onchange="this.form.submit()"
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 0;">
+                        <option value="">All occasions</option>
+                        {% for value, label in occasions %}
+                        <option value="{{ value }}" {% if selected_occasion == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Favorites Filter -->
+                <div class="input-field" style="display: flex; align-items: end;">
+                    <label class="checkbox-item-inline"
+                        style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding-bottom: 10px;">
+                        <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %}
+                            onchange="this.form.submit()">
+                        <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.5px;">★ Favorites only</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+                <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary" style="border-radius: 0;">Reset Filters</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Outfits Grid -->
+    <div class="content-section">
+        {% if outfits %}
+        <div class="wardrobe-grid">
+            {% for outfit in outfits %}
+            <div class="wardrobe-item">
+                <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="item-link" style="text-decoration: none; color: inherit;">
+                    <div class="item-image">
+                        {% if outfit.outfit_image %}
+                        <img src="{{ outfit.outfit_image.url }}" alt="{{ outfit.name }}">
+                        {% else %}
+                        <!-- Placeholder: show first item or text -->
+                        {% with outfit.items.first as first_item %}
+                        {% if first_item and first_item.image %}
+                        <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}">
+                        {% else %}
+                        <div class="item-placeholder">No Image</div>
+                        {% endif %}
+                        {% endwith %}
+                        {% endif %}
+                    </div>
+
+                    <div class="item-info">
+                        <h3 class="item-name">{{ outfit.name }}</h3>
+                        <p class="item-category">{{ outfit.get_occasion_display }}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                            <span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase;">
+                                {{ outfit.items.count }} item{{ outfit.items.count|pluralize }}
+                            </span>
+                            {% if outfit.favorite %}
+                            <span style="color: #ffc107; font-size: 16px;">★</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+
+                <div class="item-actions">
+                    <form method="post" action="{% url 'outfits:outfit_toggle_favorite' outfit.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon"
+                            title="{% if outfit.favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">
+                            {% if outfit.favorite %}★ Favorite{% else %}☆ Favorite{% endif %}
+                        </button>
+                    </form>
+                    <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn-icon" title="View">View Details →</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if outfits.has_other_pages %}
+        <div class="pagination" style="display: flex; justify-content: center; gap: 12px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
+            {% if outfits.has_previous %}
+            <a href="?page={{ outfits.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}"
+                class="btn btn-secondary" style="border-radius: 0;">← Previous</a>
             {% endif %}
-        </h3>
-        <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-bottom: 24px;">
-            {% if search_query or selected_occasion or show_favorites %}
-            Try adjusting your search filters.
-            {% else %}
-            Create your first outfit by combining your wardrobe items!
+
+            <span style="display: flex; align-items: center; font-family: 'Inter', sans-serif; font-size: 14px; color: #757575;">
+                Page {{ outfits.number }} of {{ outfits.paginator.num_pages }}
+            </span>
+
+            {% if outfits.has_next %}
+            <a href="?page={{ outfits.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}"
+                class="btn btn-secondary" style="border-radius: 0;">Next →</a>
             {% endif %}
-        </p>
-        {% if not search_query and not selected_occasion and not show_favorites %}
-        <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">Create my first outfit</a>
+        </div>
+        {% endif %}
+
         {% else %}
-        <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">Reset Filters</a>
+        <!-- Empty State -->
+        <div class="empty-state" style="text-align: center; padding: 60px 20px; background: #fff; border: 1px dashed #ccc; border-radius: 0;">
+            <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;">👕</div>
+            <h3 style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">
+                {% if search_query or selected_occasion or show_favorites %}
+                No outfits found
+                {% else %}
+                You don't have any outfits yet
+                {% endif %}
+            </h3>
+            <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-bottom: 24px;">
+                {% if search_query or selected_occasion or show_favorites %}
+                Try adjusting your search filters.
+                {% else %}
+                Create your first outfit by combining your wardrobe items!
+                {% endif %}
+            </p>
+            {% if not search_query and not selected_occasion and not show_favorites %}
+            <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary" style="border-radius: 0;">Create my first outfit</a>
+            {% else %}
+            <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary" style="border-radius: 0;">Reset Filters</a>
+            {% endif %}
+        </div>
         {% endif %}
     </div>
-    {% endif %}
 </div>
-</div>
+
+<script>
+    // Spinner animation style
+    const style = document.createElement('style');
+    style.textContent = '@keyframes spin { from { transform: translateY(-50%) rotate(0deg); } to { transform: translateY(-50%) rotate(360deg); } }';
+    document.head.appendChild(style);
+    
+    // Dynamic search with debounce
+    const searchInput = document.getElementById('outfit-search');
+    const searchSpinner = document.getElementById('search-spinner');
+    let searchTimeout;
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            // Show spinner
+            searchSpinner.style.display = 'block';
+            
+            // Debounce: wait 500ms after user stops typing
+            searchTimeout = setTimeout(() => {
+                // Build URL with current filters
+                const form = document.getElementById('outfit-filter-form');
+                const formData = new FormData(form);
+                const params = new URLSearchParams();
+                
+                for (let [key, value] of formData.entries()) {
+                    if (value) params.append(key, value);
+                }
+                
+                // Navigate with new search
+                window.location.href = '{% url "outfits:outfit_gallery" %}?' + params.toString();
+            }, 500);
+        });
+        
+        // Live filter for items already on page (instant feedback)
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') return;
+            
+            const query = this.value.toLowerCase().trim();
+            const items = document.querySelectorAll('.wardrobe-item');
+            
+            items.forEach(item => {
+                const name = item.querySelector('.item-name')?.textContent.toLowerCase() || '';
+                const category = item.querySelector('.item-category')?.textContent.toLowerCase() || '';
+                
+                const matches = name.includes(query) || category.includes(query);
+                item.style.display = matches ? '' : 'none';
+            });
+            
+            // Hide spinner after local filter
+            searchSpinner.style.display = 'none';
+        });
+    }
+</script>
 
 {% endblock %}

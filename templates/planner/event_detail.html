@@ -12,8 +12,7 @@
 <div class="page-header">
     <div>
         <h1 class="page-title">{{ event.title }}</h1>
-        <p class="page-subtitle">{{ event.date|date:"F j, Y" }}{% if event.time %} at {{ event.time|date:"g:i A" }}{%
-            endif %}</p>
+        <p class="page-subtitle">{{ event.date|date:"F j, Y" }}{% if event.time %} at {{ event.time|date:"g:i A" }}{% endif %}</p>
     </div>
     <div class="header-actions">
         <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary">Edit Event</a>

@@ -606,14 +606,14 @@
     <div class="header-content"
         style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
         <div>
-            <h1 class="page-title">Daily Recommendations</h1>
-            <p class="page-subtitle">AI-powered outfit suggestions</p>
+            <h1 class="page-title">AI Outfit Suggestions</h1>
+            <p class="page-subtitle">Choose your look for today • {{ recommendations|length }} suggestions ready</p>
         </div>
         <form method="post" action="{% url 'recommendations:generate' %}" style="display: inline;">
             {% csrf_token %}
             <input type="hidden" name="force" value="true">
             <button type="submit" class="btn btn-secondary">
-                Regenerate
+                🔄 New Suggestions
             </button>
         </form>
     </div>
@@ -640,37 +640,62 @@
             {% endif %}
 
             <div style="padding: 0 40px 40px;">
-                <div class="rec-section-title">Today's Outfits</div>
+                <div class="rec-section-title">Pick Your Outfit</div>
+                <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: -16px 0 24px 0;">
+                    Click "Add to My Outfits" to save any outfit you like. They won't be added automatically.
+                </p>
 
                 {% if recommendations %}
                 {% for rec in recommendations %}
                 <div class="outfit-card">
                     <div style="clearfix; margin-bottom: 16px;">
-                        <h3 class="outfit-title">{{ rec.outfit.name }}</h3>
+                        <h3 class="outfit-title">
+                            {% if rec.outfit %}
+                                {{ rec.outfit.name }}
+                            {% else %}
+                                {{ rec.weather_factor.suggested_name|default:"Outfit Suggestion" }}
+                            {% endif %}
+                        </h3>
                         <span class="confidence-badge">{{ rec.confidence_score|floatformat:0 }}% Match</span>
                     </div>
 
-                    {% if rec.weather_factor %}
+                    {% if rec.occasion_match %}
                     <span class="weather-tag">
-                        {{ rec.weather_factor.temperature }}°C • {{ rec.weather_factor.condition|upper }}
+                        {{ rec.occasion_match|upper }}
                     </span>
                     {% endif %}
 
-                    <!-- Items -->
+                    <!-- Items - from outfit or suggestions -->
                     <div class="items-grid">
-                        {% for item in rec.outfit.items.all|slice:":4" %}
-                        <div class="item-box">
-                            {% if item.image %}
-                            <img src="{{ item.image.url }}" alt="{{ item.name }}">
-                            {% else %}
-                            <div
-                                style="width:100%; height:140px; background:#e0e0e0; border:1px solid #d9d9d9; display:flex; align-items:center; justify-content:center; color:#757575; font-size:12px;">
-                                NO IMAGE
+                        {% if rec.outfit %}
+                            {% for item in rec.outfit.items.all|slice:":4" %}
+                            <div class="item-box">
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                {% else %}
+                                <div
+                                    style="width:100%; height:140px; background:#e0e0e0; border:1px solid #d9d9d9; display:flex; align-items:center; justify-content:center; color:#757575; font-size:12px;">
+                                    NO IMAGE
+                                </div>
+                                {% endif %}
+                                <div class="item-name">{{ item.name }}</div>
                             </div>
-                            {% endif %}
-                            <div class="item-name">{{ item.name }}</div>
-                        </div>
-                        {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            {% for item in rec.weather_factor.suggested_items|slice:":4" %}
+                            <div class="item-box">
+                                {% if item.image_url %}
+                                <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                                {% else %}
+                                <div
+                                    style="width:100%; height:140px; background:#e0e0e0; border:1px solid #d9d9d9; display:flex; align-items:center; justify-content:center; color:#757575; font-size:12px;">
+                                    NO IMAGE
+                                </div>
+                                {% endif %}
+                                <div class="item-name">{{ item.name }}</div>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
                     </div>
 
                     <!-- Reason -->
@@ -684,12 +709,19 @@
                     <div class="action-btns">
                         <form method="post" action="{% url 'recommendations:accept' rec.id %}">
                             {% csrf_token %}
-                            <button type="submit" class="btn-accept" style="width: 100%;">Wear Today</button>
+                            <button type="submit" class="btn-accept" style="width: 100%;">
+                                {% if rec.outfit %}Wear Today{% else %}✓ Add to My Outfits{% endif %}
+                            </button>
                         </form>
                         <form method="post" action="{% url 'recommendations:reject' rec.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn-reject" style="width: 100%;">Not for Me</button>
                         </form>
+                    </div>
+                    {% elif rec.status == 'accepted' %}
+                    <div
+                        style="text-align: center; padding: 12px; background: #2c2c2c; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                        ✓ Added to Outfits
                     </div>
                     {% else %}
                     <div

@@ -20,7 +20,7 @@ class DailyRecommendation(models.Model):
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='daily_recommendations')
-    outfit = models.ForeignKey(Outfit, on_delete=models.CASCADE, related_name='recommendations')
+    outfit = models.ForeignKey(Outfit, on_delete=models.CASCADE, null=True, blank=True, related_name='recommendations')
     
     # Recommendation details
     recommendation_date = models.DateField()
