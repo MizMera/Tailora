@@ -475,7 +475,7 @@ def profile_settings_view(request):
 @login_required
 def change_password_view(request):
     """
-    Change password view for logged-in users
+    Change password view for logged-in users - Step 1: Validate and send verification code
     """
     if request.method == 'POST':
         current_password = request.POST.get('current_password')
@@ -500,18 +500,91 @@ def change_password_view(request):
             messages.error(request, 'New password must be at least 8 characters long.')
             return render(request, 'change_password.html')
         
-        # Change password
-        request.user.set_password(new_password1)
-        request.user.save()
+        # Generate password change verification code
+        from django.contrib.auth.hashers import make_password
+        new_password_hash = make_password(new_password1)
+        request.user.generate_password_change_code(new_password_hash)
+        
+        # Send email with verification code
+        subject = 'Your Password Change Verification Code'
+        message = f"""
+Hello {request.user.username},
+
+You requested to change your password. Please use the following 6-digit code to confirm:
+
+{request.user.password_change_code}
+
+This code will expire in 15 minutes.
+
+If you did not request this change, please ignore this email and your password will remain unchanged.
+
+Best regards,
+The Tailora Team
+"""
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [request.user.email],
+                fail_silently=False,
+            )
+            messages.success(request, 'A verification code has been sent to your email.')
+            return redirect('verify_password_change')
+        except Exception as e:
+            request.user.clear_password_change_code()
+            messages.error(request, 'Failed to send verification email. Please try again.')
+            return render(request, 'change_password.html')
+    
+    return render(request, 'change_password.html')
+
+
+@login_required
+def verify_password_change_view(request):
+    """
+    Verify the password change code and complete the password change - Step 2
+    """
+    from django.utils import timezone
+    
+    user = request.user
+    
+    # Check if there's a pending password change
+    if not user.password_change_code or not user.pending_new_password:
+        messages.error(request, 'No pending password change request. Please start again.')
+        return redirect('change_password')
+    
+    # Check if code has expired
+    if user.password_change_code_expires_at and user.password_change_code_expires_at < timezone.now():
+        user.clear_password_change_code()
+        messages.error(request, 'Verification code has expired. Please start again.')
+        return redirect('change_password')
+    
+    if request.method == 'POST':
+        entered_code = request.POST.get('verification_code', '').strip()
+        
+        if not entered_code:
+            messages.error(request, 'Please enter the verification code.')
+            return render(request, 'verify_password_change.html')
+        
+        if entered_code != user.password_change_code:
+            messages.error(request, 'Invalid verification code. Please try again.')
+            return render(request, 'verify_password_change.html')
+        
+        # Code is valid - change the password
+        user.password = user.pending_new_password
+        user.save()
+        
+        # Clear the verification data
+        user.clear_password_change_code()
         
         # Update session to prevent logout
         from django.contrib.auth import update_session_auth_hash
-        update_session_auth_hash(request, request.user)
+        update_session_auth_hash(request, user)
         
         messages.success(request, 'Password changed successfully!')
         return redirect('profile_settings')
     
-    return render(request, 'change_password.html')
+    return render(request, 'verify_password_change.html')
 
 
 @login_required
