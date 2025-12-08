@@ -27,7 +27,7 @@ class CategoryMapper:
         'shorts': ['Shorts', 'Bas'],
         'skirt': ['Jupes', 'Bas'],
         
-        # Dresses
+        # Dresses2.6 gb d
         'dresses': ['Robes'],
         'dress': ['Robes'],
         

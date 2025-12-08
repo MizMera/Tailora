@@ -13,7 +13,8 @@
     <p class="text-muted">Outfits you've saved for later</p>
 </div>
 
-<div class="posts-container">
+<div style="max-width: 1200px; margin: 0 auto;">
+<div class="content-section">
     {% if posts %}
         {% for post in posts %}
             {% include 'social/_post_card.html' %}
@@ -24,6 +25,7 @@
             <a href="{% url 'social:discover' %}" class="btn btn-primary">Explore Posts</a>
         </div>
     {% endif %}
+</div>
 </div>
  
 {% endblock %}

@@ -386,11 +386,34 @@ def dashboard_view(request):
     """
     Dashboard view - main page after login
     """
+    from outfits.models import Outfit
+    from wardrobe.models import ClothingItem
+    from social.models import UserFollow
+    
     # Get or create style profile
     try:
         style_profile = request.user.style_profile
     except StyleProfile.DoesNotExist:
         style_profile = StyleProfile.objects.create(user=request.user)
+    
+    # Calculate actual counts from database
+    user = request.user
+    actual_wardrobe_count = ClothingItem.objects.filter(user=user).count()
+    actual_outfits_count = Outfit.objects.filter(user=user).count()
+    actual_followers_count = UserFollow.objects.filter(following=user).count()
+    
+    # Sync counts if they differ
+    if user.wardrobe_items_count != actual_wardrobe_count:
+        user.wardrobe_items_count = actual_wardrobe_count
+        user.save(update_fields=['wardrobe_items_count'])
+    
+    if user.outfits_created_count != actual_outfits_count:
+        user.outfits_created_count = actual_outfits_count
+        user.save(update_fields=['outfits_created_count'])
+    
+    if user.followers_count != actual_followers_count:
+        user.followers_count = actual_followers_count
+        user.save(update_fields=['followers_count'])
     
     context = {
         'user': request.user,
@@ -442,9 +465,39 @@ def profile_settings_view(request):
         messages.success(request, 'Profile updated successfully!')
         return redirect('profile_settings')
     
+    # Define choices for template
+    preferred_style_choices = [
+        ('casual', 'Casual'),
+        ('chic', 'Chic'),
+        ('boheme', 'Bohemian'),
+        ('sportif', 'Sporty'),
+        ('elegant', 'Elegant'),
+        ('classique', 'Classic'),
+        ('streetwear', 'Streetwear'),
+        ('vintage', 'Vintage'),
+        ('minimaliste', 'Minimalist'),
+    ]
+    
+    color_choices = [
+        ('#000000', 'Black'),
+        ('#FFFFFF', 'White'),
+        ('#808080', 'Grey'),
+        ('#0000FF', 'Blue'),
+        ('#FF0000', 'Red'),
+        ('#008000', 'Green'),
+        ('#FFFF00', 'Yellow'),
+        ('#FFC0CB', 'Pink'),
+        ('#A52A2A', 'Brown'),
+        ('#F5DEB3', 'Beige'),
+        ('#FFA500', 'Orange'),
+        ('#800080', 'Purple'),
+    ]
+    
     context = {
         'user': user,
         'style_profile': style_profile,
+        'preferred_style_choices': preferred_style_choices,
+        'color_choices': color_choices,
     }
     return render(request, 'profile_settings.html', context)
 
@@ -452,7 +505,7 @@ def profile_settings_view(request):
 @login_required
 def change_password_view(request):
     """
-    Change password view for logged-in users
+    Change password view for logged-in users - Step 1: Validate and send verification code
     """
     if request.method == 'POST':
         current_password = request.POST.get('current_password')
@@ -477,43 +530,353 @@ def change_password_view(request):
             messages.error(request, 'New password must be at least 8 characters long.')
             return render(request, 'change_password.html')
         
-        # Change password
-        request.user.set_password(new_password1)
-        request.user.save()
+        # Generate password change verification code
+        from django.contrib.auth.hashers import make_password
+        new_password_hash = make_password(new_password1)
+        request.user.generate_password_change_code(new_password_hash)
         
-        # Update session to prevent logout
-        from django.contrib.auth import update_session_auth_hash
-        update_session_auth_hash(request, request.user)
-        
-        messages.success(request, 'Password changed successfully!')
-        return redirect('profile_settings')
+        # Send email with verification code
+        subject = 'Your Password Change Verification Code'
+        message = f"""
+Hello {request.user.username},
+
+You requested to change your password. Please use the following 6-digit code to confirm:
+
+{request.user.password_change_code}
+
+This code will expire in 15 minutes.
+
+If you did not request this change, please ignore this email and your password will remain unchanged.
+
+Best regards,
+The Tailora Team
+"""
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [request.user.email],
+                fail_silently=False,
+            )
+            messages.success(request, 'A verification code has been sent to your email.')
+            return redirect('verify_password_change')
+        except Exception as e:
+            request.user.clear_password_change_code()
+            messages.error(request, 'Failed to send verification email. Please try again.')
+            return render(request, 'change_password.html')
     
     return render(request, 'change_password.html')
 
 
 @login_required
-def delete_account_view(request):
+def verify_password_change_view(request):
     """
-    Delete user account view
+    Verify the password change code and complete the password change - Step 2
+    """
+    from django.utils import timezone
+    
+    user = request.user
+    
+    # Check if there's a pending password change
+    if not user.password_change_code or not user.pending_new_password:
+        messages.error(request, 'No pending password change request. Please start again.')
+        return redirect('change_password')
+    
+    # Check if code has expired
+    if user.password_change_code_expires_at and user.password_change_code_expires_at < timezone.now():
+        user.clear_password_change_code()
+        messages.error(request, 'Verification code has expired. Please start again.')
+        return redirect('change_password')
+    
+    if request.method == 'POST':
+        entered_code = request.POST.get('verification_code', '').strip()
+        
+        if not entered_code:
+            messages.error(request, 'Please enter the verification code.')
+            return render(request, 'verify_password_change.html')
+        
+        if entered_code != user.password_change_code:
+            messages.error(request, 'Invalid verification code. Please try again.')
+            return render(request, 'verify_password_change.html')
+        
+        # Code is valid - change the password
+        user.password = user.pending_new_password
+        user.save()
+        
+        # Clear the verification data
+        user.clear_password_change_code()
+        
+        # Update session to prevent logout
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(request, user)
+        
+        messages.success(request, 'Password changed successfully!')
+        return redirect('profile_settings')
+    
+    return render(request, 'verify_password_change.html')
+
+
+@login_required
+def request_account_deletion_view(request):
+    """
+    Handles the initial request for account deletion by sending a confirmation code.
     """
     if request.method == 'POST':
-        password = request.POST.get('password')
-        confirm = request.POST.get('confirm')
-        
-        if confirm != 'DELETE':
-            messages.error(request, 'Please type "DELETE" to confirm.')
-            return render(request, 'delete_account.html')
-        
-        if not request.user.check_password(password):
-            messages.error(request, 'Incorrect password.')
-            return render(request, 'delete_account.html')
-        
-        # Delete user account
         user = request.user
-        auth_logout(request)
-        user.delete()
-        
-        messages.success(request, 'Your account has been deleted.')
-        return redirect('login')
-    
+        user.generate_deletion_code()
+
+        # Send email with deletion code
+        subject = 'Your Account Deletion Code'
+        message = f"""
+Hello {user.username},
+
+You requested to delete your account. Please use the following 6-digit code to confirm:
+
+{user.deletion_code}
+
+This code will expire in 15 minutes.
+
+If you did not request this, please ignore this email.
+
+Best regards,
+The Tailora Team
+"""
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+            messages.success(request, 'A deletion code has been sent to your email.')
+            return redirect('confirm_account_deletion')
+        except Exception as e:
+            messages.error(request, f'Failed to send deletion email: {e}')
+            return redirect('profile_settings')
+
     return render(request, 'delete_account.html')
+
+
+@login_required
+def confirm_account_deletion_view(request):
+    """
+    Handles the final confirmation of account deletion with a code.
+    """
+    user = request.user
+    if request.method == 'POST':
+        code = request.POST.get('deletion_code')
+        if not code:
+            messages.error(request, 'Please enter the deletion code.')
+            return render(request, 'delete_account_confirm.html')
+
+        if user.deletion_code == code:
+            from django.utils import timezone
+            if user.deletion_code_expires_at > timezone.now():
+                # Correct code and not expired, delete account
+                user_email = user.email  # Save for message
+                auth_logout(request)
+                user.delete()
+                messages.success(request, f'Account for {user_email} has been successfully deleted.')
+                return redirect('login')
+            else:
+                messages.error(request, 'The deletion code has expired. Please request a new one.')
+        else:
+            messages.error(request, 'The deletion code is incorrect.')
+
+    return render(request, 'delete_account_confirm.html')
+
+
+@login_required
+def upgrade_account_view(request):
+    """
+    Handles the user request to upgrade their account to Premium.
+    """
+    user = request.user
+    from django.utils import timezone
+
+    if user.role == 'premium':
+        messages.info(request, 'You are already a full Premium member.')
+        return redirect('profile_settings')
+    
+    if user.premium_until and user.premium_until > timezone.now():
+        messages.info(request, f'You are currently on a Premium trial until {user.premium_until.strftime("%Y-%m-%d")}.')
+        return redirect('profile_settings')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'trial':
+            user.premium_until = timezone.now() + timezone.timedelta(days=7)
+            user.save()
+            messages.success(request, 'Congratulations! You have started a 7-day Premium trial.')
+            return redirect('profile_settings')
+
+        elif action == 'upgrade':
+            card_number = request.POST.get('card_number')
+            expiry_date = request.POST.get('expiry_date')
+            cvc = request.POST.get('cvc')
+
+            if card_number and expiry_date and cvc:
+                # Simulate successful payment
+                user.role = 'premium'
+                user.premium_until = None  # Clear trial date if it exists
+                user.save()
+                messages.success(request, 'Congratulations! Your account has been upgraded to Premium.')
+                return redirect('profile_settings')
+            else:
+                messages.error(request, 'Please fill in all payment details.')
+
+    return render(request, 'upgrade_account.html')
+
+
+@login_required
+def cancel_subscription_view(request):
+    """
+    Handles the user request to cancel their Premium subscription.
+    """
+    if request.method == 'POST':
+        user = request.user
+        user.role = 'user'
+        user.premium_until = None
+        user.save()
+        messages.success(request, 'Your Premium subscription has been canceled.')
+        return redirect('profile_settings')
+    
+    # Redirect if accessed via GET
+    return redirect('profile_settings')
+
+
+@login_required
+def ai_style_analyze_view(request):
+    """
+    AI Style Profile Generator
+    Allows users to upload images to analyze their style persona and color palette.
+    """
+    import os
+    from collections import Counter
+    from wardrobe.ai_image_analyzer import get_image_analyzer
+    
+    if request.method == 'POST':
+        if 'analyze' in request.POST:
+            # Handle Image Upload & Analysis
+            images = request.FILES.getlist('style_images')
+            
+            if not images:
+                messages.error(request, 'Please upload at least one image.')
+                return render(request, 'ai_style_analyze.html')
+            
+            if len(images) > 5:
+                messages.warning(request, 'Maximum 5 images allowed. Analyzing the first 5.')
+                images = images[:5]
+            
+            try:
+                # Initialize Analyzer (Lazy load if possible)
+                analyzer = get_image_analyzer(use_blip2=True)
+                
+                results = []
+                all_styles = []
+                all_colors = []
+                
+                import base64
+                
+                for img in images:
+                    # Reset pointer to beginning of file for reading
+                    img.seek(0)
+                    image_data = img.read()
+                    encoded_string = base64.b64encode(image_data).decode('utf-8')
+                    # Reset pointer again for analyzer if needed (though analyzer likely read it already or we should read before analysis)
+                    # Actually, let's analyze first, then encode? Or careful with stream position.
+                    img.seek(0)
+                    
+                    # Analyze each image
+                    # Note: analyze_image expects an InMemoryUploadedFile which 'img' is
+                    analysis = analyzer.analyze_image(img)
+                    
+                    if analysis.get('style'):
+                        all_styles.append(analysis['style'].lower())
+                    
+                    if analysis.get('color'):
+                        all_colors.append(analysis['color'].lower())
+                        
+                    results.append({
+                        'name': img.name,
+                        'analysis': analysis,
+                        'image_base64': f"data:image/jpeg;base64,{encoded_string}" # Assuming JPEG/PNG, browser handles mime mostly
+                    })
+                
+                # Aggregate Styles
+                style_counts = Counter(all_styles)
+                top_styles = [s for s, c in style_counts.most_common(3)]
+                
+                # Aggregate Colors
+                color_counts = Counter(all_colors)
+                top_colors = [c for c, count in color_counts.most_common(5)]
+                
+                # Map detailed styles to broad categories if necessary
+                # Simple heuristic mapping
+                mapped_styles = []
+                style_map = {
+                    'casual': 'casual', 'relax': 'casual', 'everyday': 'casual',
+                    'chic': 'chic', 'elegant': 'elegant', 'formal': 'elegant',
+                    'bohemian': 'boheme', 'boho': 'boheme', 'hippie': 'boheme',
+                    'sport': 'sportif', 'athletic': 'sportif', 'gym': 'sportif',
+                    'street': 'streetwear', 'urban': 'streetwear', 'hipster': 'streetwear',
+                    'vintage': 'vintage', 'retro': 'vintage', 'classic': 'classique',
+                    'minimal': 'minimaliste', 'simple': 'minimaliste', 'clean': 'minimaliste'
+                }
+                
+                detected_persona = "Eclectic" # Default
+                
+                for s in top_styles:
+                    for key, value in style_map.items():
+                        if key in s:
+                            if value not in mapped_styles:
+                                mapped_styles.append(value)
+                
+                if mapped_styles:
+                    detected_persona = mapped_styles[0].title()
+                elif top_styles:
+                     detected_persona = top_styles[0].title()
+
+                # Prepare Context for Results Step
+                context = {
+                    'analyzed': True,
+                    'results': results,
+                    'detected_persona': detected_persona,
+                    'detected_styles': mapped_styles,  # Codes for checkbox pre-selection
+                    'detected_colors': top_colors,     # Raw color names
+                }
+                return render(request, 'ai_style_analyze.html', context)
+                
+            except Exception as e:
+                print(f"AI Analysis Error: {e}")
+                messages.error(request, f"Error analyzing images: {str(e)}")
+                return render(request, 'ai_style_analyze.html')
+
+        elif 'save_profile' in request.POST:
+            # Handle Saving Results to Profile
+            user = request.user
+            try:
+                style_profile = user.style_profile
+            except StyleProfile.DoesNotExist:
+                style_profile = StyleProfile.objects.create(user=user)
+            
+            # Update Styles
+            selected_styles = request.POST.getlist('preferred_styles')
+            if selected_styles:
+                style_profile.preferred_styles = selected_styles
+            
+            # Update Colors
+            # We receive raw text names from the form or analysis
+            # We might want to map them to hex or just save as custom if model allows
+            # Model expects hex list.
+            # Simplified: We won't overwrite colors completely, maybe append or just rely on user manual selection in settings
+            # For now, let's just save styles primarily as that's the "Persona"
+            
+            style_profile.save()
+            messages.success(request, 'Style Profile updated with AI insights!')
+            return redirect('profile_settings')
+            
+    return render(request, 'ai_style_analyze.html')

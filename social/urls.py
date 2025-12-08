@@ -1,15 +1,15 @@
 from django.urls import path, include
-from . import views
 from rest_framework.routers import DefaultRouter
-from .views import LookbookPostViewSet, PostCommentViewSet, UserFollowViewSet, StyleChallengeViewSet
+from . import views
 
 app_name = 'social'
 
+# REST API router
 router = DefaultRouter()
-router.register(r'posts', LookbookPostViewSet, basename='post')
-router.register(r'comments', PostCommentViewSet, basename='comment')
-router.register(r'follows', UserFollowViewSet, basename='follow')
-router.register(r'challenges', StyleChallengeViewSet, basename='challenge')
+router.register(r'api/posts', views.LookbookPostViewSet, basename='post-api')
+router.register(r'api/comments', views.PostCommentViewSet, basename='comment-api')
+router.register(r'api/follows', views.UserFollowViewSet, basename='follow-api')
+router.register(r'api/challenges', views.StyleChallengeViewSet, basename='challenge-api')
 
 urlpatterns = [
     # Feed
@@ -19,6 +19,7 @@ urlpatterns = [
     # Posts
     path('post/create/', views.create_post, name='create_post'),
     path('post/<uuid:post_id>/', views.post_detail, name='post_detail'),
+    path('post/<uuid:post_id>/edit/', views.edit_post, name='edit_post'),
     path('post/<uuid:post_id>/delete/', views.delete_post, name='delete_post'),
     
     # Interactions
@@ -39,19 +40,10 @@ urlpatterns = [
     # Style challenges
     path('challenges/', views.challenges_list, name='challenges_list'),
     path('challenge/<uuid:challenge_id>/', views.challenge_detail, name='challenge_detail'),
-
-    # Hashtags
-    path('hashtags/trending/', views.trending_hashtags, name='trending_hashtags'),
-    path('hashtags/search/<str:hashtag>/', views.hashtag_search, name='hashtag_search'),
     
-    #modifier
-    path('post/<uuid:post_id>/edit/', views.edit_post, name='edit_post'),
-
-    #api
+    # AI Feature
+    path('ai-preview/<uuid:outfit_id>/', views.ai_preview, name='ai_preview'),
+    
     # REST API routes
-    path('api/', include(router.urls)), 
-    path('api/hashtags/trending/', views.trending_hashtags),  # Pour AJAX
-    # AI Photo Enhancer
-    path('ai-preview/<uuid:outfit_id>/', views.ai_photo_preview, name='ai_photo_preview'),
-
+    path('', include(router.urls)),
 ]

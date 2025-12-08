@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import UserFollow, LookbookPost, PostLike, PostComment, PostSave, StyleChallenge
-from .models import Badge, UserBadge
+
 
 @admin.register(UserFollow)
 class UserFollowAdmin(admin.ModelAdmin):
@@ -49,18 +49,3 @@ class StyleChallengeAdmin(admin.ModelAdmin):
     list_filter = ['status', 'start_date', 'end_date']
     search_fields = ['title', 'theme', 'hashtag']
     date_hierarchy = 'start_date'
-
-@admin.register(Badge)
-class BadgeAdmin(admin.ModelAdmin):
-    list_display = ['name', 'badge_type', 'icon', 'color', 'created_at']
-    list_filter = ['badge_type', 'created_at']
-    search_fields = ['name', 'description']
-    ordering = ['badge_type', 'name']
-
-@admin.register(UserBadge)
-class UserBadgeAdmin(admin.ModelAdmin):
-    list_display = ['user', 'badge', 'earned_at']
-    list_filter = ['badge', 'earned_at']
-    search_fields = ['user__username', 'user__email', 'badge__name']
-    ordering = ['-earned_at']
-    date_hierarchy = 'earned_at'

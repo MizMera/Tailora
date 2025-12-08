@@ -42,6 +42,10 @@ class LookbookPost(models.Model):
     caption = models.TextField(blank=True)
     hashtags = models.JSONField(default=list, blank=True)  # e.g., ["#mariage", "#lookdujour"]
     
+    # AI Enhanced Images
+    # Dictionary mapping outfit item IDs to enhanced image paths: { "item_id": "path/to/image.jpg" }
+    enhanced_images = models.JSONField(default=dict, blank=True)
+    
     # Visibility
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')
     
@@ -53,15 +57,9 @@ class LookbookPost(models.Model):
     # Optional: Link to style challenge
     challenge = models.ForeignKey('StyleChallenge', on_delete=models.SET_NULL, null=True, blank=True, related_name='submissions')
     
-    # NOUVEAU: Stocker les chemins des images améliorées pour ce post
-    enhanced_images = models.JSONField(default=dict, blank=True)
-    
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-   
-    # NOUVEAU: Badge actuel du post
-    current_badge = models.CharField(max_length=50, blank=True, null=True)
     
     class Meta:
         db_table = 'lookbook_posts'
@@ -183,37 +181,3 @@ class StyleChallenge(models.Model):
     
     def __str__(self):
         return f"{self.title} - {self.theme}"
-    
-class Badge(models.Model):
-    BADGE_TYPES = (
-        ('starter', 'Starter'),
-        ('popular', 'Popular'), 
-        ('influencer', 'Influencer'),
-        ('trendsetter', 'Trendsetter'),
-        ('champion', 'Champion'),
-        ('social', 'Social'),
-        ('creator', 'Creator'),
-    )
-    
-    name = models.CharField(max_length=100)
-    badge_type = models.CharField(max_length=20, choices=BADGE_TYPES)
-    description = models.TextField()
-    icon = models.CharField(max_length=50)  # Emoji
-    color = models.CharField(max_length=7, default='#FFD700')  # Code couleur hex
-    criteria = models.JSONField(default=dict)  # Conditions pour gagner le badge
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.icon} {self.name}"
-
-class UserBadge(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='badges')
-    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
-    earned_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        unique_together = ['user', 'badge']
-        ordering = ['-earned_at']
-
-    def __str__(self):
-        return f"{self.user.get_full_name()} - {self.badge.name}"

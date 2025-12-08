@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirm Account Deletion - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
+{% block container_class %}page-reveal{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 class="page-title">Confirm Deletion</h1>
+            <p class="page-subtitle">Enter your verification code</p>
+        </div>
+        <div>
+            <a href="{% url 'profile_settings' %}" class="btn btn-secondary">
+                <span style="margin-right: 6px;">←</span> Cancel
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="settings-wrapper">
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {% if message.tags == 'error' %}message-error{% elif message.tags == 'success' %}message-success{% else %}message-info{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="settings-grid">
+        <!-- Main Content -->
+        <div class="settings-main">
+            <div class="settings-section" style="border-bottom: none; padding-bottom: 0;">
+                <!-- Warning Header -->
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 28px; padding: 20px; background: linear-gradient(135deg, #ffebee, #ffcdd2); border-radius: 0;">
+                    <div style="width: 48px; height: 48px; background: #c62828; border-radius: 0; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 style="font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700; color: #c62828; margin: 0 0 4px 0;">Final Step</h3>
+                        <p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #b71c1c; margin: 0;">Enter the code sent to your email</p>
+                    </div>
+                </div>
+
+                <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 28px;">
+                    A 6-digit verification code has been sent to your email. Please enter it below to confirm the permanent deletion of your account. The code expires in <strong>15 minutes</strong>.
+                </p>
+
+                <form method="post" action="{% url 'confirm_account_deletion' %}">
+                    {% csrf_token %}
+                    
+                    <div class="verification-field" style="text-align: center; margin-bottom: 28px;">
+                        <label for="deletion_code" class="verification-label" style="display: block; margin-bottom: 12px;">
+                            Verification Code
+                        </label>
+                        <input type="text" class="verification-input" id="deletion_code" name="deletion_code" 
+                               required maxlength="6" pattern="\d{6}" placeholder="000000"
+                               style="font-family: 'Inter', monospace; max-width: 200px; margin: 0 auto;">
+                    </div>
+                    
+                    <div class="delete-actions" style="justify-content: center;">
+                        <button type="submit" class="btn-danger" style="padding: 16px 32px;">
+                            <svg style="vertical-align: middle; margin-right: 6px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            Delete My Account Permanently
+                        </button>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px;">
+                        <a href="{% url 'profile_settings' %}" style="font-family: 'Inter', sans-serif; font-size: 14px; color: #888; text-decoration: none;">
+                            Cancel and keep my account
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="settings-sidebar">
+            <!-- Changed Your Mind? -->
+            <div class="security-card">
+                <h3 class="security-title">
+                    <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Changed Your Mind?
+                </h3>
+                <p style="font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 16px;">
+                    If you didn't request this deletion, simply leave this page. Your account remains safe.
+                </p>
+                <a href="{% url 'profile_settings' %}" class="btn btn-secondary" style="width: 100%; text-align: center;">
+                    Keep My Account
+                </a>
+            </div>
+
+            <!-- Security Concern? -->
+            <div class="security-card">
+                <h3 class="security-title">
+                    <svg class="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    Security Concern?
+                </h3>
+                <p style="font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 16px;">
+                    If you're worried about security, consider changing your password instead.
+                </p>
+                <a href="{% url 'change_password' %}" class="btn btn-secondary" style="width: 100%; text-align: center;">
+                    Change Password
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

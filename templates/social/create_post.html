@@ -17,72 +17,74 @@
 </div>
 
 {% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+{% endfor %}
 {% endif %}
 
 <div class="content-section" style="max-width: 700px; margin: 0 auto;">
     <form method="post" class="social-form">
         {% csrf_token %}
-        
+        <input type="hidden" name="enhanced_images" id="enhanced_images_input">
+
         <div class="form-section">
             <h3 class="section-title">SELECT OUTFIT</h3>
             <div class="form-group">
                 <select name="outfit" class="input-control" required id="outfit_select">
                     <option value="">Choose an outfit...</option>
                     {% for outfit in outfits %}
-                        <option value="{{ outfit.id }}">{{ outfit.name }} - {{ outfit.items.count }} items</option>
+                    <option value="{{ outfit.id }}">{{ outfit.name }} - {{ outfit.items.count }} items</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
-        
-        <!-- 🎨 AI PHOTO ENHANCER SECTION - UNE SEULE FOIS -->
-        <div class="form-section" style="background: #f8f9fa; border-radius: 10px; padding: 20px;">
-            <h3 class="section-title">🎨 AI Photo Enhancer</h3>
-            <p class="text-muted" style="margin-bottom: 20px;">Améliorez automatiquement vos photos de mode</p>
-            
+
+        <!-- AI Photo Enhancer Section -->
+        <div class="form-section" style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 20px;">
+            <h3 class="section-title">AI PHOTO ENHANCER</h3>
+            <p style="font-size: 13px; color: #757575; margin-bottom: 16px;">Automatically enhance your fashion photos
+                with AI</p>
+
             <div class="form-group">
-                <label class="form-label" style="display: flex; align-items: center; gap: 10px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                     <input type="checkbox" name="enhance_photos" id="enhance_photos" value="true">
-                    <span>Activer l'amélioration automatique des photos</span>
+                    <span style="font-size: 14px;">Enable automatic photo enhancement</span>
                 </label>
             </div>
-            
+
             <div id="ai_style_options" style="display: none; margin-top: 15px;">
                 <div class="form-group">
-                    <label class="form-label">Style d'amélioration</label>
+                    <label class="form-label">Enhancement Style</label>
                     <select name="photo_style" class="input-control" id="photo_style">
-                        <option value="auto">Auto - Intelligence automatique</option>
-                        <option value="vibrant">Vibrant - Couleurs éclatantes</option>
-                        <option value="elegant">Élégant - Style raffiné</option>
-                        <option value="vintage">Vintage - Effet rétro</option>
-                        <option value="bright">Lumineux - Tons clairs et frais</option>
+                        <option value="auto">Auto - Smart enhancement</option>
+                        <option value="vibrant">Vibrant - Bold colors</option>
+                        <option value="elegant">Elegant - Refined style</option>
+                        <option value="vintage">Vintage - Retro effect</option>
+                        <option value="bright">Bright - Light and fresh</option>
                     </select>
                 </div>
-                
+
                 <div id="ai_preview_section" style="display: none;">
-                    <button type="button" id="preview_ai" class="btn btn-outline-primary btn-sm">
-                        👁️ Voir un aperçu des améliorations
+                    <button type="button" id="preview_ai" class="btn btn-secondary" style="font-size: 13px;">
+                        Preview AI Enhancement
                     </button>
                     <div id="preview_results" style="margin-top: 15px;"></div>
                 </div>
             </div>
         </div>
-        
+
         <div class="form-section">
             <h3 class="section-title">POST DETAILS</h3>
             <div class="form-group">
                 <label class="form-label">Caption</label>
                 <textarea name="caption" class="input-control" rows="4" placeholder="Write a caption..."></textarea>
             </div>
-            
+
             <div class="form-group">
                 <label class="form-label">Hashtags (space-separated)</label>
                 <input type="text" name="hashtags" class="input-control" placeholder="#ootd #style #fashion">
             </div>
-            
+
             <div class="form-group">
                 <label class="form-label">Visibility</label>
                 <select name="visibility" class="input-control">
@@ -92,7 +94,7 @@
                 </select>
             </div>
         </div>
-        
+
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Share Post</button>
             <a href="{% url 'social:feed' %}" class="btn btn-secondary">Cancel</a>
@@ -101,118 +103,117 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const enhanceCheckbox = document.getElementById('enhance_photos');
-    const styleOptions = document.getElementById('ai_style_options');
-    const previewSection = document.getElementById('ai_preview_section');
-    const outfitSelect = document.getElementById('outfit_select');
-    
-    // Afficher/masquer les options AI
-    enhanceCheckbox.addEventListener('change', function() {
-        styleOptions.style.display = this.checked ? 'block' : 'none';
-        previewSection.style.display = (this.checked && outfitSelect.value) ? 'block' : 'none';
-    });
-    
-    // Afficher/masquer la prévisualisation selon l'outfit sélectionné
-    outfitSelect.addEventListener('change', function() {
-        previewSection.style.display = (enhanceCheckbox.checked && this.value) ? 'block' : 'none';
-    });
-    
-    // Prévisualisation AI
-    document.getElementById('preview_ai').addEventListener('click', function() {
-        const outfitId = outfitSelect.value;
-        const style = document.getElementById('photo_style').value;
-        
-        if (!outfitId) {
-            alert('Veuillez d\'abord sélectionner un outfit');
-            return;
-        }
-        
-        this.innerHTML = '🔄 Traitement en cours...';
-        this.disabled = true;
-        
-        fetch(`/social/ai-preview/${outfitId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: JSON.stringify({ style: style })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Erreur serveur: ' + response.status);
+    document.addEventListener('DOMContentLoaded', function () {
+        const enhanceCheckbox = document.getElementById('enhance_photos');
+        const styleOptions = document.getElementById('ai_style_options');
+        const previewSection = document.getElementById('ai_preview_section');
+        const outfitSelect = document.getElementById('outfit_select');
+        const previewBtn = document.getElementById('preview_ai');
+
+        // Show/hide AI options
+        enhanceCheckbox.addEventListener('change', function () {
+            styleOptions.style.display = this.checked ? 'block' : 'none';
+            previewSection.style.display = (this.checked && outfitSelect.value) ? 'block' : 'none';
+        });
+
+        // Show/hide preview based on outfit selection
+        outfitSelect.addEventListener('change', function () {
+            previewSection.style.display = (enhanceCheckbox.checked && this.value) ? 'block' : 'none';
+        });
+
+        // AI Preview functionality
+        previewBtn.addEventListener('click', function () {
+            const outfitId = outfitSelect.value;
+            const style = document.getElementById('photo_style').value;
+
+            if (!outfitId) {
+                alert('Please select an outfit first');
+                return;
             }
-            return response.json();
-        })
-        .then(data => {
-            console.log('📊 Données reçues:', data);
-            
-            this.innerHTML = '👁️ Voir un aperçu des améliorations';
-            this.disabled = false;
-            
-            if (data.previews && data.previews.length > 0) {
-                let html = `
-                <div style="background: white; padding: 15px; border-radius: 10px; border: 2px solid #007bff;">
-                    <h4 style="margin-bottom: 15px; color: #007bff;">🎨 Aperçu AI - ${data.previews.length} images</h4>
+
+            this.innerHTML = 'Processing...';
+            this.disabled = true;
+
+            fetch(`/social/ai-preview/${outfitId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ style: style })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Server error: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    this.innerHTML = 'Preview AI Enhancement';
+                    this.disabled = false;
+
+                    if (data.previews && data.previews.length > 0) {
+                        // Filter definitions for visual preview
+                        const filterStyles = {
+                            'auto': 'contrast(1.2) saturate(1.2)',
+                            'vibrant': 'saturate(1.6) contrast(1.2)',
+                            'elegant': 'sepia(0.2) contrast(1.1)',
+                            'vintage': 'sepia(0.6) contrast(1.2) brightness(0.9)',
+                            'bright': 'brightness(1.2) contrast(1.1) saturate(1.1)'
+                        };
+                        const activeFilter = filterStyles[data.style] || '';
+
+                        let html = `
+                <div style="background: white; padding: 15px; border: 1px solid #e0e0e0;">
+                    <h4 style="margin-bottom: 15px; font-size: 14px;">AI Preview - ${data.previews.length} images</h4>
                     <div class="ai-previews-grid">
                 `;
-                
-                data.previews.forEach(preview => {
-                    html += `
+
+                        // Store enhanced images for submission
+                        if (data.enhanced_images) {
+                            document.getElementById('enhanced_images_input').value = JSON.stringify(data.enhanced_images);
+                        }
+
+                        data.previews.forEach(preview => {
+                            html += `
                     <div class="preview-item">
-                        <h5 style="font-size: 14px; margin-bottom: 10px;">${preview.item.name}</h5>
+                        <h5 style="font-size: 13px; margin-bottom: 10px;">${preview.item.name}</h5>
                         <div style="display: flex; gap: 15px; justify-content: center; align-items: center;">
                             <div>
-                                <p style="font-size: 11px; margin-bottom: 5px; color: #666;">AVANT</p>
-                                <img src="${preview.original}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+                                <p style="font-size: 11px; margin-bottom: 5px; color: #666;">BEFORE</p>
+                                <img src="${preview.original}" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #ddd;">
                             </div>
-                            <div style="font-size: 20px;">➡️</div>
+                            <div style="font-size: 18px;">→</div>
                             <div>
-                                <p style="font-size: 11px; margin-bottom: 5px; color: #007bff;">APRÈS</p>
-                                <img src="${preview.enhanced}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid #007bff;">
+                                <p style="font-size: 11px; margin-bottom: 5px; color: #ff4081;">AFTER</p>
+                                <img src="${preview.enhanced}" style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #ff4081; filter: ${activeFilter};">
                             </div>
                         </div>
                     </div>
                     `;
-                });
-                
-                html += `
+                        });
+
+                        html += `
                     </div>
-                    <p style="margin-top: 10px; font-size: 12px; color: #28a745;">
-                        ✅ Les améliorations seront appliquées à la création du post
+                    <p style="margin-top: 10px; font-size: 12px; color: #4caf50;">
+                        ✓ Enhancements will be applied when you share the post
                     </p>
                 </div>
                 `;
-                document.getElementById('preview_results').innerHTML = html;
-            } else {
-                document.getElementById('preview_results').innerHTML = 
-                    '<p class="text-muted">Aucun aperçu disponible. Vérifiez que l\'outfit contient des images.</p>';
-            }
-        })
-        .catch(error => {
-            console.error('❌ Erreur fetch:', error);
-            this.innerHTML = '👁️ Voir un aperçu des améliorations';
-            this.disabled = false;
-            document.getElementById('preview_results').innerHTML = 
-                `<p class="text-danger">Erreur: ${error.message}</p>`;
+                        document.getElementById('preview_results').innerHTML = html;
+                    } else {
+                        document.getElementById('preview_results').innerHTML =
+                            '<p style="color: #757575;">No preview available. Check that the outfit has images.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.innerHTML = 'Preview AI Enhancement';
+                    this.disabled = false;
+                    document.getElementById('preview_results').innerHTML =
+                        `<p style="color: #c62828;">Error: ${error.message}</p>`;
+                });
         });
     });
-});
 </script>
-
-<style>
-.ai-previews-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
-}
-.preview-item {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    text-align: center;
-}
-</style>
 {% endblock %}

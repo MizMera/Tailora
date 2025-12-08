@@ -16,6 +16,8 @@ django-imagekit==5.0.0
 
 # API Documentation
 drf-yasg==1.21.7
+django-filter==23.5
+
 
 # Environment Variables
 python-decouple==3.8
@@ -26,6 +28,12 @@ requests==2.31.0
 # AI/ML for Recommendations
 scikit-learn==1.3.2
 numpy==1.26.2
+
+# BLIP-2 Fashion Captioning
+torch>=2.0.0
+transformers>=4.25.0
+peft>=0.4.0
+accelerate>=0.16.0
 
 # Celery for async tasks
 celery==5.3.4

@@ -1,10 +1,19 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
 app_name = 'planner'
 
+# REST API router
+router = DefaultRouter()
+router.register(r'api/events', views.EventViewSet, basename='event-api')
+router.register(r'api/planning', views.OutfitPlanningViewSet, basename='planning-api')
+router.register(r'api/travel', views.TravelPlanViewSet, basename='travel-api')
+router.register(r'api/history', views.WearHistoryViewSet, basename='history-api')
+router.register(r'api/weather', views.WeatherViewSet, basename='weather-api')
+
 urlpatterns = [
-    # Calendar views
+    # Template-based calendar views
     path('', views.calendar_view, name='calendar'),
     path('events/', views.event_list, name='event_list'),
     
@@ -20,4 +29,7 @@ urlpatterns = [
     
     # Statistics
     path('stats/', views.event_stats, name='event_stats'),
+    
+    # REST API routes
+    path('', include(router.urls)),
 ]

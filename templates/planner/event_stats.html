@@ -45,23 +45,24 @@
 <div class="content-section">
     <h3 class="section-title">EVENTS BY OCCASION</h3>
     {% if occasion_stats %}
-        <div class="occasion-stats-list">
-            {% for stat in occasion_stats %}
-                <div class="occasion-stat-item">
-                    <div class="occasion-info">
-                        <span class="occasion-badge {{ stat.occasion_type }}">
-                            {{ stat.occasion_type_display }}
-                        </span>
-                        <span class="occasion-count">{{ stat.count }} event{{ stat.count|pluralize }}</span>
-                    </div>
-                    <div class="occasion-bar">
-                        <div class="occasion-bar-fill {{ stat.occasion_type }}" style="width: {% widthratio stat.count total_events 100 %}%;"></div>
-                    </div>
-                </div>
-            {% endfor %}
+    <div class="occasion-stats-list">
+        {% for stat in occasion_stats %}
+        <div class="occasion-stat-item">
+            <div class="occasion-info">
+                <span class="occasion-badge {{ stat.occasion_type }}">
+                    {{ stat.occasion_type_display }}
+                </span>
+                <span class="occasion-count">{{ stat.count }} event{{ stat.count|pluralize }}</span>
+            </div>
+            <div class="occasion-bar">
+                <div class="occasion-bar-fill {{ stat.occasion_type }}"
+                    style="width: {% widthratio stat.count total_events 100 %}%;"></div>
+            </div>
         </div>
+        {% endfor %}
+    </div>
     {% else %}
-        <p class="empty-state">No events yet</p>
+    <p class="empty-state">No events yet</p>
     {% endif %}
 </div>
 
@@ -70,39 +71,39 @@
     <div class="content-section">
         <h3 class="section-title">MOST USED OUTFITS</h3>
         {% if popular_outfits %}
-            <div class="popular-outfits-list">
-                {% for outfit in popular_outfits %}
-                    <div class="popular-outfit-item">
-                        <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="outfit-name">{{ outfit.name }}</a>
-                        <span class="usage-count">{{ outfit.event_count }} event{{ outfit.event_count|pluralize }}</span>
-                    </div>
-                {% endfor %}
+        <div class="popular-outfits-list">
+            {% for outfit in popular_outfits %}
+            <div class="popular-outfit-item">
+                <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="outfit-name">{{ outfit.name }}</a>
+                <span class="usage-count">{{ outfit.event_count }} event{{ outfit.event_count|pluralize }}</span>
             </div>
+            {% endfor %}
+        </div>
         {% else %}
-            <p class="empty-state">No outfits used in events yet</p>
+        <p class="empty-state">No outfits used in events yet</p>
         {% endif %}
     </div>
-    
+
     <!-- Upcoming Events -->
     <div class="content-section">
         <h3 class="section-title">NEXT EVENTS</h3>
         {% if next_events %}
-            <div class="next-events-list">
-                {% for event in next_events %}
-                    <div class="next-event-item">
-                        <div class="event-date-mini">
-                            <span class="mini-day">{{ event.date.day }}</span>
-                            <span class="mini-month">{{ event.date|date:"M" }}</span>
-                        </div>
-                        <div class="event-mini-info">
-                            <a href="{% url 'planner:event_detail' event.id %}" class="event-mini-title">{{ event.title }}</a>
-                            <span class="event-mini-occasion">{{ event.get_occasion_type_display }}</span>
-                        </div>
-                    </div>
-                {% endfor %}
+        <div class="next-events-list">
+            {% for event in next_events %}
+            <div class="next-event-item">
+                <div class="event-date-mini">
+                    <span class="mini-day">{{ event.date.day }}</span>
+                    <span class="mini-month">{{ event.date|date:"M" }}</span>
+                </div>
+                <div class="event-mini-info">
+                    <a href="{% url 'planner:event_detail' event.id %}" class="event-mini-title">{{ event.title }}</a>
+                    <span class="event-mini-occasion">{{ event.get_occasion_type_display }}</span>
+                </div>
             </div>
+            {% endfor %}
+        </div>
         {% else %}
-            <p class="empty-state">No upcoming events</p>
+        <p class="empty-state">No upcoming events</p>
         {% endif %}
     </div>
 </div>
@@ -113,11 +114,11 @@
     <h3 class="section-title">MONTHLY ACTIVITY (Last 6 Months)</h3>
     <div class="monthly-chart">
         {% for month, count in monthly_stats.items %}
-            <div class="month-bar">
-                <div class="month-bar-fill" style="height: {% widthratio count 10 100 %}%;"></div>
-                <div class="month-label">{{ month|slice:"5:" }}</div>
-                <div class="month-count">{{ count }}</div>
-            </div>
+        <div class="month-bar">
+            <div class="month-bar-fill" style="height: {% widthratio count 10 100 %}%;"></div>
+            <div class="month-label">{{ month|slice:"5:" }}</div>
+            <div class="month-count">{{ count }}</div>
+        </div>
         {% endfor %}
     </div>
 </div>
@@ -126,7 +127,9 @@
 {% if not total_events %}
 <div class="content-section">
     <div class="empty-state">
-        <div class="empty-icon">📊</div>
+        <div class="empty-icon"
+            style="width: 48px; height: 48px; background: #f5f5f5; border: 1px solid #e0e0e0; margin: 0 auto 16px;">
+        </div>
         <h3>No Statistics Yet</h3>
         <p>Create some events to see your statistics</p>
         <a href="{% url 'planner:event_create' %}" class="btn btn-primary">Create Your First Event</a>

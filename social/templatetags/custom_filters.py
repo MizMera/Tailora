@@ -4,8 +4,10 @@ register = template.Library()
 
 @register.filter
 def get_item(dictionary, key):
-    """Get value from dictionary by key"""
-    if not dictionary:
+    """
+    Template filter to get an item from a dictionary using a key.
+    Usage: {{ mydict|get_item:key }}
+    """
+    if dictionary is None:
         return None
-    key_str = str(key)
-    return dictionary.get(key_str)
+    return dictionary.get(str(key))

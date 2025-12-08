@@ -5,46 +5,11 @@ from django.db.models import Q, Count, Exists, OuterRef
 from django.http import JsonResponse
 from .models import LookbookPost, PostLike, PostComment, PostSave, UserFollow, StyleChallenge
 from outfits.models import Outfit
-from rest_framework import viewsets, permissions, decorators, response
-from .serializers import LookbookPostSerializer, PostCommentSerializer, UserFollowSerializer, StyleChallengeSerializer
-from .feed_algorithm import FeedAlgorithm, HashtagSystem
-import re 
-from .ai_photo_enhancer import AIPhotoEnhancer
-import os
-from django.core.files.storage import default_storage
-import json
-from django.core.files import File
-from .utils.badge_checker import BadgeChecker
 
-# [file name]: views.py - AJOUTER CES FONCTIONS À LA FIN
 
-@login_required
-def trending_hashtags(request):
-    """API pour les hashtags tendances"""
-    trending = HashtagSystem.get_trending_hashtags()
-    return JsonResponse({'trending': trending})
-
-@login_required 
-def hashtag_search(request, hashtag):
-    """Recherche par hashtag"""
-    posts = LookbookPost.objects.filter(
-        hashtags__contains=[hashtag], 
-        visibility='public'
-    ).select_related('user', 'outfit').annotate(
-        is_liked=Exists(PostLike.objects.filter(post=OuterRef('pk'), user=request.user))
-    ).order_by('-created_at')
-    
-    return render(request, 'social/hashtag_search.html', {
-        'posts': posts, 
-        'hashtag': hashtag,
-        'trending_hashtags': HashtagSystem.get_trending_hashtags()
-    })
-
-# MODIFIER la fonction feed_view existante (remplacer le début)
-# [file name]: views.py - MODIFIER feed_view
 @login_required
 def feed_view(request):
-    """Retour à l'algorithme qui fonctionne"""
+    """Main social feed showing posts from followed users"""
     # Get users the current user follows
     following_ids = UserFollow.objects.filter(
         follower=request.user
@@ -73,10 +38,11 @@ def feed_view(request):
         'followers_count': followers_count,
         'following_count': following_count,
         'posts_count': posts_count,
-        'trending_hashtags': HashtagSystem.get_trending_hashtags()[:5]
     }
     
     return render(request, 'social/feed.html', context)
+
+
 @login_required
 def discover_view(request):
     """Discover page showing trending and popular posts"""
@@ -98,87 +64,27 @@ def discover_view(request):
 
 @login_required
 def create_post(request):
-    """Create a new lookbook post - VERSION DEBUG"""
+    """Create a new lookbook post"""
     if request.method == 'POST':
         outfit_id = request.POST.get('outfit')
         caption = request.POST.get('caption', '')
         visibility = request.POST.get('visibility', 'public')
         hashtags = request.POST.get('hashtags', '').split()
-        enhance_photos = request.POST.get('enhance_photos') == 'true'
-        photo_style = request.POST.get('photo_style', 'auto')
         
-        print("=" * 50)
-        print("🚀 DÉBUT CREATE_POST - DEBUG AI")
-        print(f"📝 Paramètres: AI={enhance_photos}, Style={photo_style}")
+        # Get enhanced images from hidden JSON field
+        import json
+        enhanced_images_json = request.POST.get('enhanced_images', '{}')
+        try:
+            enhanced_images = json.loads(enhanced_images_json)
+        except json.JSONDecodeError:
+            enhanced_images = {}
         
         if not outfit_id:
             messages.error(request, 'Please select an outfit.')
             return redirect('social:create_post')
         
         outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
-        print(f"👕 Outfit: {outfit.name} ({outfit.items.count()} items)")
         
-        enhanced_images = {}
-        
-        if enhance_photos:
-            print("🎨 DÉMARRAGE AI...")
-            ai_enhancer = AIPhotoEnhancer()
-            
-            for i, item in enumerate(outfit.items.all()):
-                print(f"\n--- Item {i+1}: {item.name} ---")
-                
-                if not item.image:
-                    print("⏭️  Pas d'image - ignoré")
-                    continue
-                
-                print(f"📁 Image path: {item.image.name}")
-                print(f"📁 Image URL: {item.image.url}")
-                
-                # Vérifier existence fichier
-                if not default_storage.exists(item.image.name):
-                    print("❌ FICHIER INTROUVABLE dans storage!")
-                    continue
-                
-                print("✅ Fichier trouvé dans storage")
-                
-                try:
-                    # Étape 1: Ouvrir l'image
-                    original_img = ai_enhancer.processor.open_image(item.image.name)
-                    if not original_img:
-                        print("❌ Échec ouverture image")
-                        continue
-                    
-                    print(f"✅ Image ouverte: {original_img.size}")
-                    
-                    # Étape 2: Appliquer l'AI
-                    print("🔄 Application de l'AI...")
-                    enhanced_img = ai_enhancer.enhance_fashion_photo(item.image.name, photo_style)
-                    
-                    if not enhanced_img:
-                        print("❌ AI a retourné None")
-                        continue
-                    
-                    print(f"✅ AI réussie - Image améliorée: {enhanced_img.size}")
-                    
-                    # Étape 3: Sauvegarder
-                    print("💾 Sauvegarde...")
-                    saved_path = ai_enhancer.processor.save_image(enhanced_img, 'enhanced_posts')
-                    
-                    if saved_path:
-                        enhanced_images[str(item.id)] = saved_path
-                        print(f"✅ SAUVEGARDE RÉUSSIE: {saved_path}")
-                    else:
-                        print("❌ Échec sauvegarde")
-                        
-                except Exception as e:
-                    print(f"💥 ERREUR: {e}")
-                    import traceback
-                    traceback.print_exc()
-        
-        print(f"\n📊 RÉSULTAT FINAL: {len(enhanced_images)} images améliorées")
-        print(f"📦 enhanced_images: {enhanced_images}")
-        
-        # Créer le post
         post = LookbookPost.objects.create(
             user=request.user,
             outfit=outfit,
@@ -188,28 +94,19 @@ def create_post(request):
             enhanced_images=enhanced_images
         )
         
-        print(f"💾 POST CRÉÉ: ID {post.id}")
-        print(f"🔍 enhanced_images dans BD: {post.enhanced_images}")
-        print("=" * 50)
-            # Vérifier les badges
-        new_badges = check_and_award_badges(request.user)
-        if new_badges:
-            badges_names = ", ".join([badge.name for badge in new_badges])
-            messages.info(request, f'🏆 Nouveau badge débloqué: {badges_names}')
-        # Message utilisateur
-        if enhance_photos:
-            if enhanced_images:
-                messages.success(request, f'Post créé avec AI! 🎨 ({len(enhanced_images)} images améliorées)')
-            else:
-                messages.warning(request, 'Post créé mais AI non appliquée (voir logs)')
-        else:
-            messages.success(request, 'Post created successfully!')
-        
+        messages.success(request, 'Post created successfully!')
         return redirect('social:post_detail', post_id=post.id)
     
-    # GET
-    outfits = Outfit.objects.filter(user=request.user)
-    return render(request, 'social/create_post.html', {'outfits': outfits})
+    # GET: Show form
+    outfits = Outfit.objects.filter(user=request.user).order_by('-created_at')
+    
+    context = {
+        'outfits': outfits,
+    }
+    
+    return render(request, 'social/create_post.html', context)
+
+
 @login_required
 def post_detail(request, post_id):
     """View a single post with comments"""
@@ -245,38 +142,7 @@ def post_detail(request, post_id):
     }
     
     return render(request, 'social/post_detail.html', context)
-# [file name]: views.py - MODIFIER la fonction edit_post
-@login_required
-def edit_post(request, post_id):
-    """Edit an existing post"""
-    post = get_object_or_404(LookbookPost, id=post_id, user=request.user)
-    
-    if request.method == 'POST':
-        caption = request.POST.get('caption', '')
-        visibility = request.POST.get('visibility', 'public')
-        hashtags_input = request.POST.get('hashtags', '')  # ⚠️ NOUVEAU : Récupérer les hashtags manuels
-        
-        # OPTION 1: Extraire les hashtags de l'input manuel
-        hashtags = [tag.strip() for tag in hashtags_input.split() if tag.strip().startswith('#')]
-        
-        # OPTION 2: Extraire aussi de la caption (les deux)
-        caption_hashtags = re.findall(r'#\w+', caption)
-        all_hashtags = list(set(hashtags + caption_hashtags))  # Fusionner sans doublons
-        
-        post.caption = caption
-        post.visibility = visibility
-        post.hashtags = all_hashtags  # ⚠️ Utiliser les hashtags combinés
-        post.save()
-        
-        messages.success(request, 'Post updated successfully!')
-        return redirect('social:post_detail', post_id=post.id)
-    
-    # GET: Show edit form
-    context = {
-        'post': post,
-    }
-    
-    return render(request, 'social/edit_post.html', context)
+
 
 @login_required
 def delete_post(request, post_id):
@@ -289,6 +155,32 @@ def delete_post(request, post_id):
         return redirect('social:feed')
     
     return redirect('social:post_detail', post_id=post_id)
+
+
+@login_required
+def edit_post(request, post_id):
+    """Edit a lookbook post caption, visibility and hashtags"""
+    post = get_object_or_404(LookbookPost, id=post_id, user=request.user)
+
+    if request.method == 'POST':
+        caption = request.POST.get('caption', '').strip()
+        visibility = request.POST.get('visibility', post.visibility)
+        hashtags_raw = request.POST.get('hashtags', '').strip()
+        # Normalize hashtags into list
+        hashtags = [h if h.startswith('#') else f"#{h}" for h in hashtags_raw.split() if h]
+
+        post.caption = caption
+        post.visibility = visibility if visibility in dict(LookbookPost.VISIBILITY_CHOICES) else post.visibility
+        post.hashtags = hashtags
+        post.save(update_fields=['caption', 'visibility', 'hashtags', 'updated_at'])
+
+        messages.success(request, 'Post updated successfully!')
+        return redirect('social:post_detail', post_id=post.id)
+
+    context = {
+        'post': post,
+    }
+    return render(request, 'social/edit_post.html', context)
 
 
 @login_required
@@ -407,6 +299,9 @@ def profile_view(request, user_id):
     following_count = UserFollow.objects.filter(follower=profile_user).count()
     posts_count = posts.count()
     
+    # Extract username from email
+    username = profile_user.email.split('@')[0] if '@' in profile_user.email else profile_user.email
+    
     context = {
         'profile_user': profile_user,
         'posts': posts,
@@ -415,6 +310,7 @@ def profile_view(request, user_id):
         'followers_count': followers_count,
         'following_count': following_count,
         'posts_count': posts_count,
+        'username': username,
     }
     
     return render(request, 'social/profile.html', context)
@@ -448,13 +344,22 @@ def toggle_follow(request, user_id):
 def followers_list(request, user_id):
     """List of user's followers"""
     from users.models import User
-    user = get_object_or_404(User, id=user_id)
+    profile_user = get_object_or_404(User, id=user_id)
     
-    followers = UserFollow.objects.filter(following=user).select_related('follower')
+    # Get followers and extract the follower user objects
+    follower_relationships = UserFollow.objects.filter(following=profile_user).select_related('follower')
+    followers = [relationship.follower for relationship in follower_relationships]
+    
+    # Get IDs of users that current user is following
+    following_ids = UserFollow.objects.filter(
+        follower=request.user
+    ).values_list('following_id', flat=True)
     
     context = {
-        'user': user,
-        'followers': followers,
+        'profile_user': profile_user,
+        'users': followers,
+        'list_type': 'followers',
+        'following_ids': list(following_ids),
     }
     
     return render(request, 'social/followers_list.html', context)
@@ -464,13 +369,22 @@ def followers_list(request, user_id):
 def following_list(request, user_id):
     """List of users that this user follows"""
     from users.models import User
-    user = get_object_or_404(User, id=user_id)
+    profile_user = get_object_or_404(User, id=user_id)
     
-    following = UserFollow.objects.filter(follower=user).select_related('following')
+    # Get following relationships and extract the followed user objects
+    following_relationships = UserFollow.objects.filter(follower=profile_user).select_related('following')
+    following_users = [relationship.following for relationship in following_relationships]
+    
+    # Get IDs of users that current user is following
+    following_ids = UserFollow.objects.filter(
+        follower=request.user
+    ).values_list('following_id', flat=True)
     
     context = {
-        'user': user,
-        'following': following,
+        'profile_user': profile_user,
+        'users': following_users,
+        'list_type': 'following',
+        'following_ids': list(following_ids),
     }
     
     return render(request, 'social/following_list.html', context)
@@ -526,151 +440,270 @@ def challenge_detail(request, challenge_id):
     return render(request, 'social/challenge_detail.html', context)
 
 
+@login_required
+def ai_preview(request, outfit_id):
+    """
+    Generate AI-enhanced previews for outfit items.
+    For now, this is a mock implementation that returns the original images.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+        
+    outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
+    style = request.POST.get('style', 'auto')
+    
+    # Mock AI enhancement - in production this would call an AI service
+    enhanced_images = {}
+    previews = []
+    
+    for item in outfit.items.all():
+        if item.image:
+            # For prototype, we just return the original image
+            # In a real app, this would return a processed image URL
+            original_url = item.image.url
+            enhanced_url = item.image.url
+            
+            # Store relative path for database
+            enhanced_images[str(item.id)] = item.image.name
+            
+            previews.append({
+                'item': {'name': item.name},
+                'original': original_url,
+                'enhanced': enhanced_url
+            })
+            
+    return JsonResponse({
+        'status': 'success', 
+        'enhanced_images': enhanced_images,
+        'previews': previews,
+        'style': style
+    })
+
+
+# ==================== REST API Views ====================
+
+from rest_framework import viewsets, status, permissions, mixins
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+from .serializers import (
+    LookbookPostSerializer,
+    PostCommentSerializer,
+    UserFollowSerializer,
+    StyleChallengeSerializer
+)
+
+
+class SocialPagination(PageNumberPagination):
+    """Custom pagination for social items"""
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
 
 class LookbookPostViewSet(viewsets.ModelViewSet):
-    queryset = LookbookPost.objects.all().select_related('user', 'outfit')
+    """
+    ViewSet for lookbook posts
+    
+    Endpoints:
+    - GET /api/social/posts/ - List posts
+    - POST /api/social/posts/ - Create post
+    - GET /api/social/posts/{id}/ - Get post details
+    - PUT /api/social/posts/{id}/ - Update post
+    - DELETE /api/social/posts/{id}/ - Delete post
+    
+    Custom actions:
+    - GET /api/social/posts/feed/ - Personalized feed
+    - GET /api/social/posts/discover/ - Discover trending posts
+    - POST /api/social/posts/{id}/like/ - Like/unlike post
+    - POST /api/social/posts/{id}/save/ - Save/unsave post
+    """
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = LookbookPostSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    @decorators.action(detail=True, methods=['POST'])
-    def like(self, request, pk=None):
-        post = self.get_object()
-        like, created = PostLike.objects.get_or_create(user=request.user, post=post)
-        if not created:
-            like.delete()
-        return response.Response({'liked': created})
-
-    @decorators.action(detail=True, methods=['POST'])
-    def save(self, request, pk=None):
-        post = self.get_object()
-        save, created = PostSave.objects.get_or_create(user=request.user, post=post)
-        if not created:
-            save.delete()
-        return response.Response({'saved': created})
-
-class PostCommentViewSet(viewsets.ModelViewSet):
-    queryset = PostComment.objects.all().select_related('user', 'post')
-    serializer_class = PostCommentSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
+    pagination_class = SocialPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['user', 'visibility', 'challenge']
+    search_fields = ['caption', 'hashtags']
+    ordering_fields = ['created_at', 'likes_count']
+    ordering = ['-created_at']
+    
+    def get_queryset(self):
+        """
+        Return appropriate posts based on visibility
+        """
+        user = self.request.user
+        queryset = LookbookPost.objects.select_related('user', 'outfit')
+        
+        if self.action in ['list', 'retrieve']:
+            if user.is_authenticated:
+                # Users can see public posts, their own posts, and followers-only posts if they follow the user
+                following_ids = UserFollow.objects.filter(follower=user).values_list('following_id', flat=True)
+                
+                return queryset.filter(
+                    Q(visibility='public') |
+                    Q(user=user) |
+                    Q(visibility='followers', user_id__in=following_ids)
+                )
+            else:
+                return queryset.filter(visibility='public')
+        
+        return queryset
+    
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+    
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def feed(self, request):
+        """
+        Get personalized feed for current user
+        GET /api/social/posts/feed/
+        """
+        user = request.user
+        following_ids = UserFollow.objects.filter(follower=user).values_list('following_id', flat=True)
+        
+        # Feed logic: Posts from followed users + own posts
+        feed_posts = LookbookPost.objects.filter(
+            Q(user_id__in=following_ids) | Q(user=user),
+            visibility__in=['public', 'followers']
+        ).select_related('user', 'outfit').order_by('-created_at')
+        
+        page = self.paginate_queryset(feed_posts)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+            
+        serializer = self.get_serializer(feed_posts, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def discover(self, request):
+        """
+        Get trending/popular posts
+        GET /api/social/posts/discover/
+        """
+        # Discover logic: Public posts sorted by likes and recency
+        discover_posts = LookbookPost.objects.filter(
+            visibility='public'
+        ).select_related('user', 'outfit').order_by('-likes_count', '-created_at')
+        
+        page = self.paginate_queryset(discover_posts)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+            
+        serializer = self.get_serializer(discover_posts, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def like(self, request, pk=None):
+        """
+        Like or unlike a post
+        POST /api/social/posts/{id}/like/
+        """
+        post = self.get_object()
+        like, created = PostLike.objects.get_or_create(user=request.user, post=post)
+        
+        if not created:
+            like.delete()
+            post.likes_count = max(0, post.likes_count - 1)
+            liked = False
+        else:
+            post.likes_count += 1
+            liked = True
+            
+        post.save(update_fields=['likes_count'])
+        
+        return Response({
+            'status': 'success',
+            'liked': liked,
+            'likes_count': post.likes_count
+        })
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def save(self, request, pk=None):
+        """
+        Save or unsave a post
+        POST /api/social/posts/{id}/save/
+        """
+        post = self.get_object()
+        save, created = PostSave.objects.get_or_create(user=request.user, post=post)
+        
+        if not created:
+            save.delete()
+            post.saves_count = max(0, post.saves_count - 1)
+            saved = False
+        else:
+            post.saves_count += 1
+            saved = True
+            
+        post.save(update_fields=['saves_count'])
+        
+        return Response({
+            'status': 'success',
+            'saved': saved,
+            'saves_count': post.saves_count
+        })
+
+
+class PostCommentViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for post comments
+    """
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    serializer_class = PostCommentSerializer
+    pagination_class = SocialPagination
+    
+    def get_queryset(self):
+        """Filter comments by post if provided"""
+        queryset = PostComment.objects.select_related('user')
+        post_id = self.request.query_params.get('post_id')
+        if post_id:
+            queryset = queryset.filter(post_id=post_id)
+        return queryset.order_by('created_at')
+    
+    def perform_create(self, serializer):
+        post_id = self.request.data.get('post_id')
+        if not post_id:
+            # Try to get from URL kwargs if nested
+            # This depends on URL config, assuming standard query param or body for now
+            pass 
+            
+        # In a real nested router, we'd get post_id from kwargs
+        # Here we expect it in the body for simplicity or handle it in serializer
+        serializer.save(user=self.request.user)
+
 
 class UserFollowViewSet(viewsets.ModelViewSet):
-    queryset = UserFollow.objects.all()
+    """
+    ViewSet for managing follows
+    """
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserFollowSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = SocialPagination
+    
+    def get_queryset(self):
+        """
+        List who the user is following or who follows them
+        """
+        user = self.request.user
+        mode = self.request.query_params.get('mode', 'following') # following or followers
+        
+        if mode == 'followers':
+            return UserFollow.objects.filter(following=user).select_related('follower')
+        return UserFollow.objects.filter(follower=user).select_related('following')
+    
+    def perform_create(self, serializer):
+        serializer.save(follower=self.request.user)
 
-    @decorators.action(detail=True, methods=['POST'])
-    def toggle_follow(self, request, pk=None):
-        follow_instance = self.get_object()
-        if follow_instance.follower == request.user:
-            return response.Response({'error': "Cannot follow yourself."})
-        exists = UserFollow.objects.filter(follower=request.user, following=follow_instance.following).exists()
-        if exists:
-            UserFollow.objects.filter(follower=request.user, following=follow_instance.following).delete()
-            followed = False
-        else:
-            UserFollow.objects.create(follower=request.user, following=follow_instance.following)
-            followed = True
-        return response.Response({'followed': followed})
-class StyleChallengeViewSet(viewsets.ModelViewSet):
-    queryset = StyleChallenge.objects.all()
+
+class StyleChallengeViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for style challenges (Read Only)
+    """
+    queryset = StyleChallenge.objects.all().order_by('-start_date')
     serializer_class = StyleChallengeSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+    pagination_class = SocialPagination
 
-@login_required
-def ai_photo_preview(request, outfit_id):
-    """Prévisualisation AI - Version simplifiée"""
-    from outfits.models import Outfit
-    outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
-    
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            photo_style = data.get('style', 'auto')
-            
-            print(f"🔍 AI Preview demandé - Outfit: {outfit.name}, Style: {photo_style}")
-            
-            ai_enhancer = AIPhotoEnhancer()
-            preview_results = []
-            items_with_images = [item for item in outfit.items.all() if item.image]
-            print(f"📸 Items avec images: {len(items_with_images)}")
-            for item in outfit.items.all()[:8]:  # Limiter à 2 items
-                if item.image:
-                    print(f"📸 Traitement de: {item.name}")
-                    
-                    try:
-                        enhanced = ai_enhancer.enhance_fashion_photo(item.image.name, photo_style)
-                        if enhanced:
-                            enhanced_path = ai_enhancer.processor.save_image(enhanced, 'previews')
-                            preview_results.append({
-                                'item': {'name': item.name, 'id': str(item.id)},
-                                'original': item.image.url,
-                                'enhanced': default_storage.url(enhanced_path),
-                                'style': photo_style
-                            })
-                            print(f"✅ Succès: {item.name}")
-                        else:
-                            print(f"❌ Échec amélioration: {item.name}")
-                    except Exception as e:
-                        print(f"❌ Erreur traitement {item.name}: {e}")
-            
-            print(f"📊 Résultat: {len(preview_results)} images améliorées")
-            return JsonResponse({'previews': preview_results})
-            
-        except Exception as e:
-            print(f"❌ Erreur générale AI Preview: {e}")
-            return JsonResponse({'error': str(e)}, status=500)
-    
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
-@login_required
-def debug_ai(request):
-    """Page de debug pour l'AI"""
-    outfit = Outfit.objects.filter(user=request.user).first()
-    debug_info = {}
-    
-    if outfit:
-        debug_info['outfit'] = {
-            'name': outfit.name,
-            'item_count': outfit.items.count(),
-            'items': []
-        }
-        
-        ai_enhancer = AIPhotoEnhancer()
-        
-        for item in outfit.items.all()[:2]:  # Test avec 2 items max
-            item_info = {
-                'name': item.name,
-                'has_image': bool(item.image),
-                'image_path': item.image.name if item.image else None,
-                'image_exists': False,
-                'ai_works': False,
-                'error': None
-            }
-            
-            if item.image:
-                # Vérifier si l'image existe dans le storage
-                item_info['image_exists'] = default_storage.exists(item.image.name)
-                
-                if item_info['image_exists']:
-                    try:
-                        # Tester l'AI
-                        enhanced = ai_enhancer.enhance_fashion_photo(item.image.name, 'vibrant')
-                        item_info['ai_works'] = bool(enhanced)
-                        if enhanced:
-                            # Tester la sauvegarde
-                            saved_path = ai_enhancer.processor.save_image(enhanced, 'debug_ai')
-                            item_info['saved_path'] = saved_path
-                    except Exception as e:
-                        item_info['error'] = str(e)
-            
-            debug_info['outfit']['items'].append(item_info)
-    
-    return JsonResponse(debug_info)
-# Ajoutez cette fonction utilitaire
-def check_and_award_badges(user):
-    """Vérifie et attribue les badges pour un utilisateur"""
-    checker = BadgeChecker(user)
-    new_badges = checker.check_all_badges()
-    return new_badges

@@ -1,0 +1,367 @@
+/* ========================================
+   SOCIAL MODULE - INSTAGRAM-STYLE FEED
+   Clean, minimal CSS for feed and post cards
+   ======================================== */
+
+/* Layout */
+.social-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.feed-main {
+    min-width: 0;
+}
+
+.feed-sidebar {
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+}
+
+/* Post Card */
+.post-card {
+    background: #fff;
+    border: 1px solid #dbdbdb;
+    border-radius: 0;
+    /* Sharp edges */
+    margin: 0 auto 24px;
+    max-width: 600px;
+    overflow: hidden;
+}
+
+/* Header */
+.post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #efefef;
+}
+
+.post-user-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    flex: 1;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 0;
+    /* Square avatars */
+    background: #2c2c2c;
+    /* Solid black */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.username {
+    font-weight: 600;
+    font-size: 14px;
+    color: #262626;
+}
+
+.post-time {
+    font-size: 12px;
+    color: #8e8e8e;
+}
+
+.post-options {
+    margin-left: auto;
+}
+
+.btn-options {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    color: #262626;
+    padding: 4px 6px;
+}
+
+.btn-options:hover {
+    opacity: 0.6;
+}
+
+/* Images */
+.post-image-container {
+    width: 100%;
+    background: #000;
+}
+
+.single-image-link,
+.image-grid-link {
+    display: block;
+    text-decoration: none;
+}
+
+.post-single-image {
+    width: 100%;
+    max-height: 600px;
+    object-fit: contain;
+    display: block;
+    background: #000;
+}
+
+.post-image-grid {
+    display: grid;
+    gap: 2px;
+    background: #000;
+    width: 100%;
+}
+
+.post-image-grid-2 {
+    grid-template-columns: 1fr 1fr;
+    max-height: 600px;
+}
+
+.post-image-grid-3 {
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    max-height: 600px;
+}
+
+.post-image-grid-3 .grid-image-wrapper:first-child {
+    grid-row: 1/3;
+}
+
+.post-image-grid-4 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    max-height: 600px;
+}
+
+.post-image-grid-5,
+.post-image-grid-6,
+.post-image-grid-7,
+.post-image-grid-8 {
+    grid-template-columns: repeat(3, 1fr);
+    max-height: 600px;
+    overflow: hidden;
+}
+
+.grid-image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.grid-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Interactions */
+.post-interactions {
+    padding: 8px 16px 12px;
+}
+
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.inline-form {
+    margin: 0;
+    padding: 0;
+    display: inline;
+}
+
+.save-form {
+    margin-left: auto;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity .2s;
+}
+
+.action-btn:hover {
+    opacity: .6;
+}
+
+.action-btn svg {
+    color: #262626;
+}
+
+.action-btn.liked svg,
+.action-btn.saved svg {
+    color: #ed4956;
+}
+
+.post-likes {
+    padding: 6px 0 4px;
+    font-size: 14px;
+}
+
+.post-likes strong {
+    font-weight: 600;
+    color: #262626;
+}
+
+/* Caption & Meta */
+.post-caption {
+    font-size: 14px;
+    line-height: 18px;
+    color: #262626;
+    padding: 0 0 4px;
+    word-wrap: break-word;
+}
+
+.caption-username {
+    font-weight: 600;
+    color: #262626;
+    text-decoration: none;
+    margin-right: 4px;
+}
+
+.caption-username:hover {
+    opacity: .7;
+}
+
+.caption-text {
+    color: #262626;
+}
+
+.post-hashtags {
+    font-size: 14px;
+    color: #00376b;
+    padding: 4px 0;
+}
+
+.hashtag-link {
+    color: #00376b;
+    text-decoration: none;
+    margin-right: 8px;
+}
+
+.hashtag-link:hover {
+    text-decoration: underline;
+}
+
+.view-comments {
+    display: block;
+    font-size: 14px;
+    color: #8e8e8e;
+    text-decoration: none;
+    padding: 4px 0;
+}
+
+.view-comments:hover {
+    color: #262626;
+}
+
+.outfit-link-small {
+    display: block;
+    font-size: 12px;
+    color: #8e8e8e;
+    text-decoration: none;
+    padding: 4px 0;
+    margin-top: 4px;
+}
+
+.outfit-link-small:hover {
+    color: #667eea;
+}
+
+/* Sidebar helpers */
+.user-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    text-align: center;
+    padding: 16px 0;
+}
+
+.user-stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #262626;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #8e8e8e;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .social-layout {
+        grid-template-columns: 1fr;
+        max-width: 640px;
+    }
+
+    .feed-sidebar {
+        position: static;
+    }
+
+    .post-card {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .social-layout {
+        padding: 0;
+    }
+
+    .post-card {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        margin-bottom: 16px;
+    }
+
+    .post-single-image {
+        max-height: 450px;
+    }
+
+    .post-image-grid-2,
+    .post-image-grid-3,
+    .post-image-grid-4,
+    .post-image-grid-5,
+    .post-image-grid-6,
+    .post-image-grid-7,
+    .post-image-grid-8 {
+        max-height: 450px;
+    }
+}

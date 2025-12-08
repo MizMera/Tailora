@@ -54,6 +54,15 @@ class User(AbstractUser):
     # Last activity
     last_active = models.DateTimeField(auto_now=True)
     
+    # Deletion
+    deletion_code = models.CharField(max_length=6, blank=True, null=True)
+    deletion_code_expires_at = models.DateTimeField(blank=True, null=True)
+    
+    # Password change verification
+    password_change_code = models.CharField(max_length=6, blank=True, null=True)
+    password_change_code_expires_at = models.DateTimeField(blank=True, null=True)
+    pending_new_password = models.CharField(max_length=128, blank=True, null=True)  # Temporarily store hashed new password
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     
@@ -66,6 +75,37 @@ class User(AbstractUser):
             models.Index(fields=['status']),
             models.Index(fields=['is_verified']),
         ]
+        
+    def generate_deletion_code(self):
+        """
+        Generate a 6-digit deletion code and set an expiration time (15 minutes).
+        """
+        from django.utils import timezone
+        import random
+        self.deletion_code = str(random.randint(100000, 999999))
+        self.deletion_code_expires_at = timezone.now() + timezone.timedelta(minutes=15)
+        self.save()
+    
+    def generate_password_change_code(self, new_password_hash):
+        """
+        Generate a 6-digit password change verification code and set an expiration time (15 minutes).
+        Also stores the pending new password hash temporarily.
+        """
+        from django.utils import timezone
+        import random
+        self.password_change_code = str(random.randint(100000, 999999))
+        self.password_change_code_expires_at = timezone.now() + timezone.timedelta(minutes=15)
+        self.pending_new_password = new_password_hash
+        self.save()
+    
+    def clear_password_change_code(self):
+        """
+        Clear the password change verification code and pending password.
+        """
+        self.password_change_code = None
+        self.password_change_code_expires_at = None
+        self.pending_new_password = None
+        self.save()
     
     def __str__(self):
         return self.email

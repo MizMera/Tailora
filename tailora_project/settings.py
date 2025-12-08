@@ -180,11 +180,11 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # Weather API Configuration (OpenWeatherMap example)
-WEATHER_API_KEY = ''  # Add your API key here
+# Try to get from env, otherwise use the provided key as fallback
+WEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', '7eb67c0fb353725e80acff9f42a8c242')
 WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/'
 
-# OpenAI API Configuration (for AI image analysis)
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')  # Set in environment variables
+
 
 # Email Configuration (use coded SMTP credentials with new App Password)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

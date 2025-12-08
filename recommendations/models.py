@@ -20,7 +20,7 @@ class DailyRecommendation(models.Model):
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='daily_recommendations')
-    outfit = models.ForeignKey(Outfit, on_delete=models.CASCADE, related_name='recommendations')
+    outfit = models.ForeignKey(Outfit, on_delete=models.CASCADE, null=True, blank=True, related_name='recommendations')
     
     # Recommendation details
     recommendation_date = models.DateField()
@@ -167,3 +167,61 @@ class StyleRule(models.Model):
     
     def __str__(self):
         return f"{self.category} - {self.rule_name}"
+
+
+class ShoppingRecommendation(models.Model):
+    """
+    AI-suggested items to buy for completing wardrobe
+    Analyzes gaps and suggests versatile additions
+    """
+    PRIORITY_CHOICES = [
+        (1, 'Low - Nice to have'),
+        (2, 'Medium - Recommended'),
+        (3, 'High - Wardrobe essential'),
+        (4, 'Critical - Missing basic'),
+        (5, 'Urgent - Complete existing outfit'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shopping_recommendations')
+    
+    # Item details
+    category = models.CharField(max_length=100)  # e.g., "Blazer", "White Shirt"
+    suggested_name = models.CharField(max_length=200)  # e.g., "Classic Navy Blazer"
+    color = models.CharField(max_length=50, blank=True)
+    description = models.TextField()  # Detailed suggestion
+    
+    # Why recommended
+    reason = models.TextField()  # "You have 5 tops but no blazer - this would complete 3 outfits"
+    priority = models.IntegerField(choices=PRIORITY_CHOICES, default=2)
+    versatility_score = models.FloatField(default=0.0)  # How many outfits it enables
+    
+    # Complements (items it pairs with)
+    complements = models.ManyToManyField(ClothingItem, blank=True, related_name='complement_suggestions')
+    
+    # Shopping info
+    estimated_price_min = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    estimated_price_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    shopping_keywords = models.JSONField(default=list, blank=True)  # Search terms
+    
+    # User interaction
+    is_purchased = models.BooleanField(default=False)
+    is_dismissed = models.BooleanField(default=False)
+    purchased_item = models.ForeignKey(ClothingItem, on_delete=models.SET_NULL, null=True, blank=True, related_name='shopping_source')
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'shopping_recommendations'
+        ordering = ['-priority', '-versatility_score']
+        verbose_name = 'Shopping Recommendation'
+        verbose_name_plural = 'Shopping Recommendations'
+        indexes = [
+            models.Index(fields=['user', 'is_purchased', 'is_dismissed']),
+            models.Index(fields=['user', '-priority']),
+        ]
+    
+    def __str__(self):
+        return f"{self.suggested_name} for {self.user.email} (Priority: {self.priority})"
