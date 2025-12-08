@@ -19,7 +19,8 @@
     /* 2. GRID LAYOUT FOR TOP SECTION */
     .outfit-top-grid {
         display: grid;
-        grid-template-columns: 400px 1fr; /* Fixed width for image column */
+        grid-template-columns: 400px 1fr;
+        /* Fixed width for image column */
         gap: 40px;
         align-items: start;
     }
@@ -33,32 +34,55 @@
     }
 
     /* Card Styling - NO BORDER RADIUS */
+    /* Premium Card Styles */
     .wardrobe-item {
         background: #fff;
         border: 1px solid #e0e0e0;
-        border-radius: 0; /* Squared corners */
+        border-radius: 0;
         overflow: hidden;
-        transition: transform 0.2s;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
     }
-    .wardrobe-item:hover { transform: translateY(-4px); }
+
+    .wardrobe-item:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        z-index: 2;
+    }
 
     .item-image {
         position: relative;
-        padding-top: 133%; /* 3:4 Aspect Ratio */
-        background: #f5f5f5;
+        padding-top: 133.33%;
+        /* 3:4 Aspect Ratio */
+        background: #f8f8f8;
         overflow: hidden;
     }
+
     .item-image img {
         position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .wardrobe-item:hover .item-image img {
+        transform: scale(1.12);
     }
 
     /* Info Styles */
-    .info-group { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
-    .info-group:last-child { border-bottom: none; }
-    
+    .info-group {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 12px;
+    }
+
+    .info-group:last-child {
+        border-bottom: none;
+    }
+
     .info-label {
         font-family: 'Inter', sans-serif;
         font-size: 12px;
@@ -69,7 +93,7 @@
         display: block;
         margin-bottom: 4px;
     }
-    
+
     .info-value {
         font-family: 'Inter', sans-serif;
         font-size: 15px;
@@ -95,9 +119,9 @@
     <div class="page-header" style="margin-bottom: 32px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
             <div>
-                <a href="{% url 'outfits:outfit_gallery' %}" 
-                   style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-decoration: none; display: inline-block; margin-bottom: 8px;">
-                   &larr; Back to Outfits
+                <a href="{% url 'outfits:outfit_gallery' %}"
+                    style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-decoration: none; display: inline-block; margin-bottom: 8px;">
+                    &larr; Back to Outfits
                 </a>
                 <h1 class="page-title" style="margin: 0; font-size: 28px;">{{ outfit.name }}</h1>
                 <p class="page-subtitle" style="margin-top: 4px; color: #666;">
@@ -105,8 +129,10 @@
                 </p>
             </div>
             <div style="display: flex; gap: 12px;">
-                <a href="{% url 'outfits:outfit_edit' outfit.id %}" class="btn btn-secondary" style="border-radius: 0;">Edit</a>
-                <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary" style="border-radius: 0;">Back</a>
+                <a href="{% url 'outfits:outfit_edit' outfit.id %}" class="btn btn-secondary"
+                    style="border-radius: 0;">Edit</a>
+                <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary"
+                    style="border-radius: 0;">Back</a>
             </div>
         </div>
     </div>
@@ -116,7 +142,7 @@
     <div style="margin-bottom: 24px;">
         {% for message in messages %}
         <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}"
-             style="padding: 12px; border-radius: 0; margin-bottom: 8px; border: 1px solid transparent;
+            style="padding: 12px; border-radius: 0; margin-bottom: 8px; border: 1px solid transparent;
                     {% if message.tags == 'error' %}background:#fde8e8; color:#9b1c1c; border-color:#f8b4b4;{% else %}background:#def7ec; color:#03543f; border-color:#84e1bc;{% endif %}">
             {{ message }}
         </div>
@@ -125,27 +151,30 @@
     {% endif %}
 
     <!-- Main Content Card -->
-    <div style="background: #ffffff; padding: 40px; border: 1px solid #e0e0e0; border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-        
+    <div
+        style="background: #ffffff; padding: 40px; border: 1px solid #e0e0e0; border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+
         <div class="outfit-top-grid">
             <!-- Left Column: Outfit Image -->
             <div>
-                <div style="position: relative; background: #fafafa; border: 1px solid #e0e0e0; overflow: hidden; border-radius: 0; padding-top: 133%;">
+                <div
+                    style="position: relative; background: #fafafa; border: 1px solid #e0e0e0; overflow: hidden; border-radius: 0; padding-top: 133%;">
                     <!-- Image Logic -->
                     {% if outfit.outfit_image %}
-                        <img src="{{ outfit.outfit_image.url }}" alt="{{ outfit.name }}"
-                             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                    <img src="{{ outfit.outfit_image.url }}" alt="{{ outfit.name }}"
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
                     {% else %}
-                        {% with outfit.items.first as first_item %}
-                            {% if first_item %}
-                                <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}"
-                                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
-                            {% else %}
-                                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999; text-transform: uppercase; letter-spacing: 1px;">
-                                    No Image
-                                </div>
-                            {% endif %}
-                        {% endwith %}
+                    {% with outfit.items.first as first_item %}
+                    {% if first_item %}
+                    <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}"
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                    <div
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999; text-transform: uppercase; letter-spacing: 1px;">
+                        No Image
+                    </div>
+                    {% endif %}
+                    {% endwith %}
                     {% endif %}
                 </div>
 
@@ -165,10 +194,11 @@
             <!-- Right Column: Details -->
             <div>
                 <div class="settings-section">
-                    <h3 class="section-title" style="margin-top: 0; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+                    <h3 class="section-title"
+                        style="margin-top: 0; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
                         Information
                     </h3>
-                    
+
                     <div class="info-group">
                         <label class="info-label">Occasion</label>
                         <span class="info-value">{{ outfit.get_occasion_display }}</span>
@@ -198,15 +228,17 @@
 
         <!-- Items in Outfit Section -->
         <div class="settings-section" style="margin-top: 60px;">
-            <h3 class="section-title" style="margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+            <h3 class="section-title"
+                style="margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
                 Items in this outfit ({{ outfit.items.count }})
             </h3>
-            
+
             {% if outfit.items.count %}
-            <div class="wardrobe-grid">
+            <div class="wardrobe-grid stagger-children">
                 {% for item in outfit.items.all %}
-                <div class="wardrobe-item">
-                    <a href="{% url 'wardrobe_detail' item.id %}" class="item-link" style="text-decoration: none; color: inherit;">
+                <div class="wardrobe-item animate-fade-in-up">
+                    <a href="{% url 'wardrobe_detail' item.id %}" class="item-link"
+                        style="text-decoration: none; color: inherit;">
                         <div class="item-image">
                             <img src="{{ item.image.url }}" alt="{{ item.name }}">
                         </div>
@@ -232,7 +264,8 @@
                 <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #c62828; margin: 0 0 16px 0;">
                     Deleting this outfit will permanently remove it. The items inside will remain in your wardrobe.
                 </p>
-                <form id="delete-outfit-form-{{ outfit.id }}" method="post" action="{% url 'outfits:outfit_delete' outfit.id %}">
+                <form id="delete-outfit-form-{{ outfit.id }}" method="post"
+                    action="{% url 'outfits:outfit_delete' outfit.id %}">
                     {% csrf_token %}
                     <button type="button" class="btn btn-primary delete-trigger"
                         data-form-id="delete-outfit-form-{{ outfit.id }}" data-item-name="this outfit"

@@ -54,11 +54,10 @@ def calendar_view(request):
     next_month = month + 1 if month < 12 else 1
     next_year = year if month < 12 else year + 1
     
-    # Upcoming events (next 7 days)
+    # Upcoming events (next 5)
     upcoming_events = Event.objects.filter(
         user=request.user,
-        date__gte=today,
-        date__lte=today + timedelta(days=7)
+        date__gte=today
     ).select_related('outfit').order_by('date', 'time')[:5]
     
     # Get Weather Data

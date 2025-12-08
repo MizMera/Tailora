@@ -32,6 +32,46 @@
     margin: 0 auto 24px;
     max-width: 600px;
     overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.5s ease both;
+}
+
+.post-card:hover {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+}
+
+/* Stagger animation for feed posts */
+.post-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.post-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.post-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.post-card:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.post-card:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Header */
@@ -106,6 +146,7 @@
 .post-image-container {
     width: 100%;
     background: #000;
+    overflow: hidden;
 }
 
 .single-image-link,
@@ -120,6 +161,11 @@
     object-fit: contain;
     display: block;
     background: #000;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.post-image-container:hover .post-single-image {
+    transform: scale(1.03);
 }
 
 .post-image-grid {
@@ -204,20 +250,67 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: opacity .2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .action-btn:hover {
-    opacity: .6;
+    transform: scale(1.15);
+}
+
+.action-btn:active {
+    transform: scale(0.95);
 }
 
 .action-btn svg {
     color: #262626;
+    transition: all 0.2s ease;
 }
 
-.action-btn.liked svg,
-.action-btn.saved svg {
+/* Like button animation */
+.action-btn.liked svg {
     color: #ed4956;
+    animation: heartBurst 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.action-btn.saved svg {
+    color: #262626;
+    animation: bookmarkPop 0.3s ease;
+}
+
+@keyframes heartBurst {
+    0% {
+        transform: scale(1);
+    }
+
+    25% {
+        transform: scale(1.35);
+    }
+
+    50% {
+        transform: scale(0.9);
+    }
+
+    75% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes bookmarkPop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .post-likes {

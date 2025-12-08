@@ -397,7 +397,7 @@
             border-bottom: 1px solid #e0e0e0;
         }
 
-```
+
     }
 
     /* Sidebar Widgets */
@@ -620,54 +620,55 @@
 </div>
 
 <div style="max-width: 1200px; margin: 0 auto;">
-<div class="content-section">
-    <div class="rec-grid">
-        <!-- Main Content -->
-        <div class="rec-main" style="padding: 0; border-right: 1px solid #e0e0e0;">
-            <!-- Weather Banner -->
-            {% if current_weather %}
-            <div class="weather-banner" style="margin: 0 0 40px 0;">
-                <div>
-                    <div
-                        style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
-                        TUNIS, TUNISIA</div>
-                    <div class="weather-temp">{{ current_weather.temperature }}°C</div>
-                    <div class="weather-details">
-                        {{ current_weather.description|title }} • Feels like {{ current_weather.feels_like }}°C
+    <div class="content-section">
+        <div class="rec-grid">
+            <!-- Main Content -->
+            <div class="rec-main" style="padding: 0; border-right: 1px solid #e0e0e0;">
+                <!-- Weather Banner -->
+                {% if current_weather %}
+                <div class="weather-banner" style="margin: 0 0 40px 0;">
+                    <div>
+                        <div
+                            style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                            TUNIS, TUNISIA</div>
+                        <div class="weather-temp">{{ current_weather.temperature }}°C</div>
+                        <div class="weather-details">
+                            {{ current_weather.description|title }} • Feels like {{ current_weather.feels_like }}°C
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% endif %}
+                {% endif %}
 
-            <div style="padding: 0 40px 40px;">
-                <div class="rec-section-title">Pick Your Outfit</div>
-                <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: -16px 0 24px 0;">
-                    Click "Add to My Outfits" to save any outfit you like. They won't be added automatically.
-                </p>
+                <div style="padding: 0 40px 40px;">
+                    <div class="rec-section-title">Pick Your Outfit</div>
+                    <p
+                        style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: -16px 0 24px 0;">
+                        Click "Add to My Outfits" to save any outfit you like. They won't be added automatically.
+                    </p>
 
-                {% if recommendations %}
-                {% for rec in recommendations %}
-                <div class="outfit-card">
-                    <div style="clearfix; margin-bottom: 16px;">
-                        <h3 class="outfit-title">
-                            {% if rec.outfit %}
+                    {% if recommendations %}
+                    {% for rec in recommendations %}
+                    <div class="outfit-card">
+                        <div style="margin-bottom: 16px; overflow: hidden;">
+                            <h3 class="outfit-title">
+                                {% if rec.outfit %}
                                 {{ rec.outfit.name }}
-                            {% else %}
+                                {% else %}
                                 {{ rec.weather_factor.suggested_name|default:"Outfit Suggestion" }}
-                            {% endif %}
-                        </h3>
-                        <span class="confidence-badge">{{ rec.confidence_score|floatformat:0 }}% Match</span>
-                    </div>
+                                {% endif %}
+                            </h3>
+                            <span class="confidence-badge">{% widthratio rec.confidence_score 1 100 %}% Match</span>
+                        </div>
 
-                    {% if rec.occasion_match %}
-                    <span class="weather-tag">
-                        {{ rec.occasion_match|upper }}
-                    </span>
-                    {% endif %}
+                        {% if rec.occasion_match %}
+                        <span class="weather-tag">
+                            {{ rec.occasion_match|upper }}
+                        </span>
+                        {% endif %}
 
-                    <!-- Items - from outfit or suggestions -->
-                    <div class="items-grid">
-                        {% if rec.outfit %}
+                        <!-- Items - from outfit or suggestions -->
+                        <div class="items-grid">
+                            {% if rec.outfit %}
                             {% for item in rec.outfit.items.all|slice:":4" %}
                             <div class="item-box">
                                 {% if item.image %}
@@ -681,7 +682,7 @@
                                 <div class="item-name">{{ item.name }}</div>
                             </div>
                             {% endfor %}
-                        {% else %}
+                            {% else %}
                             {% for item in rec.weather_factor.suggested_items|slice:":4" %}
                             <div class="item-box">
                                 {% if item.image_url %}
@@ -695,115 +696,115 @@
                                 <div class="item-name">{{ item.name }}</div>
                             </div>
                             {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <!-- Reason -->
+                        <div class="reason-box">
+                            <strong>Why This Outfit</strong>
+                            <p>{{ rec.reason }}</p>
+                        </div>
+
+                        <!-- Actions -->
+                        {% if rec.status == 'pending' %}
+                        <div class="action-btns">
+                            <form method="post" action="{% url 'recommendations:accept' rec.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-accept" style="width: 100%;">
+                                    {% if rec.outfit %}Wear Today{% else %}✓ Add to My Outfits{% endif %}
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'recommendations:reject' rec.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-reject" style="width: 100%;">Not for Me</button>
+                            </form>
+                        </div>
+                        {% elif rec.status == 'accepted' %}
+                        <div
+                            style="text-align: center; padding: 12px; background: #2c2c2c; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                            ✓ Added to Outfits
+                        </div>
+                        {% else %}
+                        <div
+                            style="text-align: center; padding: 12px; background: #e0e0e0; color: #252320; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                            {{ rec.get_status_display }}
+                        </div>
                         {% endif %}
                     </div>
-
-                    <!-- Reason -->
-                    <div class="reason-box">
-                        <strong>Why This Outfit</strong>
-                        <p>{{ rec.reason }}</p>
-                    </div>
-
-                    <!-- Actions -->
-                    {% if rec.status == 'pending' %}
-                    <div class="action-btns">
-                        <form method="post" action="{% url 'recommendations:accept' rec.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-accept" style="width: 100%;">
-                                {% if rec.outfit %}Wear Today{% else %}✓ Add to My Outfits{% endif %}
-                            </button>
-                        </form>
-                        <form method="post" action="{% url 'recommendations:reject' rec.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-reject" style="width: 100%;">Not for Me</button>
-                        </form>
-                    </div>
-                    {% elif rec.status == 'accepted' %}
-                    <div
-                        style="text-align: center; padding: 12px; background: #2c2c2c; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                        ✓ Added to Outfits
-                    </div>
+                    {% endfor %}
                     {% else %}
-                    <div
-                        style="text-align: center; padding: 12px; background: #e0e0e0; color: #252320; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                        {{ rec.get_status_display }}
+                    <div class="empty-state">
+                        <h3>No Recommendations Available</h3>
+                        <p>Add at least 2 tops and 2 bottoms to your wardrobe</p>
+                        <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">Add Clothes</a>
                     </div>
                     {% endif %}
                 </div>
-                {% endfor %}
-                {% else %}
-                <div class="empty-state">
-                    <h3>No Recommendations Available</h3>
-                    <p>Add at least 2 tops and 2 bottoms to your wardrobe</p>
-                    <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">Add Clothes</a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="rec-sidebar" style="padding: 40px;">
-            <!-- Wardrobe Health -->
-            <div class="widget">
-                <div class="widget-title">Wardrobe Health</div>
-
-                <div class="health-score">
-                    <div class="score-value">{{ wardrobe_analysis.versatility_score }}%</div>
-                    <div class="score-label">{{ wardrobe_analysis.wardrobe_health }}</div>
-                </div>
-
-                <div class="mini-stats">
-                    <div class="mini-stat">
-                        <div class="mini-stat-value">{{ wardrobe_analysis.total_items }}</div>
-                        <div class="mini-stat-label">Items</div>
-                    </div>
-                    <div class="mini-stat">
-                        <div class="mini-stat-value">{{ wardrobe_analysis.category_distribution|length }}</div>
-                        <div class="mini-stat-label">Categories</div>
-                    </div>
-                </div>
-
-                {% if wardrobe_analysis.underutilized_items %}
-                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e0e0e0;">
-                    <strong
-                        style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">Never
-                        Worn</strong>
-                    <ul class="item-list">
-                        {% for item in wardrobe_analysis.underutilized_items|slice:":3" %}
-                        <li>
-                            <span>{{ item.name }}</span>
-                            <span class="count">0 wears</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
             </div>
 
-            <!-- Shopping Suggestions -->
-            <div class="widget">
-                <div class="widget-title">Shopping Suggestions</div>
+            <!-- Sidebar -->
+            <div class="rec-sidebar" style="padding: 40px;">
+                <!-- Wardrobe Health -->
+                <div class="widget">
+                    <div class="widget-title">Wardrobe Health</div>
 
-                {% if shopping_suggestions %}
-                {% for sug in shopping_suggestions|slice:":3" %}
-                <div class="shop-card">
-                    <span class="priority-badge priority-{{ sug.priority }}">
-                        Priority {{ sug.priority }}
-                    </span>
-                    <div class="shop-name">{{ sug.suggested_name }}</div>
-                    <div class="shop-reason">{{ sug.reason }}</div>
+                    <div class="health-score">
+                        <div class="score-value">{{ wardrobe_analysis.versatility_score }}%</div>
+                        <div class="score-label">{{ wardrobe_analysis.wardrobe_health }}</div>
+                    </div>
+
+                    <div class="mini-stats">
+                        <div class="mini-stat">
+                            <div class="mini-stat-value">{{ wardrobe_analysis.total_items }}</div>
+                            <div class="mini-stat-label">Items</div>
+                        </div>
+                        <div class="mini-stat">
+                            <div class="mini-stat-value">{{ wardrobe_analysis.category_distribution|length }}</div>
+                            <div class="mini-stat-label">Categories</div>
+                        </div>
+                    </div>
+
+                    {% if wardrobe_analysis.underutilized_items %}
+                    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e0e0e0;">
+                        <strong
+                            style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">Never
+                            Worn</strong>
+                        <ul class="item-list">
+                            {% for item in wardrobe_analysis.underutilized_items|slice:":3" %}
+                            <li>
+                                <span>{{ item.name }}</span>
+                                <span class="count">0 wears</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
-                {% else %}
-                <p
-                    style="text-align: center; color: #757575; font-family: 'Inter', sans-serif; font-size: 13px; padding: 24px 0;">
-                    Your wardrobe is well-balanced
-                </p>
-                {% endif %}
+
+                <!-- Shopping Suggestions -->
+                <div class="widget">
+                    <div class="widget-title">Shopping Suggestions</div>
+
+                    {% if shopping_suggestions %}
+                    {% for sug in shopping_suggestions|slice:":3" %}
+                    <div class="shop-card">
+                        <span class="priority-badge priority-{{ sug.priority }}">
+                            Priority {{ sug.priority }}
+                        </span>
+                        <div class="shop-name">{{ sug.suggested_name }}</div>
+                        <div class="shop-reason">{{ sug.reason }}</div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p
+                        style="text-align: center; color: #757575; font-family: 'Inter', sans-serif; font-size: 13px; padding: 24px 0;">
+                        Your wardrobe is well-balanced
+                    </p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-</div>
 </div>
 {% endblock %}
 ```

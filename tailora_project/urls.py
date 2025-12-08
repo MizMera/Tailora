@@ -25,7 +25,7 @@ from users.auth_views import (
     verify_email_view, resend_verification_email_view,
     profile_settings_view, change_password_view, verify_password_change_view,
     request_account_deletion_view, confirm_account_deletion_view,
-    upgrade_account_view, cancel_subscription_view
+    upgrade_account_view, cancel_subscription_view, ai_style_analyze_view
 )
 
 urlpatterns = [
@@ -54,6 +54,7 @@ urlpatterns = [
     path('profile/confirm-account-deletion/', confirm_account_deletion_view, name='confirm_account_deletion'),
     path('profile/upgrade/', upgrade_account_view, name='upgrade_account'),
     path('profile/cancel-subscription/', cancel_subscription_view, name='cancel_subscription'),
+    path('profile/analyze-style/', ai_style_analyze_view, name='ai_style_analyze'),
     
     # JWT Authentication (API)
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

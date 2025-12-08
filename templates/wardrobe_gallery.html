@@ -6,18 +6,27 @@
 {% block extra_css %}
 <style>
     /* ========================================
-       WARDROBE GALLERY - STABLE LAYOUT
+       WARDROBE GALLERY - FLEX LAYOUT
        ======================================== */
+
+    :root {
+        --bg-color: #f4e9cf;
+        --text-dark: #2c2c2c;
+        --text-light: #666;
+        --accent: #f5a623;
+        --border: #e0e0e0;
+    }
 
     .wardrobe-wrapper {
         width: 100%;
-        background: #f4e9cf;
+        background: var(--bg-color);
+        min-height: 100vh;
     }
 
     .wardrobe-container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 32px 32px;
+        padding: 40px 24px;
     }
 
     /* Header */
@@ -25,27 +34,30 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 24px;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
     }
 
     .wardrobe-title {
         font-family: 'Istok Web', sans-serif;
-        font-size: 28px;
+        font-size: 32px;
         font-weight: 700;
-        color: #2c2c2c;
+        color: var(--text-dark);
         margin: 0;
+        line-height: 1.2;
     }
 
     .wardrobe-count {
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        color: #666;
+        color: var(--text-light);
         margin-top: 4px;
     }
 
     /* Messages */
     .wardrobe-messages {
-        margin-bottom: 20px;
+        margin-bottom: 24px;
     }
 
     .toast-message {
@@ -53,6 +65,8 @@
         font-family: 'Inter', sans-serif;
         font-size: 14px;
         margin-bottom: 8px;
+        border-radius: 0px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     .toast-message.success {
@@ -67,53 +81,56 @@
         border-left: 4px solid #e53935;
     }
 
-    /* Two Column Layout - Fixed Widths */
+    /* Flex Layout (Replaces Table Layout) */
     .wardrobe-layout {
-        display: table;
-        width: 100%;
-        table-layout: fixed;
+        display: flex;
+        gap: 32px;
+        align-items: flex-start;
     }
 
     .wardrobe-sidebar {
-        display: table-cell;
-        width: 240px;
-        vertical-align: top;
-        padding-right: 28px;
+        width: 260px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 20px; /* Sticky sidebar */
     }
 
     .wardrobe-main {
-        display: table-cell;
-        vertical-align: top;
+        flex-grow: 1;
+        width: 100%; /* Ensures grid takes available space */
     }
 
     /* Sidebar Card */
     .sidebar-card {
-        background: #fff;
-        border: 1px solid #e0e0e0;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
         padding: 24px;
-      
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+        border-radius: 0px;
     }
 
     .filter-section {
         margin-bottom: 24px;
     }
 
-    .filter-section:last-child {
-        margin-bottom: 0;
+    .filter-section:last-of-type {
+        margin-bottom: 16px;
     }
 
     .filter-label {
         font-family: 'Inter', sans-serif;
         font-size: 11px;
         font-weight: 700;
-        color: #2c2c2c;
+        color: var(--text-dark);
         text-transform: uppercase;
         letter-spacing: 1px;
         margin-bottom: 10px;
         display: block;
-        border-radius: 0px;
     }
 
+    /* Search Input */
     .search-wrapper {
         position: relative;
     }
@@ -129,26 +146,20 @@
 
     .filter-search {
         width: 100%;
-        padding: 12px 12px 12px 38px;
+        padding: 10px 12px 10px 36px;
         font-family: 'Inter', sans-serif;
         font-size: 14px;
         border: 1px solid #ddd;
-        background: #fafafa;
-        color: #2c2c2c;
+        background: #fff;
+        color: var(--text-dark);
         outline: none;
         transition: all 0.2s;
-        box-sizing: border-box;
-        border-radius: 0px
+        border-radius: 0px;
     }
 
     .filter-search:focus {
-        border-color: #2c2c2c;
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(44,44,44,0.08);
-    }
-
-    .filter-search::placeholder {
-        color: #aaa;
+        border-color: var(--text-dark);
+        box-shadow: 0 0 0 3px rgba(44, 44, 44, 0.08);
     }
 
     /* Category List */
@@ -160,12 +171,12 @@
 
     .category-item {
         display: block;
-        padding: 10px 14px;
+        padding: 8px 12px;
         font-family: 'Inter', sans-serif;
         font-size: 13px;
         font-weight: 500;
-        background: #f8f8f8;
-        border: 1px solid #e8e8e8;
+        background: transparent;
+        border: 1px solid transparent;
         border-radius: 0px;
         color: #555;
         cursor: pointer;
@@ -174,12 +185,10 @@
 
     .category-item:hover {
         background: #f0f0f0;
-        border-color: #ddd;
     }
 
     .category-item.active {
-        background: #2c2c2c;
-        border-color: #2c2c2c;
+        background: var(--text-dark);
         color: #fff;
     }
 
@@ -187,32 +196,19 @@
         display: none;
     }
 
-    /* Filter Select */
+    /* Select & Checkbox */
     .filter-select {
         width: 100%;
-        padding: 12px 14px;
+        padding: 10px;
         font-family: 'Inter', sans-serif;
         font-size: 13px;
         border: 1px solid #ddd;
-        background: #fff;
-        color: #2c2c2c;
+        background-color: #fff;
+        border-radius: 0px;
         cursor: pointer;
         outline: none;
-        box-sizing: border-box;
-        border-radius: 0px;
-        -webkit-appearance: none;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
     }
 
-    .filter-select:focus {
-        border-color: #2c2c2c;
-        box-shadow: 0 0 0 3px rgba(44,44,44,0.08);
-    }
-
-    /* Checkbox */
     .filter-checkbox {
         display: flex;
         align-items: center;
@@ -220,83 +216,106 @@
         cursor: pointer;
         font-family: 'Inter', sans-serif;
         font-size: 13px;
-        color: #2c2c2c;
+        color: var(--text-dark);
+        user-select: none;
     }
 
     .filter-checkbox input {
         width: 16px;
         height: 16px;
-        accent-color: #2c2c2c;
+        accent-color: var(--text-dark);
     }
 
     .btn-reset {
         display: block;
         width: 100%;
-        padding: 14px;
+        padding: 12px;
         font-family: 'Inter', sans-serif;
         font-size: 13px;
         font-weight: 600;
-        background: #2c2c2c;
-        color: #f4e9cf;
-        border: none;
-        border-radius:  0px;
+        background: transparent;
+        color: var(--text-dark);
+        border: 1px solid var(--text-dark);
+        border-radius: 0px;
         cursor: pointer;
         text-align: center;
         text-decoration: none;
         transition: all 0.2s;
-        margin-top: 24px;
-        box-sizing: border-box;
+        margin-top: 16px;
     }
 
     .btn-reset:hover {
-        background: #444;
-        transform: translateY(-1px);
+        background: var(--text-dark);
+        color: #fff;
     }
 
-    /* Items Grid - Fixed 4 columns */
+    /* Items Grid */
     .items-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 24px;
+    }
+
+    /* Animations */
+    .item-card {
+        animation: fadeInUp 0.5s ease both;
     }
     
+    /* Generate delays for up to 20 items */
+    .items-grid .item-card:nth-child(1) { animation-delay: 0.05s; }
+    .items-grid .item-card:nth-child(2) { animation-delay: 0.1s; }
+    .items-grid .item-card:nth-child(3) { animation-delay: 0.15s; }
+    .items-grid .item-card:nth-child(4) { animation-delay: 0.2s; }
+    .items-grid .item-card:nth-child(5) { animation-delay: 0.25s; }
+    .items-grid .item-card:nth-child(6) { animation-delay: 0.3s; }
+    .items-grid .item-card:nth-child(7) { animation-delay: 0.35s; }
+    .items-grid .item-card:nth-child(8) { animation-delay: 0.4s; }
+    .items-grid .item-card:nth-child(9) { animation-delay: 0.45s; }
+    .items-grid .item-card:nth-child(10) { animation-delay: 0.5s; }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
     /* Item Card */
     .item-card {
         background: #fff;
-        border: 1px solid #e0e0e0;
+        border: 1px solid var(--border);
         border-radius: 0px;
         overflow: hidden;
-        transition: all 0.25s ease;
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
     }
 
     .item-card:hover {
-        border-color: #ccc;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        border-color: #bbb;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
         transform: translateY(-4px);
     }
 
     .item-card-link {
-        display: block;
         text-decoration: none;
         color: inherit;
+        flex-grow: 1;
     }
 
     .item-image {
         position: relative;
         width: 100%;
-        padding-top: 100%; /* 1:1 aspect ratio */
-        background: linear-gradient(135deg, #f8f8f8 0%, #efefef 100%);
+        padding-top: 100%; /* 1:1 Aspect Ratio */
+        background: #f8f8f8;
         overflow: hidden;
     }
 
     .item-image img {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
         object-fit: cover;
-        transition: transform 0.4s ease;
+        transition: transform 0.6s ease;
     }
 
     .item-card:hover .item-image img {
@@ -305,47 +324,43 @@
 
     .badge-favorite {
         position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 30px;
-        height: 30px;
+        top: 10px; right: 10px;
+        width: 32px; height: 32px;
         background: #fff;
-        border-radius: 0%;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
-        color: #f5a623;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        color: var(--accent);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 2;
     }
 
     .badge-status {
         position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 6px 10px;
-        background: rgba(44,44,44,0.92);
-        color: #f4e9cf;
+        bottom: 10px; left: 10px;
+        padding: 4px 10px;
+        background: rgba(44, 44, 44, 0.95);
+        color: #fff;
         font-family: 'Inter', sans-serif;
         font-size: 10px;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        text-align: center;
+        border-radius: 0px;
+        z-index: 2;
     }
 
     /* Item Info */
     .item-body {
-        padding: 14px 16px 12px;
+        padding: 16px;
         border-bottom: 1px solid #f0f0f0;
     }
 
     .item-name {
         font-family: 'Inter', sans-serif;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
-        color: #2c2c2c;
+        color: var(--text-dark);
         margin: 0 0 4px 0;
         white-space: nowrap;
         overflow: hidden;
@@ -370,30 +385,22 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 10px;
+        padding: 12px;
         background: transparent;
         border: none;
-        color: #aaa;
+        color: #999;
         cursor: pointer;
         transition: all 0.2s;
-        text-decoration: none;
-        font-size: 15px;
     }
 
     .item-action:hover {
-        background: #f5f5f5;
-        color: #2c2c2c;
+        background: #fff;
+        color: var(--text-dark);
     }
 
-    .item-action.active {
-        color: #f5a623;
-    }
-
-    .item-action.delete:hover {
-        background: #ffeaea;
-        color: #e53935;
-    }
-
+    .item-action.active { color: var(--accent); }
+    .item-action.delete:hover { color: #e53935; background: #fff5f5; }
+    
     .item-action + .item-action {
         border-left: 1px solid #f0f0f0;
     }
@@ -401,54 +408,36 @@
     /* Empty State */
     .empty-state {
         grid-column: 1 / -1;
-        padding: 80px 40px;
+        padding: 60px 20px;
         text-align: center;
-        background: #fff;
-        border: 2px dashed #ddd;
+        background: rgba(255,255,255,0.5);
+        border: 2px dashed #ccc;
         border-radius: 0px;
     }
 
     .empty-icon {
-        width: 72px;
-        height: 72px;
-        margin: 0 auto 20px;
-        background: #f4e9cf;
+        width: 64px; height: 64px;
+        margin: 0 auto 16px;
+        background: #fff;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 00%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     .empty-title {
         font-family: 'Istok Web', sans-serif;
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 700;
-        color: #2c2c2c;
-        margin: 0 0 8px 0;
+        color: var(--text-dark);
+        margin-bottom: 8px;
     }
 
     .empty-text {
+        color: #777;
+        margin-bottom: 24px;
         font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        color: #888;
-        margin: 0 0 20px 0;
-    }
-
-    /* No Results from Search */
-    .no-results {
-        grid-column: 1 / -1;
-        padding: 40px;
-        text-align: center;
-        background: #fff;
-        border: 1px dashed #ddd;
-        display: none;
-    }
-
-    .no-results p {
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        color: #888;
-        margin: 0;
     }
 
     /* Pagination */
@@ -457,59 +446,41 @@
         justify-content: center;
         align-items: center;
         gap: 16px;
-        margin-top: 24px;
-        padding-top: 20px;
-        border-top: 1px solid rgba(0,0,0,0.08);
-    }
-
-    .pagination-text {
-        font-family: 'Inter', sans-serif;
-        font-size: 13px;
-        color: #666;
+        margin-top: 40px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(0,0,0,0.05);
     }
 
     /* Responsive */
-    @media (max-width: 1000px) {
-        .items-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
         .wardrobe-layout {
-            display: block;
+            display: block; /* Stack on mobile */
         }
-
+        
         .wardrobe-sidebar {
-            display: block;
             width: 100%;
-            padding-right: 0;
-            margin-bottom: 20px;
-        }
-
-        .wardrobe-main {
-            display: block;
-        }
-
-        .items-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-        .wardrobe-container {
-            padding: 20px 16px;
+            position: static;
+            margin-bottom: 24px;
         }
 
         .category-list {
             flex-direction: row;
             flex-wrap: wrap;
-            gap: 6px;
+        }
+        
+        .sidebar-card {
+            padding: 20px;
         }
 
-        .category-item {
-            padding: 6px 12px;
-            font-size: 12px;
+        .items-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
         }
+    }
+    
+    @media (max-width: 480px) {
+        .wardrobe-container { padding: 24px 16px; }
+        .items-grid { grid-template-columns: 1fr; } 
     }
 </style>
 {% endblock %}
@@ -522,13 +493,18 @@
         <!-- Header -->
         <header class="wardrobe-header">
             <div>
-                <h1 class="wardrobe-title">Wardrobe</h1>
-                <p class="wardrobe-count">{{ items.paginator.count|default:"0" }} items</p>
+                <h1 class="wardrobe-title">My Wardrobe</h1>
+                <p class="wardrobe-count">{{ items.paginator.count|default:"0" }} items found</p>
             </div>
+            
             {% if user.wardrobe_items_count >= user.get_max_wardrobe_items %}
-            <button class="btn btn-primary" disabled style="opacity: 0.5;">Limit Reached</button>
+                <button class="btn btn-primary" disabled style="opacity: 0.6; cursor: not-allowed;">
+                    Limit Reached
+                </button>
             {% else %}
-            <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">+ Add Item</a>
+                <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">
+                    + Add New Item
+                </a>
             {% endif %}
         </header>
 
@@ -545,18 +521,27 @@
 
         <!-- Main Layout -->
         <div class="wardrobe-layout">
-            <!-- Sidebar -->
-            <div class="wardrobe-sidebar">
+            <!-- Sidebar Filters -->
+            <aside class="wardrobe-sidebar">
                 <div class="sidebar-card">
                     <form method="get" action="{% url 'wardrobe_gallery' %}" id="filter-form">
+                        
                         <!-- Search -->
                         <div class="filter-section">
+                            <span class="filter-label">Search</span>
                             <div class="search-wrapper">
                                 <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="11" cy="11" r="8"></circle>
                                     <path d="M21 21l-4.35-4.35"></path>
                                 </svg>
-                                <input type="text" name="search" id="search-input" placeholder="Search your wardrobe..." value="{{ search_query|default:'' }}" class="filter-search">
+                                <!-- Note: Added oninput for debounce logic in JS -->
+                                <input type="text" 
+                                       name="search" 
+                                       id="search-input" 
+                                       placeholder="Type to search..." 
+                                       value="{{ search_query|default:'' }}" 
+                                       class="filter-search"
+                                       autocomplete="off">
                             </div>
                         </div>
 
@@ -616,27 +601,35 @@
                         <div class="filter-section">
                             <label class="filter-checkbox">
                                 <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %} onchange="this.form.submit()">
-                                Favorites Only
+                                Show Favorites Only
                             </label>
                         </div>
 
-                        <a href="{% url 'wardrobe_gallery' %}" class="btn-reset">Reset Filters</a>
+                        {% if search_query or selected_category or selected_season or selected_status or selected_color or show_favorites %}
+                            <a href="{% url 'wardrobe_gallery' %}" class="btn-reset">Reset Filters</a>
+                        {% endif %}
                     </form>
                 </div>
-            </div>
+            </aside>
 
-            <!-- Main Content -->
-            <div class="wardrobe-main">
-                <div class="items-grid" id="items-grid">
+            <!-- Main Content (Grid) -->
+            <main class="wardrobe-main">
+                <div class="items-grid">
                     {% if items %}
                         {% for item in items %}
-                        <article class="item-card" data-name="{{ item.name|lower }}" data-category="{{ item.category.name|default:'uncategorized'|lower }}">
+                        <article class="item-card">
                             <a href="{% url 'wardrobe_detail' item.id %}" class="item-card-link">
                                 <div class="item-image">
                                     <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy">
+                                    
                                     {% if item.favorite %}
-                                    <span class="badge-favorite">★</span>
+                                    <span class="badge-favorite" title="Favorite">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        </svg>
+                                    </span>
                                     {% endif %}
+                                    
                                     {% if item.status != 'available' %}
                                     <span class="badge-status">{{ item.get_status_display }}</span>
                                     {% endif %}
@@ -646,36 +639,47 @@
                                     <p class="item-meta">{{ item.category.name|default:"Uncategorized" }}</p>
                                 </div>
                             </a>
+                            
+                            <!-- Action Footer -->
                             <div class="item-actions">
-                                <a href="{% url 'wardrobe_toggle_favorite' item.id %}" class="item-action {% if item.favorite %}active{% endif %}" title="Favorite">
-                                    {% if item.favorite %}★{% else %}☆{% endif %}
+                                <a href="{% url 'wardrobe_toggle_favorite' item.id %}" class="item-action {% if item.favorite %}active{% endif %}" title="Toggle Favorite">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="{% if item.favorite %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
                                 </a>
-                                <a href="{% url 'wardrobe_edit' item.id %}" class="item-action" title="Edit">✎</a>
-                                <form method="post" action="{% url 'wardrobe_delete' item.id %}" style="flex: 1; display: flex;" onsubmit="return confirm('Delete this item?')">
+                                <a href="{% url 'wardrobe_edit' item.id %}" class="item-action" title="Edit Item">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                </a>
+                                <form method="post" action="{% url 'wardrobe_delete' item.id %}" style="flex: 1; display: flex;" onsubmit="return confirm('Are you sure you want to delete this item? This action cannot be undone.')">
                                     {% csrf_token %}
-                                    <button type="submit" class="item-action delete" title="Delete">🗑</button>
+                                    <button type="submit" class="item-action delete" title="Delete Item">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                    </button>
                                 </form>
                             </div>
                         </article>
                         {% endfor %}
-
-                        <!-- No Results Message (hidden by default) -->
-                        <div class="no-results" id="no-results">
-                            <p>No items match your search</p>
-                        </div>
+                    
                     {% else %}
+                        <!-- Empty State -->
                         <div class="empty-state">
                             <div class="empty-icon">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2c2c2c" stroke-width="1.5">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5">
                                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                                 </svg>
                             </div>
-                            <h2 class="empty-title">No Items Found</h2>
+                            <h2 class="empty-title">No items found</h2>
                             <p class="empty-text">
-                                {% if search_query or selected_category or selected_color or selected_season %}
-                                Try adjusting your filters
+                                {% if search_query or selected_category or selected_season %}
+                                    We couldn't find any items matching your filters.
                                 {% else %}
-                                Add your first clothing item to get started
+                                    Your wardrobe is empty. Start by adding your first item!
                                 {% endif %}
                             </p>
                             <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">+ Add Item</a>
@@ -683,75 +687,64 @@
                     {% endif %}
                 </div>
 
+                <!-- Pagination -->
                 {% if items.has_other_pages %}
                 <nav class="pagination">
                     {% if items.has_previous %}
-                    <a href="?page={{ items.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_color %}&color={{ selected_color }}{% endif %}{% if selected_season %}&season={{ selected_season }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">← Prev</a>
+                        <a href="?page={{ items.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-secondary">← Previous</a>
                     {% endif %}
-                    <span class="pagination-text">{{ items.number }} / {{ items.paginator.num_pages }}</span>
+                    
+                    <span class="pagination-text">Page {{ items.number }} of {{ items.paginator.num_pages }}</span>
+                    
                     {% if items.has_next %}
-                    <a href="?page={{ items.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_color %}&color={{ selected_color }}{% endif %}{% if selected_season %}&season={{ selected_season }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}" class="btn btn-secondary">Next →</a>
+                        <a href="?page={{ items.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-secondary">Next →</a>
                     {% endif %}
                 </nav>
                 {% endif %}
-            </div>
+            </main>
         </div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('search-input');
-    const itemCards = document.querySelectorAll('.item-card');
-    const noResults = document.getElementById('no-results');
-    const countDisplay = document.querySelector('.wardrobe-count');
-    const totalItems = itemCards.length;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Debounce Search Logic
+        // This waits 500ms after the user stops typing to submit the form.
+        // This is better than filtering client-side because it works with Pagination.
+        const searchInput = document.getElementById('search-input');
+        const filterForm = document.getElementById('filter-form');
+        let timeout = null;
 
-    if (searchInput && itemCards.length > 0) {
-        searchInput.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            let visibleCount = 0;
-
-            itemCards.forEach(card => {
-                const name = card.dataset.name || '';
-                const category = card.dataset.category || '';
-                const matches = query === '' || name.includes(query) || category.includes(query);
+        if (searchInput && filterForm) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeout);
                 
-                card.style.display = matches ? '' : 'none';
-                if (matches) visibleCount++;
+                // Show user we are waiting to search (optional visual cue)
+                this.style.borderColor = '#999';
+                
+                timeout = setTimeout(function() {
+                    filterForm.submit();
+                }, 500); // 500ms delay
             });
 
-            // Update count
-            if (countDisplay) {
-                if (query === '') {
-                    countDisplay.textContent = totalItems + ' items';
-                } else {
-                    countDisplay.textContent = visibleCount + ' of ' + totalItems + ' items';
+            // Prevent form submit on Enter key to avoid double submission
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(timeout);
+                    filterForm.submit();
                 }
+            });
+            
+            // Focus input if there is a search query (for UX continuity after reload)
+            const urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.has('search')) {
+                const len = searchInput.value.length;
+                searchInput.focus();
+                // Move cursor to end
+                searchInput.setSelectionRange(len, len);
             }
-
-            // Show/hide no results
-            if (noResults) {
-                noResults.style.display = (visibleCount === 0 && query !== '') ? 'block' : 'none';
-            }
-        });
-
-        // Submit on Enter
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('filter-form').submit();
-            }
-        });
-
-        // Clear on Escape
-        searchInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                this.value = '';
-                this.dispatchEvent(new Event('input'));
-            }
-        });
-    }
-});
+        }
+    });
 </script>
 {% endblock %}

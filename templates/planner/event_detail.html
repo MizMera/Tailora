@@ -4,176 +4,382 @@
 {% block title %}{{ event.title }} - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/planner.css' %}">
-<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+    /* =========================================
+       THEME VARIABLES (Matched to Event List)
+       ========================================= */
+    :root {
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
+    }
+
+    /* Layout */
+    .planner-wrapper {
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        padding: 40px 24px;
+    }
+
+    .planner-container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 32px;
+        align-items: start;
+    }
+
+    /* Typography */
+    .hero-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 36px;
+        font-weight: 700;
+        color: var(--text-main);
+        line-height: 1.2;
+        margin: 0 0 8px 0;
+    }
+
+    .hero-meta {
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* Cards */
+    .detail-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        padding: 32px;
+        margin-bottom: 24px;
+        /* Sharp borders for consistency */
+    }
+
+    .sidebar-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    /* Badges (Matched) */
+    .badge {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 6px 10px;
+        letter-spacing: 0.5px;
+        border-radius: 0;
+        display: inline-block;
+    }
+
+    .badge-occasion {
+        background: #eee;
+        color: #333;
+    }
+
+    .badge-completed {
+        background: #dcedc8;
+        color: #33691e;
+    }
+
+    .badge-upcoming {
+        background: #e3f2fd;
+        color: #1565c0;
+    }
+
+    /* Info Items */
+    .info-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .info-value {
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        color: var(--text-main);
+        font-weight: 500;
+    }
+
+    /* Outfit Hero Card */
+    .outfit-card {
+        display: block;
+        border: 1px solid var(--border-color);
+        background: #fafafa;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .outfit-card:hover {
+        border-color: #bbb;
+        background: #fff;
+    }
+
+    .outfit-image {
+        width: 100%;
+        height: 350px;
+        object-fit: cover;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .outfit-body {
+        padding: 20px;
+    }
+
+    /* Buttons (Matched) */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 20px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 0;
+        width: 100%;
+        /* Default to block in sidebar */
+        box-sizing: border-box;
+    }
+
+    .btn-primary {
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
+    }
+
+    .btn-primary:hover {
+        background: #000;
+    }
+
+    .btn-secondary {
+        background: #fff;
+        color: var(--text-main);
+        border-color: #ccc;
+    }
+
+    .btn-secondary:hover {
+        background: #f5f5f5;
+    }
+
+    .btn-danger-outline {
+        color: #d32f2f;
+        background: transparent;
+        border: 1px solid #d32f2f;
+    }
+
+    .btn-danger-outline:hover {
+        background: #ffebee;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar-card {
+            order: 2;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">{{ event.title }}</h1>
-        <p class="page-subtitle">{{ event.date|date:"F j, Y" }}{% if event.time %} at {{ event.time|date:"g:i A" }}{% endif %}</p>
-    </div>
-    <div class="header-actions">
-        <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary">Edit Event</a>
-        <a href="{% url 'planner:calendar' %}" class="btn btn-secondary">Back to Calendar</a>
-    </div>
-</div>
+<div class="planner-wrapper">
+    <div class="planner-container">
 
-{% if messages %}
-{% for message in messages %}
-<div class="alert alert-{{ message.tags }}">{{ message }}</div>
-{% endfor %}
-{% endif %}
-
-<div class="event-detail-layout">
-    <!-- Main Event Info -->
-    <div class="event-detail-main">
-        <div class="content-section">
-            <h3 class="section-title">EVENT DETAILS</h3>
-
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <span class="detail-label">Date</span>
-                    <span class="detail-value">{{ event.date|date:"l, F j, Y" }}</span>
-                </div>
-
-                {% if event.time %}
-                <div class="detail-item">
-                    <span class="detail-label">Time</span>
-                    <span class="detail-value">{{ event.time|date:"g:i A" }}</span>
-                </div>
-                {% endif %}
-
-                <div class="detail-item">
-                    <span class="detail-label">Occasion Type</span>
-                    <span class="detail-value"><span class="occasion-badge {{ event.occasion_type }}">{{
-                            event.get_occasion_type_display }}</span></span>
-                </div>
-
-                {% if event.location %}
-                <div class="detail-item">
-                    <span class="detail-label">Location</span>
-                    <span class="detail-value">{{ event.location }}</span>
-                </div>
-                {% endif %}
-
-                <div class="detail-item">
-                    <span class="detail-label">Status</span>
-                    <span class="detail-value">
-                        {% if event.is_completed %}
-                        <span class="status-badge completed">Completed</span>
-                        {% else %}
-                        <span class="status-badge upcoming">Upcoming</span>
-                        {% endif %}
-                    </span>
-                </div>
-            </div>
-
-            {% if event.notes %}
-            <div class="notes-section">
-                <h4 class="detail-label">Notes</h4>
-                <p class="notes-text">{{ event.notes }}</p>
-            </div>
-            {% endif %}
+        <!-- Back Link -->
+        <div style="margin-bottom: 32px;">
+            <a href="{% url 'planner:calendar' %}"
+                style="color: var(--text-muted); text-decoration: none; font-family: 'Inter', sans-serif; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Back to Calendar
+            </a>
         </div>
 
-        <!-- Outfit Assignment -->
-        <div class="content-section">
-            <h3 class="section-title">PLANNED OUTFIT</h3>
+        <div class="detail-grid">
 
-            {% if event.outfit %}
-            <div class="assigned-outfit">
-                <div class="outfit-preview">
-                    <h4 class="outfit-name">{{ event.outfit.name }}</h4>
-                    <p class="outfit-meta">{{ event.outfit.get_occasion_display }} • {{ event.outfit.items.count }}
-                        items</p>
-
-                    <div class="outfit-items-grid">
-                        {% for item in event.outfit.items.all %}
-                        <div class="outfit-item-preview">
-                            {% if item.image %}
-                            <img src="{{ item.image.url }}" alt="{{ item.name }}">
-                            {% else %}
-                            <div class="item-placeholder"></div>
-                            {% endif %}
+            <!-- Main Content -->
+            <main>
+                <!-- Header Card -->
+                <div class="detail-card">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                        <div>
+                            <h1 class="hero-title">{{ event.title }}</h1>
+                            <div class="hero-meta">
+                                <span>{{ event.date|date:"l, F j, Y" }}</span>
+                                {% if event.time %}
+                                <span>•</span><span>{{ event.time|date:"g:i A" }}</span>
+                                {% endif %}
+                            </div>
                         </div>
-                        {% endfor %}
+                        {% if event.is_completed %}
+                        <span class="badge badge-completed">Completed</span>
+                        {% else %}
+                        <span class="badge badge-upcoming">Upcoming</span>
+                        {% endif %}
                     </div>
 
-                    <div class="outfit-actions">
-                        <a href="{% url 'outfits:outfit_detail' event.outfit.id %}" class="btn btn-secondary">View
-                            Outfit Details</a>
-                        <form method="post" action="{% url 'planner:assign_outfit' event.id %}"
-                            style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" name="outfit_id" value="" class="btn btn-secondary">Remove
-                                Outfit</button>
-                        </form>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 24px;">
+                        <div>
+                            <span class="info-label">Occasion</span>
+                            <div class="info-value">{{ event.get_occasion_type_display }}</div>
+                        </div>
+                        {% if event.location %}
+                        <div>
+                            <span class="info-label">Location</span>
+                            <div class="info-value">{{ event.location }}</div>
+                        </div>
+                        {% endif %}
                     </div>
+
+                    {% if event.notes %}
+                    <div style="padding-top: 24px; border-top: 1px solid #eee;">
+                        <span class="info-label">Notes</span>
+                        <p
+                            style="font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.6; color: var(--text-main); margin: 0;">
+                            {{ event.notes }}
+                        </p>
+                    </div>
+                    {% endif %}
                 </div>
-            </div>
-            {% else %}
-            <div class="no-outfit-assigned">
-                <p>No outfit has been assigned to this event yet.</p>
 
-                {% if suggested_outfits %}
-                <h4 class="suggestions-title">Suggested Outfits</h4>
-                <div class="suggestions-grid">
-                    {% for outfit in suggested_outfits %}
-                    <div class="suggestion-card">
-                        <h5>{{ outfit.name }}</h5>
-                        <p>{{ outfit.items.count }} items</p>
+                <!-- Outfit Section -->
+                <div class="detail-card">
+                    <span class="info-label" style="margin-bottom: 16px;">Planned Outfit</span>
+
+                    {% if event.outfit %}
+                    <a href="{% url 'outfits:outfit_detail' event.outfit.id %}" class="outfit-card">
+                        {% if event.outfit.outfit_image %}
+                        <img src="{{ event.outfit.outfit_image.url }}" alt="{{ event.outfit.name }}"
+                            class="outfit-image">
+                        {% elif event.outfit.items.first and event.outfit.items.first.image %}
+                        <img src="{{ event.outfit.items.first.image.url }}" alt="{{ event.outfit.name }}"
+                            class="outfit-image">
+                        {% else %}
+                        <div
+                            style="height: 250px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; color: #ccc;">
+                            <span>No Preview Available</span>
+                        </div>
+                        {% endif %}
+
+                        <div class="outfit-body">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h3
+                                        style="font-family: 'Istok Web', sans-serif; font-size: 20px; margin: 0 0 4px 0; color: var(--text-main);">
+                                        {{ event.outfit.name }}</h3>
+                                    <p
+                                        style="margin: 0; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-muted);">
+                                        {{ event.outfit.items.count }} items • {{ event.outfit.get_occasion_display }}
+                                    </p>
+                                </div>
+                                <span
+                                    style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-main);">View
+                                    Details →</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <div style="margin-top: 16px; text-align: right;">
                         <form method="post" action="{% url 'planner:assign_outfit' event.id %}">
                             {% csrf_token %}
-                            <button type="submit" name="outfit_id" value="{{ outfit.id }}"
-                                class="btn btn-sm btn-primary">Assign This Outfit</button>
+                            <button type="submit" name="outfit_id" value="" class="btn btn-secondary"
+                                style="width: auto; padding: 6px 16px; font-size: 12px;">Remove/Change Outfit</button>
                         </form>
                     </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
 
-                <a href="{% url 'outfits:outfit_gallery' %}?occasion={{ event.occasion_type }}"
-                    class="btn btn-secondary">Browse All Outfits</a>
-            </div>
-            {% endif %}
-        </div>
-    </div>
+                    {% else %}
+                    <!-- Empty State -->
+                    <div style="border: 1px dashed #ccc; padding: 40px; text-align: center; background: #fafafa;">
+                        <div style="margin-bottom: 16px; color: #ccc;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1">
+                                <path
+                                    d="M20.38 3.4a2 2 0 0 0-1.2-1.1 19.83 19.83 0 0 0-14.36 0 2 2 0 0 0-1.2 1.1L2 10l5 2V21a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V12l5-2-1.62-6.6z" />
+                            </svg>
+                        </div>
+                        <h3 style="font-family: 'Istok Web'; font-size: 18px; margin: 0 0 8px 0;">No Outfit Selected
+                        </h3>
+                        <p style="font-family: 'Inter'; font-size: 14px; color: #777; margin-bottom: 24px;">Choose a {{
+                            event.get_occasion_type_display|lower }} outfit for this event.</p>
 
-    <!-- Sidebar Actions -->
-    <div class="event-detail-sidebar">
-        <div class="content-section">
-            <h3 class="section-title">QUICK ACTIONS</h3>
-
-            <div class="action-buttons">
-                <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary btn-block"> Edit Event</a>
-
-                <form method="post" action="{% url 'planner:toggle_complete' event.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-secondary btn-block">
-                        {% if event.is_completed %}
-                        Mark as Upcoming
-                        {% else %}
-                        Mark as Completed
+                        {% if suggested_outfits %}
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; text-align: left;">
+                            {% for outfit in suggested_outfits|slice:":3" %}
+                            <div style="border: 1px solid #eee; padding: 12px; background: #fff;">
+                                <h5 style="margin: 0 0 8px 0; font-family: 'Inter'; font-size: 13px;">{{ outfit.name }}
+                                </h5>
+                                <form method="post" action="{% url 'planner:assign_outfit' event.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" name="outfit_id" value="{{ outfit.id }}"
+                                        class="btn btn-secondary"
+                                        style="width: 100%; padding: 4px; font-size: 11px;">Select</button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
                         {% endif %}
-                    </button>
-                </form>
 
-                <a href="{% url 'planner:calendar' %}" class="btn btn-secondary btn-block">View Calendar</a>
-                <a href="{% url 'planner:event_list' %}" class="btn btn-secondary btn-block">All Events</a>
-            </div>
-        </div>
+                        <a href="{% url 'outfits:outfit_gallery' %}?occasion={{ event.occasion_type }}"
+                            class="btn btn-primary">Browse Outfits</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </main>
 
-        <!-- Danger Zone -->
-        <div class="content-section danger-zone">
-            <h4 class="section-title">DANGER ZONE</h4>
-            <form id="delete-event-form-{{ event.id }}" method="post"
-                action="{% url 'planner:event_delete' event.id %}">
-                {% csrf_token %}
-                <button type="button" class="btn btn-danger btn-block delete-trigger"
-                    data-form-id="delete-event-form-{{ event.id }}" data-item-name="this event">Delete Event</button>
-            </form>
+            <!-- Sidebar -->
+            <aside>
+                <div class="sidebar-card">
+                    <span class="info-label">Actions</span>
+                    <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary"
+                        style="margin-bottom: 12px;">Edit Event</a>
+
+                    <form method="post" action="{% url 'planner:toggle_complete' event.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-secondary">
+                            {% if event.is_completed %}Mark as Upcoming{% else %}Mark as Completed{% endif %}
+                        </button>
+                    </form>
+                </div>
+
+                <div class="sidebar-card" style="border-color: #ffcdd2; background: #fffbfb;">
+                    <span class="info-label" style="color: #d32f2f;">Danger Zone</span>
+                    <p style="font-family: 'Inter'; font-size: 12px; color: #666; margin-bottom: 16px;">
+                        This action cannot be undone.
+                    </p>
+                    <form method="post" action="{% url 'planner:event_delete' event.id %}"
+                        onsubmit="return confirm('Are you sure you want to delete this event?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger-outline">Delete Event</button>
+                    </form>
+                </div>
+            </aside>
+
         </div>
     </div>
 </div>
