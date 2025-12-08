@@ -27,6 +27,32 @@
 
 .stat-card {
     margin-bottom: 32px;
+    padding: 20px;
+    background: #ffffff;
+    border-left: 3px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, #7b513b, #a67c5b);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover::before {
+    transform: scaleY(1);
+}
+
+.stat-card:hover {
+    background: #fafafa;
+    transform: translateX(8px);
 }
 
 .stat-card:last-child {
@@ -50,6 +76,12 @@
     color: #252320;
     line-height: 1;
     margin-bottom: 4px;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-value {
+    transform: scale(1.05);
+    color: #7b513b;
 }
 
 .stat-description {
@@ -143,22 +175,47 @@
     color: #252320;
     border: 1px solid #e0e0e0;
     background: #fafafa;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+}
+
+/* Shimmer overlay on hover */
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.4),
+            transparent);
+    transition: left 0.6s ease;
+}
+
+.action-card:hover::before {
+    left: 100%;
 }
 
 .action-card:hover {
     background: #2c2c2c;
     color: #ffffff;
     z-index: 1;
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .action-card:hover .action-icon svg {
     stroke: #ffffff;
+    transform: scale(1.15) rotateY(10deg);
 }
 
 .action-card:hover .action-count {
     color: #ffffff;
+    transform: scale(1.1);
 }
 
 .action-icon {
@@ -169,7 +226,7 @@
 }
 
 .action-icon svg {
-    transition: stroke 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .action-title {
@@ -186,7 +243,7 @@
     font-size: 32px;
     font-weight: 600;
     color: #252320;
-    transition: color 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .warning-banner {

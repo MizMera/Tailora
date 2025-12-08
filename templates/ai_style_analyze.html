@@ -1,0 +1,429 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Style Assistant - Tailora{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium dark mode / clean aesthetic compatible variables */
+    :root {
+        --primary-color: #1a1a1a;
+        --secondary-color: #f8f8f8;
+        --accent-color: #2c2c2c;
+        --border-color: #e0e0e0;
+        --success-color: #2e7d32;
+    }
+
+    .ai-wrapper {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 20px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Steps Header */
+    .steps-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .steps-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .steps-subtitle {
+        color: #666;
+        font-size: 16px;
+    }
+
+    /* Cards */
+    .ai-card {
+        background: #fff;
+        border: 1px solid var(--border-color);
+        padding: 40px;
+        margin-bottom: 24px;
+        /* Sharp borders as per premium aesthetic */
+    }
+
+    /* Upload Zone */
+    .upload-zone {
+        border: 2px dashed #ccc;
+        background: #fafafa;
+        padding: 60px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+        border-color: var(--primary-color);
+        background: #f0f0f0;
+    }
+
+    .upload-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    /* Results Grid */
+    .results-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .persona-card {
+        background: #f9f9f9;
+        padding: 30px;
+        text-align: center;
+        border: 1px solid #eee;
+    }
+
+    .persona-title {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #999;
+        margin-bottom: 12px;
+    }
+
+    .persona-value {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 36px;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    /* Colors */
+    .palette-row {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 16px;
+    }
+
+    .palette-swatch {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    .palette-swatch::after {
+        content: attr(data-color);
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .palette-swatch:hover::after {
+        opacity: 1;
+    }
+
+    /* Analyzed Images */
+    .image-strip {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding: 12px 0;
+        margin-bottom: 24px;
+    }
+
+    .analyzed-thumb {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border: 1px solid #ddd;
+        flex-shrink: 0;
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 28px;
+        font-size: 15px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background: #000;
+    }
+
+    .btn-secondary {
+        background: #fff;
+        border-color: #ccc;
+        color: var(--primary-color);
+    }
+
+    .btn-secondary:hover {
+        background: #f5f5f5;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #eee;
+        border-top-color: var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .results-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ai-wrapper">
+    <div style="margin-bottom: 24px;">
+        <a href="{% url 'profile_settings' %}" style="color: #666; text-decoration: none; font-size: 14px;">← Back to
+            Settings</a>
+    </div>
+
+    {% if analyzed %}
+    <!-- RESULTS VIEW -->
+    <div class="steps-header">
+        <h1 class="steps-title">Style Analysis Complete</h1>
+        <p class="steps-subtitle">Based on your uploads, here is your unique style profile.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="save_profile" value="true">
+
+        <div class="results-grid">
+            <!-- Persona -->
+            <div class="persona-card">
+                <div class="persona-title">Your Style Persona</div>
+                <div class="persona-value">{{ detected_persona }}</div>
+                <p style="margin-top: 12px; font-size: 14px; color: #666;">
+                    Derived from analyzing {{ results|length }} images.
+                </p>
+
+                <!-- Hidden inputs to save logic -->
+                <!-- We map the persona back to a preferred_style choice -->
+                {% for style in detected_styles %}
+                <input type="hidden" name="preferred_styles" value="{{ style }}">
+                {% endfor %}
+            </div>
+
+            <!-- Colors -->
+            <div class="persona-card">
+                <div class="persona-title">Dominant Palette</div>
+                <div class="palette-row">
+                    {% for color in detected_colors %}
+                    <div class="palette-swatch" style="background-color: {{ color }};" data-color="{{ color }}"></div>
+                    {% empty %}
+                    <span style="color: #999;">No consistent colors detected.</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Breakdown (Optional / Accordion) -->
+        <div class="ai-card" style="margin-top: 24px;">
+            <h3 style="font-size: 16px; margin-bottom: 16px;">Image Analysis Breakdown</h3>
+            <div class="image-strip">
+                {% for result in results %}
+                <div style="text-align: center; width: 120px; flex-shrink: 0;">
+                    <!-- Note: Since images were uploaded in memory, we can't display them easily purely from backend without saving temp. 
+                             However, standard pattern is to use JS FileReader on upload to show preview, or save temp.
+                             For this MVP, we might skip showing the image itself in results if it's tricky, or just show text summary.
+                             User prompt: "Upload 3-5 reference photos"
+                             Let's just show the analysis text for now to avoid complexity of temp file storage.
+                        -->
+                    <div
+                        style="height: 80px; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; margin-bottom: 8px;">
+                        {{ result.name }}
+                    </div>
+                    <div style="font-size: 11px; text-align: left; line-height: 1.4;">
+                        <strong>Style:</strong> {{ result.analysis.style|default:"-" }}<br>
+                        <strong>Color:</strong> {{ result.analysis.color|default:"-" }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <button type="submit" class="btn btn-primary">Apply to My Profile</button>
+            <a href="{% url 'ai_style_analyze' %}" class="btn btn-secondary" style="margin-left: 12px;">Start Over</a>
+        </div>
+    </form>
+
+    {% else %}
+    <!-- UPLOAD VIEW -->
+    <div class="steps-header">
+        <h1 class="steps-title">AI Style Assistant</h1>
+        <p class="steps-subtitle">Upload 3-5 photos of outfits you love. Our AI will detect your style persona.</p>
+    </div>
+
+    <div class="ai-card">
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            <input type="hidden" name="analyze" value="true">
+
+            <div class="upload-zone" id="dropZone">
+                <input type="file" name="style_images" multiple accept="image/*" class="upload-input" id="fileInput"
+                    onchange="handleFiles(this.files)">
+                <div id="uploadContent">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"
+                        style="margin-bottom: 16px;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <h3 style="font-size: 18px; margin-bottom: 8px;">Drag & Drop Photos</h3>
+                    <p style="color: #999; font-size: 14px;">or click to browse</p>
+                </div>
+                <div id="filePreview" style="display: none; margin-top: 20px;">
+                    <p id="fileCount" style="font-weight: 600; margin-bottom: 12px;"></p>
+                    <div class="image-strip" id="previewStrip" style="justify-content: center;"></div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 32px;">
+                <button type="submit" class="btn btn-primary" id="analyzeBtn" disabled>
+                    Analyze My Style
+                </button>
+            </div>
+
+            <p style="text-align: center; font-size: 12px; color: #999; margin-top: 16px;">
+                Powered by BLIP-2 AI. Images are processed locally.
+            </p>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <h3 style="font-family: 'Istok Web'; font-size: 24px; margin-bottom: 8px;">Analyzing...</h3>
+    <p style="color: #666;">Identifying patterns, colors, and aesthetics.</p>
+</div>
+
+<script>
+    function handleFiles(files) {
+        if (files.length > 0) {
+            document.getElementById('uploadContent').style.display = 'none';
+            document.getElementById('filePreview').style.display = 'block';
+            document.getElementById('fileCount').textContent = `${files.length} images selected`;
+            document.getElementById('analyzeBtn').disabled = false;
+            document.getElementById('analyzeBtn').style.opacity = '1';
+
+            const previewStrip = document.getElementById('previewStrip');
+            previewStrip.innerHTML = '';
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'analyzed-thumb';
+                    previewStrip.appendChild(img);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
+    const form = document.getElementById('uploadForm');
+    if (form) {
+        form.addEventListener('submit', function () {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        });
+    }
+
+    // Drag and Drop Visuals
+    const dropZone = document.getElementById('dropZone');
+    if (dropZone) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('dragover');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            document.getElementById('fileInput').files = files;
+            handleFiles(files);
+        }
+    }
+</script>
+{% endblock %}

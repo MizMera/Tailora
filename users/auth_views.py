@@ -716,3 +716,126 @@ def cancel_subscription_view(request):
     
     # Redirect if accessed via GET
     return redirect('profile_settings')
+
+
+@login_required
+def ai_style_analyze_view(request):
+    """
+    AI Style Profile Generator
+    Allows users to upload images to analyze their style persona and color palette.
+    """
+    import os
+    from collections import Counter
+    from wardrobe.ai_image_analyzer import get_image_analyzer
+    
+    if request.method == 'POST':
+        if 'analyze' in request.POST:
+            # Handle Image Upload & Analysis
+            images = request.FILES.getlist('style_images')
+            
+            if not images:
+                messages.error(request, 'Please upload at least one image.')
+                return render(request, 'ai_style_analyze.html')
+            
+            if len(images) > 5:
+                messages.warning(request, 'Maximum 5 images allowed. Analyzing the first 5.')
+                images = images[:5]
+            
+            try:
+                # Initialize Analyzer (Lazy load if possible)
+                analyzer = get_image_analyzer(use_blip2=True)
+                
+                results = []
+                all_styles = []
+                all_colors = []
+                
+                for img in images:
+                    # Analyze each image
+                    # Note: analyze_image expects an InMemoryUploadedFile which 'img' is
+                    analysis = analyzer.analyze_image(img)
+                    
+                    if analysis.get('style'):
+                        all_styles.append(analysis['style'].lower())
+                    
+                    if analysis.get('color'):
+                        all_colors.append(analysis['color'].lower())
+                        
+                    results.append({
+                        'name': img.name,
+                        'analysis': analysis
+                    })
+                
+                # Aggregate Styles
+                style_counts = Counter(all_styles)
+                top_styles = [s for s, c in style_counts.most_common(3)]
+                
+                # Aggregate Colors
+                color_counts = Counter(all_colors)
+                top_colors = [c for c, count in color_counts.most_common(5)]
+                
+                # Map detailed styles to broad categories if necessary
+                # Simple heuristic mapping
+                mapped_styles = []
+                style_map = {
+                    'casual': 'casual', 'relax': 'casual', 'everyday': 'casual',
+                    'chic': 'chic', 'elegant': 'elegant', 'formal': 'elegant',
+                    'bohemian': 'boheme', 'boho': 'boheme', 'hippie': 'boheme',
+                    'sport': 'sportif', 'athletic': 'sportif', 'gym': 'sportif',
+                    'street': 'streetwear', 'urban': 'streetwear', 'hipster': 'streetwear',
+                    'vintage': 'vintage', 'retro': 'vintage', 'classic': 'classique',
+                    'minimal': 'minimaliste', 'simple': 'minimaliste', 'clean': 'minimaliste'
+                }
+                
+                detected_persona = "Eclectic" # Default
+                
+                for s in top_styles:
+                    for key, value in style_map.items():
+                        if key in s:
+                            if value not in mapped_styles:
+                                mapped_styles.append(value)
+                
+                if mapped_styles:
+                    detected_persona = mapped_styles[0].title()
+                elif top_styles:
+                     detected_persona = top_styles[0].title()
+
+                # Prepare Context for Results Step
+                context = {
+                    'analyzed': True,
+                    'results': results,
+                    'detected_persona': detected_persona,
+                    'detected_styles': mapped_styles,  # Codes for checkbox pre-selection
+                    'detected_colors': top_colors,     # Raw color names
+                }
+                return render(request, 'ai_style_analyze.html', context)
+                
+            except Exception as e:
+                print(f"AI Analysis Error: {e}")
+                messages.error(request, f"Error analyzing images: {str(e)}")
+                return render(request, 'ai_style_analyze.html')
+
+        elif 'save_profile' in request.POST:
+            # Handle Saving Results to Profile
+            user = request.user
+            try:
+                style_profile = user.style_profile
+            except StyleProfile.DoesNotExist:
+                style_profile = StyleProfile.objects.create(user=user)
+            
+            # Update Styles
+            selected_styles = request.POST.getlist('preferred_styles')
+            if selected_styles:
+                style_profile.preferred_styles = selected_styles
+            
+            # Update Colors
+            # We receive raw text names from the form or analysis
+            # We might want to map them to hex or just save as custom if model allows
+            # Model expects hex list.
+            # Simplified: We won't overwrite colors completely, maybe append or just rely on user manual selection in settings
+            # For now, let's just save styles primarily as that's the "Persona"
+            
+            style_profile.save()
+            messages.success(request, 'Style Profile updated with AI insights!')
+            return redirect('profile_settings')
+            
+    return render(request, 'ai_style_analyze.html')
