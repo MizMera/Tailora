@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Style Challenges - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+.challenge-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-top: 24px;
+    padding: 12px;
+}
+.challenge-grid.active-challenges {
+    grid-template-columns: repeat(2, 1fr);
+}
+.challenge-card {
+    background: #ffffff;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.challenge-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    border-color: #ddd;
+}
+.challenge-card .btn {
+    position: relative;
+    z-index: 2;
+}
+.challenge-image {
+    height: 160px;
+    background: #f4e9cf;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+}
+.challenge-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.challenge-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.challenge-type {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: #999999;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    opacity: 0.8;
+}
+.challenge-name {
+    font-family: 'Istok Web', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 12px 0;
+    line-height: 1.4;
+    letter-spacing: -0.2px;
+}
+.challenge-description {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #707070;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    flex: 1;
+}
+.challenge-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.challenge-duration {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #888888;
+    font-weight: 500;
+}
+.challenge-participants {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #888888;
+    font-weight: 500;
+}
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #efefef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2c2c2c 0%, #4a4a4a 100%);
+    transition: width 0.3s ease;
+}
+.progress-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #888888;
+    text-align: right;
+    margin-bottom: 16px;
+}
+.section-title {
+    font-family: 'Istok Web', sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: #2c2c2c;
+    margin: 40px 0 20px 0;
+    padding-left: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 12px;
+}
+.section-title:first-child {
+    margin-top: 0;
+}
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.status-active {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+.status-completed {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+.status-upcoming {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 class="page-title">Style Challenges</h1>
+            <p class="page-subtitle">Participate in fun style challenges and earn badges</p>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <a href="{% url 'outfits:badges' %}" class="btn btn-secondary">My Badges</a>
+            <a href="{% url 'outfits:create_challenge' %}" class="btn btn-primary">Create Challenge</a>
+        </div>
+    </div>
+</div>
+
+<!-- Active Challenges -->
+{% if active_challenges %}
+<h2 class="section-title">Active Challenges</h2>
+<div class="challenge-grid active-challenges">
+    {% for challenge, participation in active_challenges %}
+    <div class="challenge-card">
+        <a href="{% url 'outfits:challenge_detail' challenge.id %}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="challenge-content">
+            <div class="challenge-type">{{ challenge.get_challenge_type_display }}</div>
+            <h3 class="challenge-name">{{ challenge.name }}</h3>
+            <p class="challenge-description">{{ challenge.description|truncatewords:20 }}</p>
+            
+            <div class="challenge-meta">
+                <span class="challenge-duration">{{ challenge.duration_days }} days</span>
+                <span class="status-badge status-active">Active • {{ participation.days_remaining }} days left</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ participation.progress_percentage }}%"></div>
+            </div>
+            <div class="progress-text">{{ participation.outfits_submitted }}/{{ challenge.rules.required_outfits|default:challenge.duration_days }} outfits</div>
+            
+            <div style="display: flex; gap: 8px; margin-top: auto;">
+                <span class="btn btn-primary" style="flex: 1; pointer-events: none; font-weight: 600; letter-spacing: 0.5px; padding: 10px 16px; font-size: 13px;">View Challenge</span>
+                <a href="{% url 'outfits:submit_challenge_outfit' challenge.id %}" class="btn btn-secondary" onclick="event.stopPropagation();" style="font-weight: 600; letter-spacing: 0.5px; padding: 10px 16px; font-size: 13px;">Submit</a>
+            </div>
+        </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Available Challenges -->
+{% if available_challenges %}
+<h2 class="section-title">Available Challenges</h2>
+<div class="challenge-grid">
+    {% for challenge in available_challenges %}
+    <div class="challenge-card">
+        <a href="{% url 'outfits:challenge_detail' challenge.id %}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="challenge-content">
+            <div class="challenge-type">{{ challenge.get_challenge_type_display }}</div>
+            <h3 class="challenge-name">{{ challenge.name }}</h3>
+            <p class="challenge-description">{{ challenge.description|truncatewords:20 }}</p>
+            
+            <div class="challenge-meta">
+                <span class="challenge-duration">{{ challenge.duration_days }} days</span>
+                <span class="challenge-participants">{{ challenge.participants_count }} participants</span>
+            </div>
+            
+            <div style="margin-top: 16px;">
+                <span class="btn btn-primary" style="width: 100%; pointer-events: none; font-weight: 600; letter-spacing: 0.5px;">Join Challenge</span>
+            </div>
+        </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Completed Challenges -->
+{% if completed_challenges %}
+<h2 class="section-title">Completed Challenges</h2>
+<div class="challenge-grid">
+    {% for challenge, participation in completed_challenges %}
+    <div class="challenge-card">
+        <a href="{% url 'outfits:challenge_detail' challenge.id %}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="challenge-content">
+            <div class="challenge-type">{{ challenge.get_challenge_type_display }}</div>
+            <h3 class="challenge-name">{{ challenge.name }}</h3>
+            <p class="challenge-description">{{ challenge.description|truncatewords:20 }}</p>
+            
+            <div class="challenge-meta">
+                <span class="challenge-duration">Completed</span>
+                <span class="status-badge status-completed">Completed</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%"></div>
+            </div>
+            <div class="progress-text">{{ participation.outfits_submitted }}/{{ challenge.rules.required_outfits|default:challenge.duration_days }} outfits</div>
+            
+            <div style="margin-top: 16px;">
+                <span class="btn btn-secondary" style="width: 100%; pointer-events: none;">View Results</span>
+            </div>
+        </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Empty State -->
+{% if not active_challenges and not available_challenges and not completed_challenges %}
+<div class="empty-state">
+    <div style="font-size: 64px; margin-bottom: 24px; opacity: 0.3;">🎯</div>
+    <h3 style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; color: #2c2c2c; margin: 0 0 12px 0;">
+        No challenges available
+    </h3>
+    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: 0 0 32px 0;">
+        Be the first to create a style challenge!
+    </p>
+    <a href="{% url 'outfits:create_challenge' %}" class="btn btn-primary">Create First Challenge</a>
+</div>
+{% endif %}
+{% endblock %}

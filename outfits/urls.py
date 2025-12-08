@@ -20,6 +20,14 @@ urlpatterns = [
     # Stats
     path('stats/', views.outfit_stats_view, name='outfit_stats'),
     
+    # Challenge routes
+    path('challenges/', views.challenges_list_view, name='challenges_list'),
+    path('challenges/create/', views.create_challenge_view, name='create_challenge'),
+    path('challenges/<uuid:challenge_id>/', views.challenge_detail_view, name='challenge_detail'),
+    path('challenges/<uuid:challenge_id>/join/', views.join_challenge_view, name='join_challenge'),
+    path('challenges/<uuid:challenge_id>/submit/', views.submit_challenge_outfit_view, name='submit_challenge_outfit'),
+    path('badges/', views.badges_view, name='badges'),
+    
     # REST API routes
     path('', include(router.urls)),
 ]
