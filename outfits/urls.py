@@ -11,6 +11,7 @@ router.register(r'api/outfits', views.OutfitViewSet, basename='outfit-api')
 urlpatterns = [
     # Template-based views
     path('', views.outfit_gallery_view, name='outfit_gallery'),
+    path('search/', views.outfit_advanced_search_view, name='outfit_advanced_search'),
     path('create/', views.outfit_create_view, name='outfit_create'),
     path('<uuid:outfit_id>/', views.outfit_detail_view, name='outfit_detail'),
     path('<uuid:outfit_id>/edit/', views.outfit_edit_view, name='outfit_edit'),

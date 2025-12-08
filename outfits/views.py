@@ -43,6 +43,24 @@ def outfit_gallery_view(request):
     total_outfits = outfits.count()
     favorite_count = outfits.filter(favorite=True).count()
     
+    # Get today's daily challenge only
+    from django.utils import timezone
+    today = timezone.now().date()
+    daily_challenge = StyleChallenge.objects.filter(
+        start_date=today,
+        end_date=today,
+        challenge_type='daily',
+        is_public=True
+    ).first()
+    
+    # Get user's participation for the daily challenge if it exists
+    daily_participation = None
+    if daily_challenge:
+        daily_participation = ChallengeParticipation.objects.filter(
+            user=user, 
+            challenge=daily_challenge
+        ).first()
+    
     context = {
         'outfits': page_obj,
         'total_outfits': total_outfits,
@@ -51,9 +69,115 @@ def outfit_gallery_view(request):
         'search_query': search_query,
         'show_favorites': show_favorites,
         'occasions': Outfit.OCCASION_CHOICES,
+        'daily_challenge': daily_challenge,
+        'daily_participation': daily_participation,
     }
     
     return render(request, 'outfit_gallery.html', context)
+
+
+@login_required
+def outfit_advanced_search_view(request):
+    """
+    Advanced search for outfits with multiple filters
+    """
+    user = request.user
+    outfits = Outfit.objects.filter(user=user).prefetch_related('items')
+    
+    # Get all filter parameters
+    search_query = request.GET.get('search', '').strip()
+    occasion_filter = request.GET.get('occasion', '')
+    colors = request.GET.getlist('colors')
+    styles = request.GET.getlist('styles')
+    item_count_min = request.GET.get('item_count_min', '')
+    item_count_max = request.GET.get('item_count_max', '')
+    show_favorites = request.GET.get('favorites') == 'true'
+    
+    # Apply search query
+    if search_query:
+        outfits = outfits.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(style_tags__icontains=search_query)
+        )
+    
+    # Apply occasion filter
+    if occasion_filter:
+        outfits = outfits.filter(occasion=occasion_filter)
+    
+    # Apply color filters
+    if colors:
+        color_query = Q()
+        for color in colors:
+            color_query |= Q(items__color__icontains=color)
+        outfits = outfits.filter(color_query).distinct()
+    
+    # Apply style filters
+    if styles:
+        style_query = Q()
+        for style in styles:
+            style_query |= Q(style_tags__icontains=style)
+        outfits = outfits.filter(style_query).distinct()
+    
+    # Apply item count filters
+    if item_count_min:
+        try:
+            min_count = int(item_count_min)
+            outfits = outfits.annotate(item_count=Count('items')).filter(item_count__gte=min_count)
+        except (ValueError, TypeError):
+            pass
+    
+    if item_count_max:
+        try:
+            max_count = int(item_count_max)
+            if not item_count_min:
+                outfits = outfits.annotate(item_count=Count('items'))
+            outfits = outfits.filter(item_count__lte=max_count)
+        except (ValueError, TypeError):
+            pass
+    
+    # Apply favorites filter
+    if show_favorites:
+        outfits = outfits.filter(favorite=True)
+    
+    # Pagination
+    paginator = Paginator(outfits, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get all unique colors and styles from user's wardrobe for filter options
+    user_colors = set()
+    user_styles = set()
+    
+    for outfit in Outfit.objects.filter(user=user):
+        for item in outfit.items.all():
+            if hasattr(item, 'color') and item.color:
+                user_colors.add(item.color)
+        if outfit.style_tags:
+            tags = outfit.style_tags.split(',')
+            for tag in tags:
+                user_styles.add(tag.strip())
+    
+    # Get wardrobe items for must contain/exclude filters
+    wardrobe_items = ClothingItem.objects.filter(user=user, status='available')
+    
+    context = {
+        'outfits': page_obj,
+        'total_outfits': outfits.count(),
+        'occasions': Outfit.OCCASION_CHOICES,
+        'colors': sorted(list(user_colors)),
+        'styles': sorted(list(user_styles)),
+        'selected_colors': colors,
+        'selected_styles': styles,
+        'selected_occasion': occasion_filter,
+        'search_query': search_query,
+        'item_count_min': item_count_min,
+        'item_count_max': item_count_max,
+        'show_favorites': show_favorites,
+        'wardrobe_items': wardrobe_items,
+    }
+    
+    return render(request, 'outfit_advanced_search.html', context)
 
 
 @login_required
@@ -572,9 +696,11 @@ class OutfitViewSet(viewsets.ModelViewSet):
 @login_required
 def challenges_list_view(request):
     """
-    List all available challenges
+    List all available challenges (daily, weekly, and regular)
     """
     user = request.user
+    from django.utils import timezone
+    
     all_challenges = StyleChallenge.objects.filter(
         Q(is_public=True) | Q(created_by=user)
     ).prefetch_related('participations')
@@ -585,25 +711,55 @@ def challenges_list_view(request):
     }
     
     # Separate challenges into categories
+    daily_challenges = []
+    weekly_challenges = []
     active_challenges = []
     available_challenges = []
     completed_challenges = []
     
+    today = timezone.now().date()
+    
     for challenge in all_challenges:
         participation = user_participations.get(challenge.id)
         
-        if participation:
-            if participation.completed:
-                completed_challenges.append((challenge, participation))
+        # Check if challenge is active (current date is between start and end)
+        is_active = challenge.start_date <= today <= challenge.end_date if challenge.end_date else challenge.start_date <= today
+        
+        # Categorize by challenge type
+        if challenge.challenge_type == 'daily' and is_active:
+            if participation:
+                if participation.completed:
+                    completed_challenges.append((challenge, participation))
+                else:
+                    daily_challenges.append((challenge, participation))
             else:
-                active_challenges.append((challenge, participation))
+                daily_challenges.append(challenge)
+        elif challenge.challenge_type == 'weekly' and is_active:
+            if participation:
+                if participation.completed:
+                    completed_challenges.append((challenge, participation))
+                else:
+                    weekly_challenges.append((challenge, participation))
+            else:
+                weekly_challenges.append(challenge)
         else:
-            available_challenges.append(challenge)
+            # Regular challenges
+            if participation:
+                if participation.completed:
+                    completed_challenges.append((challenge, participation))
+                else:
+                    active_challenges.append((challenge, participation))
+            else:
+                if is_active:
+                    available_challenges.append(challenge)
     
     context = {
+        'daily_challenges': daily_challenges,
+        'weekly_challenges': weekly_challenges,
         'active_challenges': active_challenges,
         'available_challenges': available_challenges,
         'completed_challenges': completed_challenges,
+        'today': today,
     }
     
     return render(request, 'challenges_list.html', context)

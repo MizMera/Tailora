@@ -132,6 +132,7 @@
                 </p>
             </div>
             <div style="display: flex; gap: 12px;">
+                <a href="{% url 'outfits:outfit_advanced_search' %}" class="btn btn-secondary" style="border-radius: 0;">Advanced Search</a>
                 <a href="{% url 'outfits:outfit_stats' %}" class="btn btn-secondary" style="border-radius: 0;">Statistics</a>
                 <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary" style="border-radius: 0;">Create Outfit</a>
             </div>
@@ -200,6 +201,53 @@
             </div>
         </form>
     </div>
+
+    <!-- Daily Challenge Banner -->
+    {% if daily_challenge %}
+    <div style="margin-bottom: 48px;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 32px; display: flex; align-items: center; gap: 32px; box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);">
+            <!-- Challenge Icon -->
+            <div style="font-size: 64px; line-height: 1;">⚡</div>
+            
+            <!-- Challenge Content -->
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                    <span style="background: rgba(255, 255, 255, 0.2); color: #fff; padding: 4px 12px; border-radius: 20px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Today's Challenge</span>
+                    {% if daily_participation %}
+                    <span style="background: rgba(76, 175, 80, 0.9); color: #fff; padding: 4px 12px; border-radius: 20px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                        {% if daily_participation.completed %}✓ Completed{% else %}In Progress{% endif %}
+                    </span>
+                    {% endif %}
+                </div>
+                <h2 style="font-family: 'Istok Web', sans-serif; font-size: 28px; font-weight: 600; margin: 0 0 8px 0; color: #fff; letter-spacing: -0.3px;">{{ daily_challenge.name }}</h2>
+                <p style="font-family: 'Inter', sans-serif; font-size: 15px; color: rgba(255, 255, 255, 0.9); margin: 0 0 16px 0; line-height: 1.5;">{{ daily_challenge.description }}</p>
+                
+                <!-- Challenge Stats -->
+                <div style="display: flex; gap: 24px; margin-bottom: 20px;">
+                    <div>
+                        <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: rgba(255, 255, 255, 0.7); text-transform: uppercase; letter-spacing: 0.5px;">Participants</span>
+                        <p style="font-family: 'Istok Web', sans-serif; font-size: 20px; font-weight: 600; margin: 4px 0 0 0; color: #fff;">{{ daily_challenge.participants_count }}</p>
+                    </div>
+                    <div>
+                        <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: rgba(255, 255, 255, 0.7); text-transform: uppercase; letter-spacing: 0.5px;">Ends In</span>
+                        <p style="font-family: 'Istok Web', sans-serif; font-size: 20px; font-weight: 600; margin: 4px 0 0 0; color: #fff;">24 Hours</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Button -->
+            <div>
+                <a href="{% url 'outfits:challenge_detail' daily_challenge.id %}" style="background: #fff; color: #667eea; padding: 14px 28px; border-radius: 8px; text-align: center; text-decoration: none; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; display: inline-block; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: transform 0.2s; white-space: nowrap;">
+                    {% if daily_participation %}
+                        {% if daily_participation.completed %}View Results{% else %}Continue Challenge{% endif %}
+                    {% else %}
+                        Join Now
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Outfits Grid -->
     <div class="content-section">
