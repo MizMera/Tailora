@@ -1,122 +1,62 @@
-<article style="border: 1px solid #e0e0e0;
-                background: #fafafa;
-                padding: 0;
-                position: relative;">
-    <!-- Post Badge based on likes -->
-    {% if post.likes_count >= 200 %}
-    <div class="post-badge iconic">💎 Iconic</div>
-    {% elif post.likes_count >= 100 %}
-    <div class="post-badge star">🌟 Star</div>
-    {% elif post.likes_count >= 50 %}
-    <div class="post-badge viral">🔥 Viral</div>
-    {% elif post.likes_count >= 25 %}
-    <div class="post-badge appreciated">❤️ Appreciated</div>
-    {% endif %}
-
+<article style="border: 1px solid #e0e0e0; background: #fafafa; padding: 0;">
     <!-- Post Header -->
-    <header style="display: flex;
-                   align-items: center;
-                   justify-content: space-between;
-                   padding: 16px;
-                   background: #ffffff;
-                   border-bottom: 1px solid #e0e0e0;">
-        <a href="{% url 'social:profile' post.user.id %}" style="display: flex;
-                  align-items: center;
-                  gap: 12px;
-                  text-decoration: none;
-                  color: inherit;
-                  flex: 1;">
+    <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #ffffff; border-bottom: 1px solid #e0e0e0;">
+        <a href="{% url 'social:profile' post.user.id %}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; flex: 1;">
             <div class="user-avatar">{{ post.user.first_name|slice:":1"|upper }}</div>
             <div>
-                <div style="font-family: 'Inter', sans-serif;
-                            font-size: 14px;
-                            font-weight: 600;
-                            color: #2c2c2c;">
-                    {{ post.user.get_full_name|default:post.user.email }}
-                </div>
-                <div style="font-family: 'Inter', sans-serif;
-                            font-size: 12px;
-                            color: #757575;">
-                    {{ post.created_at|timesince }} ago
-                </div>
+                <div style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c;">{{ post.user.get_full_name|default:post.user.email }}</div>
+                <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575;">{{ post.created_at|timesince }} ago</div>
             </div>
         </a>
         {% if post.user == request.user %}
         <div style="display: flex; align-items: center; gap: 8px;">
-            <a href="{% url 'social:edit_post' post.id %}" style="font-family: 'Inter', sans-serif;
-                      font-size: 13px;
-                      color: #757575;
-                      text-decoration: none;
-                      padding: 4px 12px;
-                      border: 1px solid #e0e0e0;
-                      background: #ffffff;" title="Edit post">Edit</a>
-            <form id="delete-post-form-{{ post.id }}" method="post" action="{% url 'social:delete_post' post.id %}"
-                style="margin: 0;">
+            <a href="{% url 'social:edit_post' post.id %}" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #757575; text-decoration: none; padding: 4px 12px; border: 1px solid #e0e0e0; background: #ffffff;" title="Edit post">Edit</a>
+            <form id="delete-post-form-{{ post.id }}" method="post" action="{% url 'social:delete_post' post.id %}" style="margin: 0;">
                 {% csrf_token %}
-                <button type="button" class="delete-trigger" data-form-id="delete-post-form-{{ post.id }}"
-                    data-item-name="this post" title="Delete post" style="font-family: 'Inter', sans-serif;
-                               font-size: 13px;
-                               color: #c62828;
-                               text-decoration: none;
-                               padding: 4px 12px;
-                               border: 1px solid #e0e0e0;
-                               background: #ffffff;
-                               cursor: pointer;">Delete</button>
+                <button type="button" class="delete-trigger" data-form-id="delete-post-form-{{ post.id }}" data-item-name="this post" title="Delete post" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #c62828; text-decoration: none; padding: 4px 12px; border: 1px solid #e0e0e0; background: #ffffff; cursor: pointer;">Delete</button>
             </form>
         </div>
         {% endif %}
     </header>
-
+    
     <!-- Post Image(s) -->
     <div style="background: #000;">
         {% with items=post.outfit.items.all %}
         {% if items|length == 1 %}
-        <!-- Single Image -->
-        {% for item in items %}
-        {% if item.image %}
-        <a href="{% url 'social:post_detail' post.id %}">
-            <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width: 100%;
-                        max-height: 500px;
-                        object-fit: contain;
-                        display: block;">
-        </a>
-        {% endif %}
-        {% endfor %}
-        {% else %}
-        <!-- Multiple Images Grid -->
-        <a href="{% url 'social:post_detail' post.id %}">
-            <div class="post-image-grid post-image-grid-{{ items|length }}" style="max-height: 500px;">
-                {% for item in items %}
+            <!-- Single Image -->
+            {% for item in items %}
                 {% if item.image %}
-                <div class="grid-image-wrapper">
-                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="grid-image">
-                </div>
+                <a href="{% url 'social:post_detail' post.id %}">
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width: 100%; max-height: 500px; object-fit: contain; display: block;">
+                </a>
                 {% endif %}
-                {% endfor %}
-            </div>
-        </a>
+            {% endfor %}
+        {% else %}
+            <!-- Multiple Images Grid -->
+            <a href="{% url 'social:post_detail' post.id %}">
+                <div class="post-image-grid post-image-grid-{{ items|length }}" style="max-height: 500px;">
+                    {% for item in items %}
+                        {% if item.image %}
+                        <div class="grid-image-wrapper">
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="grid-image">
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </a>
         {% endif %}
         {% endwith %}
     </div>
-
+    
     <!-- Post Interactions -->
     <div style="padding: 16px; background: #ffffff;">
         <!-- Actions -->
-        <div style="display: flex;
-                    align-items: center;
-                    gap: 16px;
-                    padding-bottom: 12px;
-                    border-bottom: 1px solid #e0e0e0;
-                    margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0; margin-bottom: 12px;">
             <form method="post" action="{% url 'social:toggle_like' post.id %}" class="inline-form">
                 {% csrf_token %}
                 <button type="submit" class="action-btn like-btn {% if post.is_liked %}liked{% endif %}" title="Like">
-                    <svg width="22" height="22" viewBox="0 0 24 24"
-                        fill="{% if post.is_liked %}#ed4956{% else %}none{% endif %}"
-                        stroke="{% if post.is_liked %}#ed4956{% else %}currentColor{% endif %}" stroke-width="2">
-                        <path
-                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
-                        </path>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="{% if post.is_liked %}#ed4956{% else %}none{% endif %}" stroke="{% if post.is_liked %}#ed4956{% else %}currentColor{% endif %}" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                 </button>
             </form>
@@ -125,87 +65,47 @@
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
             </a>
-            <form method="post" action="{% url 'social:toggle_save' post.id %}" class="inline-form save-form"
-                style="margin-left: auto;">
+            <form method="post" action="{% url 'social:toggle_save' post.id %}" class="inline-form save-form" style="margin-left: auto;">
                 {% csrf_token %}
                 <button type="submit" class="action-btn save-btn {% if post.is_saved %}saved{% endif %}" title="Save">
-                    <svg width="22" height="22" viewBox="0 0 24 24"
-                        fill="{% if post.is_saved %}currentColor{% else %}none{% endif %}" stroke="currentColor"
-                        stroke-width="2">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="{% if post.is_saved %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
                         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                     </svg>
                 </button>
             </form>
         </div>
-
+        
         <!-- Likes Count -->
         <div style="padding-bottom: 8px;">
-            <strong style="font-family: 'Inter', sans-serif;
-                           font-size: 14px;
-                           font-weight: 600;
-                           color: #2c2c2c;">
-                {{ post.likes_count }} like{{ post.likes_count|pluralize }}
-            </strong>
+            <strong style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c;">{{ post.likes_count }} like{{ post.likes_count|pluralize }}</strong>
         </div>
-
+        
         <!-- Caption -->
         {% if post.caption %}
         <div style="padding-bottom: 4px;">
-            <a href="{% url 'social:profile' post.user.id %}" style="font-family: 'Inter', sans-serif;
-                      font-size: 14px;
-                      font-weight: 600;
-                      color: #2c2c2c;
-                      text-decoration: none;
-                      margin-right: 6px;">
-                {{ post.user.first_name }}
-            </a>
-            <span style="font-family: 'Inter', sans-serif;
-                         font-size: 14px;
-                         color: #2c2c2c;
-                         line-height: 1.5;">
-                {{ post.caption }}
-            </span>
+            <a href="{% url 'social:profile' post.user.id %}" style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; text-decoration: none; margin-right: 6px;">{{ post.user.first_name }}</a>
+            <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; line-height: 1.5;">{{ post.caption }}</span>
         </div>
         {% endif %}
-
+        
         <!-- Hashtags -->
         {% if post.hashtags %}
         <div style="padding: 4px 0;">
             {% for tag in post.hashtags %}
-            <a href="#" style="font-family: 'Inter', sans-serif;
-                      font-size: 13px;
-                      color: #00376b;
-                      text-decoration: none;
-                      margin-right: 8px;">
-                {{ tag }}
-            </a>
+                <a href="#" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #00376b; text-decoration: none; margin-right: 8px;">{{ tag }}</a>
             {% endfor %}
         </div>
         {% endif %}
-
+        
         <!-- Comments Count -->
         {% if post.comments_count > 0 %}
-        <a href="{% url 'social:post_detail' post.id %}" style="display: block;
-                  font-family: 'Inter', sans-serif;
-                  font-size: 13px;
-                  color: #757575;
-                  text-decoration: none;
-                  padding: 4px 0;">
+        <a href="{% url 'social:post_detail' post.id %}" style="display: block; font-family: 'Inter', sans-serif; font-size: 13px; color: #757575; text-decoration: none; padding: 4px 0;">
             View all {{ post.comments_count }} comment{{ post.comments_count|pluralize }}
         </a>
         {% endif %}
-
+        
         <!-- Outfit Link -->
-        <a href="{% url 'outfits:outfit_detail' post.outfit.id %}" style="display: inline-block;
-                  font-family: 'Inter', sans-serif;
-                  font-size: 12px;
-                  color: #757575;
-                  text-decoration: none;
-                  padding: 4px 0;
-                  margin-top: 4px;
-                  border-top: 1px solid #e0e0e0;
-                  padding-top: 8px;
-                  width: 100%;">
+        <a href="{% url 'outfits:outfit_detail' post.outfit.id %}" style="display: inline-block; font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-decoration: none; padding: 4px 0; margin-top: 4px; border-top: 1px solid #e0e0e0; padding-top: 8px; width: 100%;">
             View outfit: {{ post.outfit.name }} &rarr;
         </a>
     </div>
