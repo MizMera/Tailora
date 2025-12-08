@@ -465,9 +465,39 @@ def profile_settings_view(request):
         messages.success(request, 'Profile updated successfully!')
         return redirect('profile_settings')
     
+    # Define choices for template
+    preferred_style_choices = [
+        ('casual', 'Casual'),
+        ('chic', 'Chic'),
+        ('boheme', 'Bohemian'),
+        ('sportif', 'Sporty'),
+        ('elegant', 'Elegant'),
+        ('classique', 'Classic'),
+        ('streetwear', 'Streetwear'),
+        ('vintage', 'Vintage'),
+        ('minimaliste', 'Minimalist'),
+    ]
+    
+    color_choices = [
+        ('#000000', 'Black'),
+        ('#FFFFFF', 'White'),
+        ('#808080', 'Grey'),
+        ('#0000FF', 'Blue'),
+        ('#FF0000', 'Red'),
+        ('#008000', 'Green'),
+        ('#FFFF00', 'Yellow'),
+        ('#FFC0CB', 'Pink'),
+        ('#A52A2A', 'Brown'),
+        ('#F5DEB3', 'Beige'),
+        ('#FFA500', 'Orange'),
+        ('#800080', 'Purple'),
+    ]
+    
     context = {
         'user': user,
         'style_profile': style_profile,
+        'preferred_style_choices': preferred_style_choices,
+        'color_choices': color_choices,
     }
     return render(request, 'profile_settings.html', context)
 
@@ -749,7 +779,17 @@ def ai_style_analyze_view(request):
                 all_styles = []
                 all_colors = []
                 
+                import base64
+                
                 for img in images:
+                    # Reset pointer to beginning of file for reading
+                    img.seek(0)
+                    image_data = img.read()
+                    encoded_string = base64.b64encode(image_data).decode('utf-8')
+                    # Reset pointer again for analyzer if needed (though analyzer likely read it already or we should read before analysis)
+                    # Actually, let's analyze first, then encode? Or careful with stream position.
+                    img.seek(0)
+                    
                     # Analyze each image
                     # Note: analyze_image expects an InMemoryUploadedFile which 'img' is
                     analysis = analyzer.analyze_image(img)
@@ -762,7 +802,8 @@ def ai_style_analyze_view(request):
                         
                     results.append({
                         'name': img.name,
-                        'analysis': analysis
+                        'analysis': analysis,
+                        'image_base64': f"data:image/jpeg;base64,{encoded_string}" # Assuming JPEG/PNG, browser handles mime mostly
                     })
                 
                 # Aggregate Styles

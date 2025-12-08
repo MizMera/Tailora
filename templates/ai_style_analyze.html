@@ -5,20 +5,31 @@
 
 {% block extra_css %}
 <style>
-    /* Premium dark mode / clean aesthetic compatible variables */
+    /* =========================================
+       THEME VARIABLES (Matching Profile Settings)
+       ========================================= */
     :root {
-        --primary-color: #1a1a1a;
-        --secondary-color: #f8f8f8;
-        --accent-color: #2c2c2c;
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #757575;
         --border-color: #e0e0e0;
-        --success-color: #2e7d32;
+        --accent-color: #2c2c2c;
     }
 
+    /* =========================================
+       LAYOUT
+       ========================================= */
     .ai-wrapper {
-        max-width: 900px;
-        margin: 40px auto;
-        padding: 0 20px;
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        padding: 40px 24px;
         font-family: 'Inter', sans-serif;
+    }
+
+    .ai-container {
+        max-width: 900px;
+        margin: 0 auto;
     }
 
     /* Steps Header */
@@ -31,21 +42,22 @@
         font-family: 'Istok Web', sans-serif;
         font-size: 32px;
         font-weight: 700;
+        color: var(--text-main);
         margin-bottom: 8px;
     }
 
     .steps-subtitle {
-        color: #666;
+        color: var(--text-muted);
         font-size: 16px;
     }
 
     /* Cards */
     .ai-card {
-        background: #fff;
+        background: var(--card-bg);
         border: 1px solid var(--border-color);
         padding: 40px;
         margin-bottom: 24px;
-        /* Sharp borders as per premium aesthetic */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
     }
 
     /* Upload Zone */
@@ -61,7 +73,7 @@
 
     .upload-zone:hover,
     .upload-zone.dragover {
-        border-color: var(--primary-color);
+        border-color: var(--text-main);
         background: #f0f0f0;
     }
 
@@ -83,93 +95,134 @@
     }
 
     .persona-card {
-        background: #f9f9f9;
-        padding: 30px;
+        background: #fcfcfc;
+        padding: 40px;
         text-align: center;
-        border: 1px solid #eee;
+        border: 1px solid var(--border-color);
     }
 
     .persona-title {
-        font-size: 12px;
+        font-size: 11px;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #999;
-        margin-bottom: 12px;
+        letter-spacing: 1.5px;
+        color: var(--text-muted);
+        margin-bottom: 16px;
     }
 
     .persona-value {
         font-family: 'Istok Web', sans-serif;
-        font-size: 36px;
+        font-size: 42px;
         font-weight: 700;
-        color: var(--primary-color);
+        color: var(--text-main);
+        margin-bottom: 8px;
     }
 
     /* Colors */
     .palette-row {
         display: flex;
-        gap: 12px;
+        gap: 16px;
         justify-content: center;
-        margin-top: 16px;
+        margin-top: 20px;
     }
 
     .palette-swatch {
         width: 48px;
         height: 48px;
         border-radius: 50%;
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        /* Subtle border for white */
         position: relative;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
 
-    .palette-swatch::after {
-        content: attr(data-color);
-        position: absolute;
-        bottom: -20px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 10px;
-        white-space: nowrap;
-        opacity: 0;
-        transition: opacity 0.2s;
+    /* Analyzed Images Breakdown */
+    .image-breakdown-card {
+        background: #fff;
+        border: 1px solid var(--border-color);
+        padding: 24px;
+        margin-top: 24px;
     }
 
-    .palette-swatch:hover::after {
-        opacity: 1;
-    }
-
-    /* Analyzed Images */
     .image-strip {
-        display: flex;
-        gap: 12px;
-        overflow-x: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        /* Fixed width columns */
+        gap: 16px;
         padding: 12px 0;
-        margin-bottom: 24px;
     }
 
+    .breakdown-item {
+        background: #f9f9f9;
+        border: 1px solid #eee;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .breakdown-thumb-placeholder {
+        width: 100%;
+        height: 100px;
+        background: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: #999;
+        margin-bottom: 12px;
+        overflow: hidden;
+        text-align: center;
+        padding: 4px;
+    }
+
+    .breakdown-info {
+        width: 100%;
+        text-align: left;
+    }
+
+    .breakdown-text {
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--text-muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .breakdown-label {
+        color: var(--text-main);
+        font-weight: 600;
+    }
+
+    /* Analyzed Thumb Image */
     .analyzed-thumb {
-        width: 80px;
-        height: 80px;
+        width: 100%;
+        height: 100px;
         object-fit: cover;
         border: 1px solid #ddd;
-        flex-shrink: 0;
     }
+
 
     /* Buttons */
     .btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 14px 28px;
+        padding: 14px 32px;
+        font-family: 'Inter', sans-serif;
         font-size: 15px;
         font-weight: 500;
         text-decoration: none;
         cursor: pointer;
         transition: all 0.2s;
         border: 1px solid transparent;
+        border-radius: 0;
     }
 
     .btn-primary {
-        background: var(--primary-color);
+        background: var(--text-main);
         color: #fff;
+        border-color: var(--text-main);
     }
 
     .btn-primary:hover {
@@ -179,7 +232,7 @@
     .btn-secondary {
         background: #fff;
         border-color: #ccc;
-        color: var(--primary-color);
+        color: var(--text-main);
     }
 
     .btn-secondary:hover {
@@ -205,7 +258,7 @@
         width: 40px;
         height: 40px;
         border: 3px solid #eee;
-        border-top-color: var(--primary-color);
+        border-top-color: var(--text-main);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin-bottom: 16px;
@@ -228,125 +281,133 @@
 
 {% block content %}
 <div class="ai-wrapper">
-    <div style="margin-bottom: 24px;">
-        <a href="{% url 'profile_settings' %}" style="color: #666; text-decoration: none; font-size: 14px;">← Back to
-            Settings</a>
-    </div>
+    <div class="ai-container">
 
-    {% if analyzed %}
-    <!-- RESULTS VIEW -->
-    <div class="steps-header">
-        <h1 class="steps-title">Style Analysis Complete</h1>
-        <p class="steps-subtitle">Based on your uploads, here is your unique style profile.</p>
-    </div>
+        <header style="margin-bottom: 24px;">
+            <a href="{% url 'profile_settings' %}" class="btn btn-secondary"
+                style="padding: 8px 16px; font-size: 13px;">
+                ← Back to Settings
+            </a>
+        </header>
 
-    <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="save_profile" value="true">
+        {% if analyzed %}
+        <!-- RESULTS VIEW -->
+        <div class="steps-header">
+            <h1 class="steps-title">Style Analysis Complete</h1>
+            <p class="steps-subtitle">Based on your uploads, here is your unique style profile.</p>
+        </div>
 
-        <div class="results-grid">
-            <!-- Persona -->
-            <div class="persona-card">
-                <div class="persona-title">Your Style Persona</div>
-                <div class="persona-value">{{ detected_persona }}</div>
-                <p style="margin-top: 12px; font-size: 14px; color: #666;">
-                    Derived from analyzing {{ results|length }} images.
-                </p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="save_profile" value="true">
 
-                <!-- Hidden inputs to save logic -->
-                <!-- We map the persona back to a preferred_style choice -->
-                {% for style in detected_styles %}
-                <input type="hidden" name="preferred_styles" value="{{ style }}">
-                {% endfor %}
+            <div class="results-grid">
+                <!-- Persona -->
+                <div class="persona-card">
+                    <div class="persona-title">Your Style Persona</div>
+                    <div class="persona-value">{{ detected_persona }}</div>
+                    <p style="margin-top: 12px; font-size: 14px; color: var(--text-muted);">
+                        Derived from analyzing {{ results|length }} images.
+                    </p>
+
+                    {% for style in detected_styles %}
+                    <input type="hidden" name="preferred_styles" value="{{ style }}">
+                    {% endfor %}
+                </div>
+
+                <!-- Colors -->
+                <div class="persona-card">
+                    <div class="persona-title">Dominant Palette</div>
+                    <div class="palette-row">
+                        {% for color in detected_colors %}
+                        <div class="palette-swatch" style="background-color: {{ color }};" title="{{ color }}"></div>
+                        {% empty %}
+                        <span style="color: #999;">No consistent colors detected.</span>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
 
-            <!-- Colors -->
-            <div class="persona-card">
-                <div class="persona-title">Dominant Palette</div>
-                <div class="palette-row">
-                    {% for color in detected_colors %}
-                    <div class="palette-swatch" style="background-color: {{ color }};" data-color="{{ color }}"></div>
-                    {% empty %}
-                    <span style="color: #999;">No consistent colors detected.</span>
+            <!-- Detailed Breakdown -->
+            <div class="image-breakdown-card">
+                <h3 style="font-size: 16px; margin-bottom: 16px; font-weight: 600;">Image Analysis Breakdown</h3>
+                <div class="image-strip">
+                    {% for result in results %}
+                    <div class="breakdown-item">
+                        <!-- Filename Truncated -->
+                        <!-- Image Preview -->
+                        <div style="width: 100%; margin-bottom: 12px;">
+                            {% if result.image_base64 %}
+                            <img src="{{ result.image_base64 }}" class="analyzed-thumb" alt="{{ result.name }}"
+                                style="width: 100%; height: 100px; object-fit: cover;">
+                            {% else %}
+                            <div class="breakdown-thumb-placeholder" title="{{ result.name }}">
+                                {{ result.name|truncatechars:20 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="breakdown-info">
+                            <div class="breakdown-text">
+                                <span class="breakdown-label">Style:</span> {{ result.analysis.style|default:"-" }}
+                            </div>
+                            <div class="breakdown-text">
+                                <span class="breakdown-label">Color:</span> {{ result.analysis.color|default:"-" }}
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
-        </div>
 
-        <!-- Detailed Breakdown (Optional / Accordion) -->
-        <div class="ai-card" style="margin-top: 24px;">
-            <h3 style="font-size: 16px; margin-bottom: 16px;">Image Analysis Breakdown</h3>
-            <div class="image-strip">
-                {% for result in results %}
-                <div style="text-align: center; width: 120px; flex-shrink: 0;">
-                    <!-- Note: Since images were uploaded in memory, we can't display them easily purely from backend without saving temp. 
-                             However, standard pattern is to use JS FileReader on upload to show preview, or save temp.
-                             For this MVP, we might skip showing the image itself in results if it's tricky, or just show text summary.
-                             User prompt: "Upload 3-5 reference photos"
-                             Let's just show the analysis text for now to avoid complexity of temp file storage.
-                        -->
-                    <div
-                        style="height: 80px; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; margin-bottom: 8px;">
-                        {{ result.name }}
-                    </div>
-                    <div style="font-size: 11px; text-align: left; line-height: 1.4;">
-                        <strong>Style:</strong> {{ result.analysis.style|default:"-" }}<br>
-                        <strong>Color:</strong> {{ result.analysis.color|default:"-" }}
-                    </div>
-                </div>
-                {% endfor %}
+            <div style="text-align: center; margin-top: 40px;">
+                <button type="submit" class="btn btn-primary">Apply to My Profile</button>
+                <a href="{% url 'ai_style_analyze' %}" class="btn btn-secondary" style="margin-left: 12px;">Start
+                    Over</a>
             </div>
-        </div>
-
-        <div style="text-align: center; margin-top: 40px;">
-            <button type="submit" class="btn btn-primary">Apply to My Profile</button>
-            <a href="{% url 'ai_style_analyze' %}" class="btn btn-secondary" style="margin-left: 12px;">Start Over</a>
-        </div>
-    </form>
-
-    {% else %}
-    <!-- UPLOAD VIEW -->
-    <div class="steps-header">
-        <h1 class="steps-title">AI Style Assistant</h1>
-        <p class="steps-subtitle">Upload 3-5 photos of outfits you love. Our AI will detect your style persona.</p>
-    </div>
-
-    <div class="ai-card">
-        <form method="post" enctype="multipart/form-data" id="uploadForm">
-            {% csrf_token %}
-            <input type="hidden" name="analyze" value="true">
-
-            <div class="upload-zone" id="dropZone">
-                <input type="file" name="style_images" multiple accept="image/*" class="upload-input" id="fileInput"
-                    onchange="handleFiles(this.files)">
-                <div id="uploadContent">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"
-                        style="margin-bottom: 16px;">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                    <h3 style="font-size: 18px; margin-bottom: 8px;">Drag & Drop Photos</h3>
-                    <p style="color: #999; font-size: 14px;">or click to browse</p>
-                </div>
-                <div id="filePreview" style="display: none; margin-top: 20px;">
-                    <p id="fileCount" style="font-weight: 600; margin-bottom: 12px;"></p>
-                    <div class="image-strip" id="previewStrip" style="justify-content: center;"></div>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 32px;">
-                <button type="submit" class="btn btn-primary" id="analyzeBtn" disabled>
-                    Analyze My Style
-                </button>
-            </div>
-
-            <p style="text-align: center; font-size: 12px; color: #999; margin-top: 16px;">
-                Powered by BLIP-2 AI. Images are processed locally.
-            </p>
         </form>
+
+        {% else %}
+        <!-- UPLOAD VIEW -->
+        <div class="steps-header">
+            <h1 class="steps-title">AI Style Assistant</h1>
+            <p class="steps-subtitle">Upload 3-5 photos of outfits you love. Our AI will detect your style persona.</p>
+        </div>
+
+        <div class="ai-card">
+            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                {% csrf_token %}
+                <input type="hidden" name="analyze" value="true">
+
+                <div class="upload-zone" id="dropZone">
+                    <input type="file" name="style_images" multiple accept="image/*" class="upload-input" id="fileInput"
+                        onchange="handleFiles(this.files)">
+                    <div id="uploadContent">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"
+                            style="margin-bottom: 16px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <h3 style="font-size: 18px; margin-bottom: 8px; color: var(--text-main);">Drag & Drop Photos
+                        </h3>
+                        <p style="color: #999; font-size: 14px;">or click to browse</p>
+                    </div>
+                    <div id="filePreview" style="display: none; margin-top: 20px;">
+                        <p id="fileCount" style="font-weight: 600; margin-bottom: 12px;"></p>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;"
+                            id="previewStrip"></div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 32px;">
+                    <button type="submit" class="btn btn-primary" id="analyzeBtn" disabled style="opacity: 0.5;">
+                        Analyze My Style
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 
 <!-- Loading Overlay -->
@@ -362,8 +423,10 @@
             document.getElementById('uploadContent').style.display = 'none';
             document.getElementById('filePreview').style.display = 'block';
             document.getElementById('fileCount').textContent = `${files.length} images selected`;
-            document.getElementById('analyzeBtn').disabled = false;
-            document.getElementById('analyzeBtn').style.opacity = '1';
+
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = false;
+            btn.style.opacity = '1';
 
             const previewStrip = document.getElementById('previewStrip');
             previewStrip.innerHTML = '';
@@ -374,6 +437,8 @@
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.className = 'analyzed-thumb';
+                    img.style.width = '80px';
+                    img.style.height = '80px';
                     previewStrip.appendChild(img);
                 }
                 reader.readAsDataURL(file);
@@ -388,33 +453,21 @@
         });
     }
 
-    // Drag and Drop Visuals
     const dropZone = document.getElementById('dropZone');
     if (dropZone) {
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropZone.addEventListener(eventName, preventDefaults, false);
         });
 
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
 
         ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, highlight, false);
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
         });
 
         ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, unhighlight, false);
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
         });
-
-        function highlight(e) {
-            dropZone.classList.add('dragover');
-        }
-
-        function unhighlight(e) {
-            dropZone.classList.remove('dragover');
-        }
 
         dropZone.addEventListener('drop', handleDrop, false);
 
