@@ -1,10 +1,24 @@
+<<<<<<< HEAD
 from django.urls import path
+=======
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+>>>>>>> main
 from . import views
 
 app_name = 'outfits'
 
+<<<<<<< HEAD
 urlpatterns = [
     # Outfit management
+=======
+# REST API router
+router = DefaultRouter()
+router.register(r'api/outfits', views.OutfitViewSet, basename='outfit-api')
+
+urlpatterns = [
+    # Template-based views
+>>>>>>> main
     path('', views.outfit_gallery_view, name='outfit_gallery'),
     path('create/', views.outfit_create_view, name='outfit_create'),
     path('<uuid:outfit_id>/', views.outfit_detail_view, name='outfit_detail'),
@@ -14,4 +28,12 @@ urlpatterns = [
     
     # Stats
     path('stats/', views.outfit_stats_view, name='outfit_stats'),
+<<<<<<< HEAD
 ]
+=======
+    
+    # REST API routes
+    path('', include(router.urls)),
+]
+
+>>>>>>> main

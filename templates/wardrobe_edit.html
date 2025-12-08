@@ -4,6 +4,7 @@
 {% block title %}Edit item - Tailora{% endblock %}
 
 {% block extra_css %}
+<<<<<<< HEAD
 <link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 {% endblock %}
@@ -62,10 +63,414 @@
                                         <img id="previewImage" style="max-width: 100%; max-height: 200px; border: 1px solid #e0e0e0;">
                                         <p id="imageName" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #2c2c2c; margin-top: 12px; font-weight: 500;"></p>
                                     </div>
+=======
+<style>
+    /* ========================================
+       EDIT ITEM PAGE STYLES
+       ======================================== */
+    
+    .page-wrapper {
+        width: 100%;
+        background: #f4e9cf;
+        min-height: 100vh;
+        padding-bottom: 60px;
+    }
+
+    .edit-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    /* Page Header */
+    .edit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 32px;
+    }
+
+    .edit-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: #2c2c2c;
+        margin: 0 0 4px 0;
+    }
+
+    .edit-subtitle {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+    }
+
+    /* Form Container */
+    .edit-card {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Form Sections */
+    .form-section {
+        margin-bottom: 40px;
+        border-bottom: 1px solid #f0f0f0;
+        padding-bottom: 32px;
+    }
+
+    .form-section:last-child {
+        margin-bottom: 0;
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .section-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 20px;
+        font-weight: 600;
+        color: #2c2c2c;
+        margin: 0 0 24px 0;
+    }
+
+    /* Grids */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 20px;
+    }
+
+    .form-grid-full {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    /* Inputs */
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .input-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: #2c2c2c;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .input-control {
+        padding: 12px 16px;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        border: 1px solid #ddd;
+        border-radius: 0; /* Sharp edges for style */
+        background: #fafafa;
+        color: #2c2c2c;
+        transition: all 0.2s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .input-control:focus {
+        background: #fff;
+        border-color: #2c2c2c;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(44, 44, 44, 0.08);
+    }
+
+    textarea.input-control {
+        resize: vertical;
+        line-height: 1.5;
+    }
+
+    .input-hint {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #888;
+        margin-top: 6px;
+    }
+
+    /* Photo Upload Specifics */
+    .photo-grid {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 32px;
+        align-items: start;
+    }
+
+    .current-photo-wrapper {
+        width: 100%;
+        background: #f8f8f8;
+        border: 1px solid #e0e0e0;
+    }
+
+    .current-photo-wrapper img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .drop-zone {
+        border: 2px dashed #e0e0e0;
+        background: #fafafa;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+        border-color: #2c2c2c;
+        background: #fff;
+    }
+
+    .drop-zone-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #666;
+        margin: 12px 0 4px;
+    }
+
+    .drop-zone-sub {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #999;
+    }
+
+    .preview-container img {
+        max-height: 180px;
+        max-width: 100%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Checkbox Cards (Seasons/Occasions) */
+    .checkbox-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .checkbox-card {
+        cursor: pointer;
+        position: relative;
+    }
+
+    .checkbox-card input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .checkbox-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 20px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: #666;
+        transition: all 0.2s;
+        user-select: none;
+    }
+
+    .checkbox-card input:checked + .checkbox-content {
+        background: #2c2c2c;
+        border-color: #2c2c2c;
+        color: #f4e9cf;
+    }
+
+    .checkbox-card:hover .checkbox-content {
+        border-color: #bbb;
+        transform: translateY(-1px);
+    }
+
+    /* Standard Checkbox */
+    .checkbox-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        margin-top: 30px;
+    }
+
+    .checkbox-inline input {
+        width: 18px;
+        height: 18px;
+        accent-color: #2c2c2c;
+    }
+
+    /* Color Picker Wrapper */
+    .color-input-wrapper {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    input[type="color"] {
+        -webkit-appearance: none;
+        border: 1px solid #e0e0e0;
+        width: 50px;
+        height: 45px;
+        padding: 0;
+        background: none;
+        cursor: pointer;
+    }
+    
+    input[type="color"]::-webkit-color-swatch-wrapper {
+        padding: 0; 
+    }
+    
+    input[type="color"]::-webkit-color-swatch {
+        border: none;
+    }
+
+    /* Actions */
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        margin-top: 40px;
+        padding-top: 24px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-secondary {
+        background: #f5f5f5;
+        color: #2c2c2c;
+        border: 1px solid #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+        background: #e0e0e0;
+    }
+
+    .btn-primary {
+        background: #2c2c2c;
+        color: #f4e9cf;
+    }
+
+    .btn-primary:hover {
+        background: #444;
+        transform: translateY(-1px);
+    }
+
+    /* Messages */
+    .messages-container {
+        margin-bottom: 24px;
+    }
+    .message-box {
+        padding: 14px 20px;
+        margin-bottom: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        border-left: 4px solid;
+    }
+    .msg-error { background: #ffebee; color: #c62828; border-color: #d32f2f; }
+    .msg-success { background: #e8f5e9; color: #2e7d32; border-color: #388e3c; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-grid, .photo-grid {
+            grid-template-columns: 1fr;
+        }
+        .edit-container {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="edit-container">
+        
+        <!-- Messages -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="message-box {% if message.tags == 'error' %}msg-error{% else %}msg-success{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Header -->
+        <header class="edit-header">
+            <div>
+                <h1 class="edit-title">Edit Item</h1>
+                <p class="edit-subtitle">Updating details for: <strong>{{ item.name }}</strong></p>
+            </div>
+            <a href="{% url 'wardrobe_detail' item.id %}" class="btn btn-secondary">Cancel</a>
+        </header>
+
+        <!-- Main Form Card -->
+        <div class="edit-card">
+            <form method="post" enctype="multipart/form-data" id="editForm">
+                {% csrf_token %}
+
+                <!-- Section: Photo -->
+                <div class="form-section">
+                    <h3 class="section-title">Photo</h3>
+                    <div class="photo-grid">
+                        <!-- Current Image -->
+                        <div>
+                            <div class="current-photo-wrapper">
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" id="currentImage">
+                            </div>
+                            <p class="input-hint" style="text-align: center;">Current Photo</p>
+                        </div>
+
+                        <!-- Upload Area -->
+                        <div class="input-group">
+                            <label class="input-label">Update Photo (Optional)</label>
+                            <div id="imageDropArea" class="drop-zone">
+                                <input type="file" id="image" name="image" accept="image/*" style="display: none;">
+                                
+                                <div id="uploadPrompt">
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2c2c2c" stroke-width="1.5" style="opacity: 0.5;">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    <p class="drop-zone-text">Click to upload or drag image</p>
+                                    <p class="drop-zone-sub">PNG, JPG, WEBP (Max 5MB)</p>
+                                </div>
+                                
+                                <div id="imagePreview" class="preview-container" style="display: none;">
+                                    <img id="previewImage">
+                                    <p id="imageName" class="drop-zone-text" style="font-weight: 600;"></p>
+>>>>>>> main
                                 </div>
                             </div>
                         </div>
                     </div>
+<<<<<<< HEAD
 
                     <!-- Basic Info -->
                     <div class="settings-section">
@@ -295,6 +700,220 @@
 
     <script>
         // Image upload handling
+=======
+                </div>
+
+                <!-- Section: Basic Info -->
+                <div class="form-section">
+                    <h3 class="section-title">Basic Information</h3>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="name" class="input-label">Item Name *</label>
+                            <input type="text" id="name" name="name" class="input-control" value="{{ item.name }}" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="category" class="input-label">Category</label>
+                            <select id="category" name="category" class="input-control">
+                                <option value="">Select a category</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if item.category.id == cat.id %}selected{% endif %}>
+                                    {{ cat.icon }} {{ cat.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-grid-full">
+                        <div class="input-group">
+                            <label for="description" class="input-label">Description</label>
+                            <textarea id="description" name="description" class="input-control" rows="3" placeholder="Describe this item...">{{ item.description }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Color -->
+                <div class="form-section">
+                    <h3 class="section-title">Color</h3>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="color" class="input-label">Color Name *</label>
+                            <input type="text" id="color" name="color" class="input-control" value="{{ item.color }}" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="color_hex" class="input-label">Color Code</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" id="color_hex" name="color_hex" value="{{ item.color_hex|default:'#000000' }}">
+                                <input type="text" id="color_hex_display" class="input-control" value="{{ item.color_hex }}" placeholder="#000000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Details -->
+                <div class="form-section">
+                    <h3 class="section-title">Details</h3>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="brand" class="input-label">Brand</label>
+                            <input type="text" id="brand" name="brand" class="input-control" value="{{ item.brand }}" placeholder="e.g., Zara">
+                        </div>
+                        <div class="input-group">
+                            <label for="material" class="input-label">Material</label>
+                            <input type="text" id="material" name="material" class="input-control" value="{{ item.material }}" placeholder="e.g., Cotton">
+                        </div>
+                        <div class="input-group">
+                            <label for="pattern" class="input-label">Pattern</label>
+                            <input type="text" id="pattern" name="pattern" class="input-control" value="{{ item.pattern }}" placeholder="e.g., Solid">
+                        </div>
+                        <div class="input-group">
+                            <label for="condition" class="input-label">Condition</label>
+                            <select id="condition" name="condition" class="input-control">
+                                <option value="new" {% if item.condition == 'new' %}selected{% endif %}>New</option>
+                                <option value="excellent" {% if item.condition == 'excellent' %}selected{% endif %}>Excellent</option>
+                                <option value="good" {% if item.condition == 'good' %}selected{% endif %}>Good</option>
+                                <option value="fair" {% if item.condition == 'fair' %}selected{% endif %}>Fair</option>
+                                <option value="worn" {% if item.condition == 'worn' %}selected{% endif %}>Worn</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Status & Availability -->
+                <div class="form-section">
+                    <h3 class="section-title">Status</h3>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="status" class="input-label">Availability</label>
+                            <select id="status" name="status" class="input-control">
+                                <option value="available" {% if item.status == 'available' %}selected{% endif %}>Available</option>
+                                <option value="washing" {% if item.status == 'washing' %}selected{% endif %}>Washing</option>
+                                <option value="dry_cleaning" {% if item.status == 'dry_cleaning' %}selected{% endif %}>Dry Cleaning</option>
+                                <option value="loaned" {% if item.status == 'loaned' %}selected{% endif %}>Loaned</option>
+                                <option value="repair" {% if item.status == 'repair' %}selected{% endif %}>Repair</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="checkbox-inline">
+                                <input type="checkbox" name="favorite" id="favorite" {% if item.favorite %}checked{% endif %}>
+                                <span style="font-family: 'Inter', sans-serif; font-size: 14px;">Mark as Favorite</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Seasons -->
+                <div class="form-section">
+                    <h3 class="section-title">Seasons</h3>
+                    <div class="checkbox-grid">
+                        {% for value, label in season_choices %}
+                            <!-- Assuming you can pass season choices from view, or hardcode -->
+                        {% endfor %}
+                        
+                        <!-- Hardcoded loop for clarity based on original -->
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="seasons" value="spring" {% if 'spring' in item.seasons %}checked{% endif %}>
+                            <span class="checkbox-content">Spring</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="seasons" value="summer" {% if 'summer' in item.seasons %}checked{% endif %}>
+                            <span class="checkbox-content">Summer</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="seasons" value="fall" {% if 'fall' in item.seasons %}checked{% endif %}>
+                            <span class="checkbox-content">Fall</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="seasons" value="winter" {% if 'winter' in item.seasons %}checked{% endif %}>
+                            <span class="checkbox-content">Winter</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="seasons" value="all_seasons" {% if 'all_seasons' in item.seasons %}checked{% endif %}>
+                            <span class="checkbox-content">All Seasons</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Section: Occasions -->
+                <div class="form-section">
+                    <h3 class="section-title">Occasions</h3>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="occasions" value="casual" {% if 'casual' in item.occasions %}checked{% endif %}>
+                            <span class="checkbox-content">Casual</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="occasions" value="formal" {% if 'formal' in item.occasions %}checked{% endif %}>
+                            <span class="checkbox-content">Formal</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="occasions" value="sport" {% if 'sport' in item.occasions %}checked{% endif %}>
+                            <span class="checkbox-content">Sport</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="occasions" value="party" {% if 'party' in item.occasions %}checked{% endif %}>
+                            <span class="checkbox-content">Party</span>
+                        </label>
+                        <label class="checkbox-card">
+                            <input type="checkbox" name="occasions" value="work" {% if 'work' in item.occasions %}checked{% endif %}>
+                            <span class="checkbox-content">Work</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Section: Purchase Info -->
+                <div class="form-section">
+                    <h3 class="section-title">Purchase Information</h3>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="purchase_date" class="input-label">Purchase Date</label>
+                            <input type="date" id="purchase_date" name="purchase_date" class="input-control" value="{{ item.purchase_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="input-group">
+                            <label for="purchase_price" class="input-label">Price (EUR)</label>
+                            <input type="number" id="purchase_price" name="purchase_price" class="input-control" value="{{ item.purchase_price }}" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <div class="input-group">
+                            <label for="purchase_location" class="input-label">Purchase Location</label>
+                            <input type="text" id="purchase_location" name="purchase_location" class="input-control" value="{{ item.purchase_location }}" placeholder="e.g., Zara Paris">
+                        </div>
+                        <div class="input-group">
+                            <label class="checkbox-inline">
+                                <input type="checkbox" name="is_secondhand" id="is_secondhand" {% if item.is_secondhand %}checked{% endif %}>
+                                <span style="font-family: 'Inter', sans-serif; font-size: 14px;">Second-hand item</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Tags -->
+                <div class="form-section">
+                    <h3 class="section-title">Tags</h3>
+                    <div class="form-grid-full">
+                        <div class="input-group">
+                            <label for="tags" class="input-label">Tags (comma-separated)</label>
+                            <input type="text" id="tags" name="tags" class="input-control" 
+                                value="{% for tag in item.tags %}{{ tag }}{% if not forloop.last %}, {% endif %}{% endfor %}"
+                                placeholder="e.g., comfy, summer, blue">
+                            <small class="input-hint">Keywords to help you find this item later.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'wardrobe_detail' item.id %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Image Upload Logic ---
+>>>>>>> main
         const imageInput = document.getElementById('image');
         const imageDropArea = document.getElementById('imageDropArea');
         const uploadPrompt = document.getElementById('uploadPrompt');
@@ -302,6 +921,7 @@
         const previewImage = document.getElementById('previewImage');
         const imageName = document.getElementById('imageName');
 
+<<<<<<< HEAD
         // Color picker sync
         const colorPicker = document.getElementById('color_hex');
         const colorDisplay = document.getElementById('color_hex_display');
@@ -314,10 +934,39 @@
             colorDisplay.addEventListener('input', function() {
                 if (this.value.match(/^#[0-9A-F]{6}$/i)) {
                     colorPicker.value = this.value;
+=======
+        if (imageDropArea) {
+            // Trigger file input
+            imageDropArea.addEventListener('click', () => imageInput.click());
+
+            // Handle file selection via Click
+            imageInput.addEventListener('change', function () {
+                handleFiles(this.files);
+            });
+
+            // Drag & Drop effects
+            imageDropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                imageDropArea.classList.add('dragover');
+            });
+
+            imageDropArea.addEventListener('dragleave', () => {
+                imageDropArea.classList.remove('dragover');
+            });
+
+            imageDropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                imageDropArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    imageInput.files = files; // Sync with input
+                    handleFiles(files);
+>>>>>>> main
                 }
             });
         }
 
+<<<<<<< HEAD
         // Click to open file dialog
         imageDropArea.addEventListener('click', () => imageInput.click());
 
@@ -370,6 +1019,23 @@
             // Show preview
             const reader = new FileReader();
             reader.onload = function(e) {
+=======
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file.');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size must be less than 5MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+>>>>>>> main
                 previewImage.src = e.target.result;
                 imageName.textContent = file.name;
                 uploadPrompt.style.display = 'none';
@@ -378,6 +1044,7 @@
             reader.readAsDataURL(file);
         }
 
+<<<<<<< HEAD
         // Checkbox card interactivity
         document.querySelectorAll('.checkbox-card input[type="checkbox"]').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
@@ -403,3 +1070,24 @@
         });
     </script>
 {% endblock %}
+=======
+        // --- Color Picker Sync ---
+        const colorPicker = document.getElementById('color_hex');
+        const colorDisplay = document.getElementById('color_hex_display');
+
+        if (colorPicker && colorDisplay) {
+            colorPicker.addEventListener('input', function () {
+                colorDisplay.value = this.value;
+            });
+
+            colorDisplay.addEventListener('input', function () {
+                // If user types a valid hex code, update picker
+                if (this.value.match(/^#[0-9A-F]{6}$/i)) {
+                    colorPicker.value = this.value;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
+>>>>>>> main

@@ -24,6 +24,7 @@ body {
     padding: 0;
 }
 
+<<<<<<< HEAD
 /* Main Container - White Box */
 .tailora-container {
     width: 100%;
@@ -35,6 +36,18 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+=======
+/* Main Container - Controls app width */
+.tailora-container {
+    width: 100%;
+    max-width: 1200px;
+    min-height: 100vh;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+>>>>>>> main
 }
 
 /* Header - Tailora Logo + Navigation */
@@ -128,6 +141,51 @@ body {
     line-height: normal;
 }
 
+<<<<<<< HEAD
+=======
+/* Generic content blocks used across pages */
+.content-section {
+    background: #ffffff;
+    padding: 40px;
+}
+
+.filter-section {
+    background: #ffffff;
+    padding: 24px 40px;
+    margin-bottom: 24px;
+}
+
+/* Section spacing */
+.content-section+.content-section {
+    margin-top: 24px;
+}
+
+.filter-section+.content-section {
+    margin-top: 24px;
+}
+
+/* Simple alert styles for Django messages */
+.alert {
+    padding: 16px;
+    margin-bottom: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    border-left: 4px solid #2c2c2c;
+}
+
+.alert-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-left-color: #2e7d32;
+}
+
+.alert-error {
+    background: #ffebee;
+    color: #c62828;
+    border-left-color: #c62828;
+}
+
+>>>>>>> main
 /* Buttons */
 .btn {
     display: inline-flex;
@@ -213,6 +271,18 @@ body {
     .page-subtitle {
         font-size: 18px;
     }
+<<<<<<< HEAD
+=======
+
+    .content-section {
+        padding: 24px;
+    }
+
+    .filter-section {
+        padding: 16px 24px;
+        margin-bottom: 16px;
+    }
+>>>>>>> main
 }
 
 /* Animations */
@@ -221,12 +291,106 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
+<<<<<<< HEAD
 .fade-in {
     animation: fadeIn 0.5s ease-in;
 }
+=======
+/* New default page transition */
+.page-reveal {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Wipe overlay */
+.page-reveal::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #f4e9cf;
+    /* same as content background for a clean wipe */
+    transform: translateX(0%);
+    animation: tailoraWipe 650ms cubic-bezier(0.4, 0.0, 0.2, 1) both;
+    pointer-events: none;
+    z-index: 9;
+}
+
+.page-reveal::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 96px;
+    height: 96px;
+    background: url('../img/tailora-mark.svg') center/contain no-repeat;
+    transform: translate(-50%, -50%) scale(0.96);
+    opacity: 0.0;
+    animation: logoPop 680ms cubic-bezier(0.4, 0.0, 0.2, 1) both;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.page-reveal .tailora-header,
+.page-reveal .tailora-content {
+    animation: riseIn 420ms cubic-bezier(0.4, 0.0, 0.2, 1) 140ms both;
+}
+
+@keyframes tailoraWipe {
+    from {
+        transform: translateX(0%);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes riseIn {
+    from {
+        transform: translateY(12px);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes logoPop {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.92);
+    }
+
+    35% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.06);
+    }
+}
+
+/* Accessibility: Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+    .page-reveal::after,
+    .page-reveal::before,
+    .page-reveal .tailora-header,
+    .page-reveal .tailora-content {
+        animation: none !important;
+        transform: none !important;
+    }
+}
+>>>>>>> main

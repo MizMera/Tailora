@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
+<<<<<<< HEAD
 {% block title %}Daily Recommendations - Tailora{% endblock %}
 
 {% block extra_css %}
@@ -306,11 +307,609 @@
     .status-badge.worn {
         background: #d1ecf1;
         color: #0c5460;
+=======
+{% block title %}AI Recommendations - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+    /* Override: Match Exact Dashboard Design */
+    .rec-container {
+        background: #ffffff;
+        min-height: calc(100vh - 200px);
+    }
+
+    .rec-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 0;
+    }
+
+    .rec-main {
+        padding: 40px;
+        border-right: 1px solid #e0e0e0;
+    }
+
+    .rec-sidebar {
+        background: #fafafa;
+        padding: 40px;
+    }
+
+    /* Weather Banner - Minimal Style */
+    .weather-banner {
+        background: #2c2c2c;
+        color: #ffffff;
+        padding: 24px 40px;
+        margin: -40px -40px 40px -40px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .weather-temp {
+        font-family: 'Inter', sans-serif;
+        font-size: 48px;
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    .weather-details {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #e0e0e0;
+        margin-top: 8px;
+    }
+
+    /* Section Titles - Match Dashboard */
+    .rec-section-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        color: #252320;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #2c2c2c;
+    }
+
+    /* Outfit Cards - Minimal */
+    .outfit-card {
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+        padding: 32px;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+
+    .outfit-card:hover {
+        background: #f0f0f0;
+    }
+
+    .outfit-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        color: #252320;
+        margin-bottom: 8px;
+    }
+
+    .weather-tag {
+        display: inline-block;
+        padding: 4px 12px;
+        background: #e0e0e0;
+        color: #252320;
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 16px;
+    }
+
+    .confidence-badge {
+        float: right;
+        padding: 4px 12px;
+        background: #2c2c2c;
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Items Grid */
+    .items-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin: 24px 0;
+    }
+
+    .item-box {
+        text-align: center;
+    }
+
+    .item-box img {
+        width: 100%;
+        height: 140px;
+        object-fit: cover;
+        border: 1px solid #d9d9d9;
+    }
+
+    .item-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #757575;
+        margin-top: 8px;
+    }
+
+    /* Reason Box */
+    .reason-box {
+        background: #ffffff;
+        padding: 20px;
+        border-left: 3px solid #2c2c2c;
+        margin: 24px 0;
+    }
+
+    .reason-box strong {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #252320;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .reason-box p {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #252320;
+        margin: 8px 0 0 0;
+        line-height: 1.6;
+    }
+
+    /* Action Buttons - Match Dashboard Style */
+    .action-btns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .btn-accept {
+        background: #2c2c2c;
+        color: #ffffff;
+        padding: 12px 24px;
+        border: none;
+        font-family: 'Istok Web', sans-serif;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-accept:hover {
+        background: #1a1a1a;
+        transform: translateY(-1px);
+    }
+
+    .btn-reject {
+        background: #cdcdcd;
+        color: #252320;
+        padding: 12px 24px;
+        border: none;
+        font-family: 'Istok Web', sans-serif;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-reject:hover {
+        background: #b8b8b8;
+    }
+
+    /* Sidebar Widgets */
+    .widget {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .widget-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #252320;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+    }
+
+    /* Health Score */
+    .health-score {
+        text-align: center;
+        padding: 24px;
+        background: #fafafa;
+        margin-bottom: 20px;
+    }
+
+    .score-value {
+        font-family: 'Inter', sans-serif;
+        font-size: 48px;
+        font-weight: 600;
+        color: #252320;
+        line-height: 1;
+    }
+
+    .score-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 8px;
+    }
+
+    /* Stats */
+    .mini-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin: 16px 0;
+    }
+
+    .mini-stat {
+        text-align: center;
+        padding: 16px;
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+    }
+
+    .mini-stat-value {
+        font-family: 'Inter', sans-serif;
+        font-size: 32px;
+        font-weight: 600;
+        color: #252320;
+    }
+
+    .mini-stat-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+    }
+
+    /* Item List */
+    .item-list {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0 0 0;
+    }
+
+    .item-list li {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #252320;
+    }
+
+    .item-list li:last-child {
+        border-bottom: none;
+    }
+
+    .item-list .count {
+        color: #757575;
+        font-size: 12px;
+    }
+
+    /* Shopping Cards */
+    .shop-card {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .shop-card:hover {
+        border-color: #2c2c2c;
+    }
+
+    .priority-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .priority-5 {
+        background: #2c2c2c;
+        color: #ffffff;
+    }
+
+    .priority-4 {
+        background: #757575;
+        color: #ffffff;
+    }
+
+    .priority-3 {
+        background: #cdcdcd;
+        color: #252320;
+    }
+
+    .priority-2 {
+        background: #e0e0e0;
+        color: #252320;
+    }
+
+    .shop-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        color: #252320;
+        margin-bottom: 8px;
+    }
+
+    .shop-reason {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #757575;
+        line-height: 1.5;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 64px 32px;
+        background: #fafafa;
+        border: 2px dashed #d9d9d9;
+    }
+
+    .empty-state h3 {
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        color: #252320;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #757575;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .rec-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rec-main {
+            border-right: none;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+
+    }
+
+    /* Sidebar Widgets */
+    .widget {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .widget-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #252320;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+    }
+
+    /* Health Score */
+    .health-score {
+        text-align: center;
+        padding: 24px;
+        background: #fafafa;
+        margin-bottom: 20px;
+    }
+
+    .score-value {
+        font-family: 'Inter', sans-serif;
+        font-size: 48px;
+        font-weight: 600;
+        color: #252320;
+        line-height: 1;
+    }
+
+    .score-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 8px;
+    }
+
+    /* Stats */
+    .mini-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin: 16px 0;
+    }
+
+    .mini-stat {
+        text-align: center;
+        padding: 16px;
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+    }
+
+    .mini-stat-value {
+        font-family: 'Inter', sans-serif;
+        font-size: 32px;
+        font-weight: 600;
+        color: #252320;
+    }
+
+    .mini-stat-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+    }
+
+    /* Item List */
+    .item-list {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0 0 0;
+    }
+
+    .item-list li {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #252320;
+    }
+
+    .item-list li:last-child {
+        border-bottom: none;
+    }
+
+    .item-list .count {
+        color: #757575;
+        font-size: 12px;
+    }
+
+    /* Shopping Cards */
+    .shop-card {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .shop-card:hover {
+        border-color: #2c2c2c;
+    }
+
+    .priority-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .priority-5 {
+        background: #2c2c2c;
+        color: #ffffff;
+    }
+
+    .priority-4 {
+        background: #757575;
+        color: #ffffff;
+    }
+
+    .priority-3 {
+        background: #cdcdcd;
+        color: #252320;
+    }
+
+    .priority-2 {
+        background: #e0e0e0;
+        color: #252320;
+    }
+
+    .shop-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        color: #252320;
+        margin-bottom: 8px;
+    }
+
+    .shop-reason {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #757575;
+        line-height: 1.5;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 64px 32px;
+        background: #fafafa;
+        border: 2px dashed #d9d9d9;
+    }
+
+    .empty-state h3 {
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        color: #252320;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #757575;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .rec-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rec-main {
+            border-right: none;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .items-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+>>>>>>> main
     }
 </style>
 {% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
 <div class="recommendations-container">
     <div class="recommendations-header">
         <h1>Your Daily Outfit Recommendations</h1>
@@ -484,3 +1083,212 @@ function setRating(recId, rating) {
 }
 </script>
 {% endblock %}
+=======
+<!-- Page Header -->
+<div class="page-header">
+    <div class="header-content"
+        style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div>
+            <h1 class="page-title">AI Outfit Suggestions</h1>
+            <p class="page-subtitle">Choose your look for today • {{ recommendations|length }} suggestions ready</p>
+        </div>
+        <form method="post" action="{% url 'recommendations:generate' %}" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="force" value="true">
+            <button type="submit" class="btn btn-secondary">
+                🔄 New Suggestions
+            </button>
+        </form>
+    </div>
+</div>
+
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div class="content-section">
+        <div class="rec-grid">
+            <!-- Main Content -->
+            <div class="rec-main" style="padding: 0; border-right: 1px solid #e0e0e0;">
+                <!-- Weather Banner -->
+                {% if current_weather %}
+                <div class="weather-banner" style="margin: 0 0 40px 0;">
+                    <div>
+                        <div
+                            style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                            TUNIS, TUNISIA</div>
+                        <div class="weather-temp">{{ current_weather.temperature }}°C</div>
+                        <div class="weather-details">
+                            {{ current_weather.description|title }} • Feels like {{ current_weather.feels_like }}°C
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div style="padding: 0 40px 40px;">
+                    <div class="rec-section-title">Pick Your Outfit</div>
+                    <p
+                        style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: -16px 0 24px 0;">
+                        Click "Add to My Outfits" to save any outfit you like. They won't be added automatically.
+                    </p>
+
+                    {% if recommendations %}
+                    {% for rec in recommendations %}
+                    <div class="outfit-card">
+                        <div style="margin-bottom: 16px; overflow: hidden;">
+                            <h3 class="outfit-title">
+                                {% if rec.outfit %}
+                                {{ rec.outfit.name }}
+                                {% else %}
+                                {{ rec.weather_factor.suggested_name|default:"Outfit Suggestion" }}
+                                {% endif %}
+                            </h3>
+                            <span class="confidence-badge">{% widthratio rec.confidence_score 1 100 %}% Match</span>
+                        </div>
+
+                        {% if rec.occasion_match %}
+                        <span class="weather-tag">
+                            {{ rec.occasion_match|upper }}
+                        </span>
+                        {% endif %}
+
+                        <!-- Items - from outfit or suggestions -->
+                        <div class="items-grid">
+                            {% if rec.outfit %}
+                            {% for item in rec.outfit.items.all|slice:":4" %}
+                            <div class="item-box">
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                {% else %}
+                                <div
+                                    style="width:100%; height:140px; background:#e0e0e0; border:1px solid #d9d9d9; display:flex; align-items:center; justify-content:center; color:#757575; font-size:12px;">
+                                    NO IMAGE
+                                </div>
+                                {% endif %}
+                                <div class="item-name">{{ item.name }}</div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            {% for item in rec.weather_factor.suggested_items|slice:":4" %}
+                            <div class="item-box">
+                                {% if item.image_url %}
+                                <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                                {% else %}
+                                <div
+                                    style="width:100%; height:140px; background:#e0e0e0; border:1px solid #d9d9d9; display:flex; align-items:center; justify-content:center; color:#757575; font-size:12px;">
+                                    NO IMAGE
+                                </div>
+                                {% endif %}
+                                <div class="item-name">{{ item.name }}</div>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <!-- Reason -->
+                        <div class="reason-box">
+                            <strong>Why This Outfit</strong>
+                            <p>{{ rec.reason }}</p>
+                        </div>
+
+                        <!-- Actions -->
+                        {% if rec.status == 'pending' %}
+                        <div class="action-btns">
+                            <form method="post" action="{% url 'recommendations:accept' rec.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-accept" style="width: 100%;">
+                                    {% if rec.outfit %}Wear Today{% else %}✓ Add to My Outfits{% endif %}
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'recommendations:reject' rec.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-reject" style="width: 100%;">Not for Me</button>
+                            </form>
+                        </div>
+                        {% elif rec.status == 'accepted' %}
+                        <div
+                            style="text-align: center; padding: 12px; background: #2c2c2c; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                            ✓ Added to Outfits
+                        </div>
+                        {% else %}
+                        <div
+                            style="text-align: center; padding: 12px; background: #e0e0e0; color: #252320; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                            {{ rec.get_status_display }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="empty-state">
+                        <h3>No Recommendations Available</h3>
+                        <p>Add at least 2 tops and 2 bottoms to your wardrobe</p>
+                        <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">Add Clothes</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="rec-sidebar" style="padding: 40px;">
+                <!-- Wardrobe Health -->
+                <div class="widget">
+                    <div class="widget-title">Wardrobe Health</div>
+
+                    <div class="health-score">
+                        <div class="score-value">{{ wardrobe_analysis.versatility_score }}%</div>
+                        <div class="score-label">{{ wardrobe_analysis.wardrobe_health }}</div>
+                    </div>
+
+                    <div class="mini-stats">
+                        <div class="mini-stat">
+                            <div class="mini-stat-value">{{ wardrobe_analysis.total_items }}</div>
+                            <div class="mini-stat-label">Items</div>
+                        </div>
+                        <div class="mini-stat">
+                            <div class="mini-stat-value">{{ wardrobe_analysis.category_distribution|length }}</div>
+                            <div class="mini-stat-label">Categories</div>
+                        </div>
+                    </div>
+
+                    {% if wardrobe_analysis.underutilized_items %}
+                    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e0e0e0;">
+                        <strong
+                            style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">Never
+                            Worn</strong>
+                        <ul class="item-list">
+                            {% for item in wardrobe_analysis.underutilized_items|slice:":3" %}
+                            <li>
+                                <span>{{ item.name }}</span>
+                                <span class="count">0 wears</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Shopping Suggestions -->
+                <div class="widget">
+                    <div class="widget-title">Shopping Suggestions</div>
+
+                    {% if shopping_suggestions %}
+                    {% for sug in shopping_suggestions|slice:":3" %}
+                    <div class="shop-card">
+                        <span class="priority-badge priority-{{ sug.priority }}">
+                            Priority {{ sug.priority }}
+                        </span>
+                        <div class="shop-name">{{ sug.suggested_name }}</div>
+                        <div class="shop-reason">{{ sug.reason }}</div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p
+                        style="text-align: center; color: #757575; font-family: 'Inter', sans-serif; font-size: 13px; padding: 24px 0;">
+                        Your wardrobe is well-balanced
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+```
+>>>>>>> main

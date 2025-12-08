@@ -27,7 +27,11 @@ class CategoryMapper:
         'shorts': ['Shorts', 'Bas'],
         'skirt': ['Jupes', 'Bas'],
         
+<<<<<<< HEAD
         # Dresses
+=======
+        # Dresses2.6 gb d
+>>>>>>> main
         'dresses': ['Robes'],
         'dress': ['Robes'],
         

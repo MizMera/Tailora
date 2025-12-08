@@ -23,7 +23,13 @@ from users.auth_views import (
     login_view, register_view, logout_view, dashboard_view,
     password_reset_request_view, password_reset_confirm_view,
     verify_email_view, resend_verification_email_view,
+<<<<<<< HEAD
     profile_settings_view, change_password_view, delete_account_view
+=======
+    profile_settings_view, change_password_view, verify_password_change_view,
+    request_account_deletion_view, confirm_account_deletion_view,
+    upgrade_account_view, cancel_subscription_view, ai_style_analyze_view
+>>>>>>> main
 )
 
 urlpatterns = [
@@ -47,7 +53,16 @@ urlpatterns = [
     # Profile & Account Management
     path('profile/settings/', profile_settings_view, name='profile_settings'),
     path('profile/change-password/', change_password_view, name='change_password'),
+<<<<<<< HEAD
     path('profile/delete-account/', delete_account_view, name='delete_account'),
+=======
+    path('profile/verify-password-change/', verify_password_change_view, name='verify_password_change'),
+    path('profile/request-account-deletion/', request_account_deletion_view, name='request_account_deletion'),
+    path('profile/confirm-account-deletion/', confirm_account_deletion_view, name='confirm_account_deletion'),
+    path('profile/upgrade/', upgrade_account_view, name='upgrade_account'),
+    path('profile/cancel-subscription/', cancel_subscription_view, name='cancel_subscription'),
+    path('profile/analyze-style/', ai_style_analyze_view, name='ai_style_analyze'),
+>>>>>>> main
     
     # JWT Authentication (API)
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

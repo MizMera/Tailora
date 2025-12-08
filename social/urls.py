@@ -1,8 +1,23 @@
+<<<<<<< HEAD
 from django.urls import path
+=======
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+>>>>>>> main
 from . import views
 
 app_name = 'social'
 
+<<<<<<< HEAD
+=======
+# REST API router
+router = DefaultRouter()
+router.register(r'api/posts', views.LookbookPostViewSet, basename='post-api')
+router.register(r'api/comments', views.PostCommentViewSet, basename='comment-api')
+router.register(r'api/follows', views.UserFollowViewSet, basename='follow-api')
+router.register(r'api/challenges', views.StyleChallengeViewSet, basename='challenge-api')
+
+>>>>>>> main
 urlpatterns = [
     # Feed
     path('', views.feed_view, name='feed'),
@@ -11,6 +26,10 @@ urlpatterns = [
     # Posts
     path('post/create/', views.create_post, name='create_post'),
     path('post/<uuid:post_id>/', views.post_detail, name='post_detail'),
+<<<<<<< HEAD
+=======
+    path('post/<uuid:post_id>/edit/', views.edit_post, name='edit_post'),
+>>>>>>> main
     path('post/<uuid:post_id>/delete/', views.delete_post, name='delete_post'),
     
     # Interactions
@@ -31,4 +50,13 @@ urlpatterns = [
     # Style challenges
     path('challenges/', views.challenges_list, name='challenges_list'),
     path('challenge/<uuid:challenge_id>/', views.challenge_detail, name='challenge_detail'),
+<<<<<<< HEAD
+=======
+    
+    # AI Feature
+    path('ai-preview/<uuid:outfit_id>/', views.ai_preview, name='ai_preview'),
+    
+    # REST API routes
+    path('', include(router.urls)),
+>>>>>>> main
 ]

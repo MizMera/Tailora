@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
             <!-- Page Header -->
             <div class="page-header">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
@@ -165,3 +166,185 @@
             </div>
             {% endif %}
 {% endblock %}
+=======
+<!-- Page Header -->
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 class="page-title">Outfit statistics</h1>
+            <p class="page-subtitle">Analyze your combinations and styles</p>
+        </div>
+        <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="content-section">
+    <div class="stats-grid stagger-children">
+        <!-- Total Outfits -->
+        <div class="stat-card animate-fade-in-up">
+            <div class="stat-value" data-counter="{{ stats.total_outfits }}">0</div>
+            <div class="stat-label">Outfits created</div>
+        </div>
+
+        <!-- Favorite Outfits -->
+        <div class="stat-card animate-fade-in-up">
+            <div class="stat-value" style="color: #2c2c2c;" data-counter="{{ stats.favorite_outfits }}">0</div>
+            <div class="stat-label">Favorite outfits</div>
+        </div>
+
+        <!-- Average Items -->
+        <div class="stat-card animate-fade-in-up">
+            <div class="stat-value" style="color: #2c2c2c;">{{ stats.avg_items_per_outfit|floatformat:1 }}</div>
+            <div class="stat-label">Items per outfit</div>
+        </div>
+
+        <!-- Most Worn -->
+        <div class="stat-card animate-fade-in-up">
+            <div class="stat-value" style="color: #2c2c2c;" data-counter="{{ stats.total_wears }}">0</div>
+            <div class="stat-label">Times worn</div>
+        </div>
+    </div>
+</div>
+
+<!-- Occasions Breakdown -->
+<div class="content-section" style="margin-top: 24px;">
+    <h3 class="section-title">Outfits by occasion</h3>
+    {% if stats.by_occasion %}
+    <div style="display: grid; gap: 16px; margin-top: 24px;">
+        {% for occasion, count in stats.by_occasion.items %}
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div
+                style="flex: 0 0 200px; font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.5px;">
+                {{ occasion }}
+            </div>
+            <div style="flex: 1; background: #e0e0e0; height: 32px; position: relative;">
+                <div style="background: #2c2c2c; height: 100%; width: {% widthratio count stats.total_outfits 100 %}%;">
+                </div>
+            </div>
+            <div
+                style="flex: 0 0 60px; text-align: right; font-family: 'Istok Web', sans-serif; font-size: 18px; font-weight: 700; color: #2c2c2c;">
+                {{ count }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p
+        style="text-align: center; padding: 40px; font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
+        No data available
+    </p>
+    {% endif %}
+</div>
+
+<!-- Most Worn Outfits -->
+{% if stats.most_worn %}
+<div class="content-section" style="margin-top: 24px;">
+    <h3 class="section-title">Most worn outfits</h3>
+    <div style="display: grid; gap: 16px; margin-top: 24px;">
+        {% for outfit in stats.most_worn %}
+        <div
+            style="display: flex; align-items: center; gap: 16px; padding: 16px; background: #fafafa; border-left: 4px solid #2c2c2c;">
+            <div style="flex: 0 0 80px; height: 80px; background: #e0e0e0; overflow: hidden;">
+                {% if outfit.outfit_image %}
+                <img src="{{ outfit.outfit_image.url }}" alt="{{ outfit.name }}"
+                    style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                {% with outfit.items.first as first_item %}
+                {% if first_item %}
+                <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}"
+                    style="width: 100%; height: 100%; object-fit: cover;">
+                {% endif %}
+                {% endwith %}
+                {% endif %}
+            </div>
+            <div style="flex: 1;">
+                <h4
+                    style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; color: #2c2c2c; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                    {{ outfit.name }}
+                </h4>
+                <p
+                    style="font-family: 'Inter', sans-serif; font-size: 13px; color: #757575; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                    {{ outfit.get_occasion_display }} • {{ outfit.items.count }} item{{ outfit.items.count|pluralize }}
+                </p>
+            </div>
+            <div style="flex: 0 0 100px; text-align: right;">
+                <div style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 700; color: #2c2c2c;">
+                    {{ outfit.wear_count }}
+                </div>
+                <div
+                    style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
+                    times
+                </div>
+            </div>
+            <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary"
+                style="flex: 0 0 auto;">View</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Outfits -->
+{% if stats.recent_outfits %}
+<div class="content-section" style="margin-top: 24px;">
+    <h3 class="section-title">Recent outfits</h3>
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 24px;">
+        {% for outfit in stats.recent_outfits %}
+        <div style="border: 1px solid #e0e0e0; background: #ffffff;">
+            <a href="{% url 'outfits:outfit_detail' outfit.id %}" style="text-decoration: none; display: block;">
+                <div style="padding-bottom: 100%; position: relative; background: #fafafa;">
+                    {% if outfit.outfit_image %}
+                    <img src="{{ outfit.outfit_image.url }}" alt="{{ outfit.name }}"
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                    {% with outfit.items.first as first_item %}
+                    {% if first_item %}
+                    <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}"
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                    {% endif %}
+                    {% endwith %}
+                    {% endif %}
+                </div>
+                <div style="padding: 12px;">
+                    <h4
+                        style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                        {{ outfit.name }}
+                    </h4>
+                    <p
+                        style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                        {{ outfit.created_at|date:"d/m/Y" }}
+                    </p>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Empty State -->
+{% if not stats.total_outfits %}
+<div class="content-section" style="margin-top: 24px;">
+    <div class="empty-state">
+        <div style="margin-bottom: 24px; opacity: 0.3;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                    d="M20.38 3.4a2 2 0 0 0-1.2-1.1 19.83 19.83 0 0 0-14.36 0 2 2 0 0 0-1.2 1.1L2 10l5 2V21a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V12l5-2-1.62-6.6z" />
+            </svg>
+        </div>
+        <h3
+            style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; color: #2c2c2c; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px;">
+            No statistics available
+        </h3>
+        <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: 0 0 32px 0;">
+            Create outfits to see your stats here!
+        </p>
+        <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">Create outfit</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+>>>>>>> main

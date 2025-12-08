@@ -1,12 +1,27 @@
+<<<<<<< HEAD
 /* Social Module Styles */
 
 /* Feed Layout */
+=======
+/* ========================================
+   SOCIAL MODULE - INSTAGRAM-STYLE FEED
+   Clean, minimal CSS for feed and post cards
+   ======================================== */
+
+/* Layout */
+>>>>>>> main
 .social-layout {
     display: grid;
     grid-template-columns: 1fr 320px;
     gap: 30px;
+<<<<<<< HEAD
     max-width: 1200px;
     margin: 0 auto;
+=======
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 16px;
+>>>>>>> main
 }
 
 .feed-main {
@@ -21,6 +36,7 @@
 
 /* Post Card */
 .post-card {
+<<<<<<< HEAD
     background: white;
     border-radius: 12px;
     padding: 20px;
@@ -153,10 +169,333 @@
     line-height: 1.6;
     color: #2d3748;
     margin-bottom: 8px;
+=======
+    background: #fff;
+    border: 1px solid #dbdbdb;
+    border-radius: 0;
+    /* Sharp edges */
+    margin: 0 auto 24px;
+    max-width: 600px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.5s ease both;
+}
+
+.post-card:hover {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+}
+
+/* Stagger animation for feed posts */
+.post-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.post-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.post-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.post-card:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.post-card:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header */
+.post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #efefef;
+}
+
+.post-user-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    flex: 1;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 0;
+    /* Square avatars */
+    background: #2c2c2c;
+    /* Solid black */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.username {
+    font-weight: 600;
+    font-size: 14px;
+    color: #262626;
+}
+
+.post-time {
+    font-size: 12px;
+    color: #8e8e8e;
+}
+
+.post-options {
+    margin-left: auto;
+}
+
+.btn-options {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    color: #262626;
+    padding: 4px 6px;
+}
+
+.btn-options:hover {
+    opacity: 0.6;
+}
+
+/* Images */
+.post-image-container {
+    width: 100%;
+    background: #000;
+    overflow: hidden;
+}
+
+.single-image-link,
+.image-grid-link {
+    display: block;
+    text-decoration: none;
+}
+
+.post-single-image {
+    width: 100%;
+    max-height: 600px;
+    object-fit: contain;
+    display: block;
+    background: #000;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.post-image-container:hover .post-single-image {
+    transform: scale(1.03);
+}
+
+.post-image-grid {
+    display: grid;
+    gap: 2px;
+    background: #000;
+    width: 100%;
+}
+
+.post-image-grid-2 {
+    grid-template-columns: 1fr 1fr;
+    max-height: 600px;
+}
+
+.post-image-grid-3 {
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    max-height: 600px;
+}
+
+.post-image-grid-3 .grid-image-wrapper:first-child {
+    grid-row: 1/3;
+}
+
+.post-image-grid-4 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    max-height: 600px;
+}
+
+.post-image-grid-5,
+.post-image-grid-6,
+.post-image-grid-7,
+.post-image-grid-8 {
+    grid-template-columns: repeat(3, 1fr);
+    max-height: 600px;
+    overflow: hidden;
+}
+
+.grid-image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.grid-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Interactions */
+.post-interactions {
+    padding: 8px 16px 12px;
+}
+
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.inline-form {
+    margin: 0;
+    padding: 0;
+    display: inline;
+}
+
+.save-form {
+    margin-left: auto;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-btn:hover {
+    transform: scale(1.15);
+}
+
+.action-btn:active {
+    transform: scale(0.95);
+}
+
+.action-btn svg {
+    color: #262626;
+    transition: all 0.2s ease;
+}
+
+/* Like button animation */
+.action-btn.liked svg {
+    color: #ed4956;
+    animation: heartBurst 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.action-btn.saved svg {
+    color: #262626;
+    animation: bookmarkPop 0.3s ease;
+}
+
+@keyframes heartBurst {
+    0% {
+        transform: scale(1);
+    }
+
+    25% {
+        transform: scale(1.35);
+    }
+
+    50% {
+        transform: scale(0.9);
+    }
+
+    75% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes bookmarkPop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.post-likes {
+    padding: 6px 0 4px;
+    font-size: 14px;
+}
+
+.post-likes strong {
+    font-weight: 600;
+    color: #262626;
+}
+
+/* Caption & Meta */
+.post-caption {
+    font-size: 14px;
+    line-height: 18px;
+    color: #262626;
+    padding: 0 0 4px;
+    word-wrap: break-word;
+}
+
+.caption-username {
+    font-weight: 600;
+    color: #262626;
+    text-decoration: none;
+    margin-right: 4px;
+}
+
+.caption-username:hover {
+    opacity: .7;
+}
+
+.caption-text {
+    color: #262626;
+>>>>>>> main
 }
 
 .post-hashtags {
     font-size: 14px;
+<<<<<<< HEAD
     color: #3182ce;
 }
 
@@ -640,12 +979,80 @@
 .create-post-form h1 {
     margin-bottom: 25px;
     color: #1a202c;
+=======
+    color: #00376b;
+    padding: 4px 0;
+}
+
+.hashtag-link {
+    color: #00376b;
+    text-decoration: none;
+    margin-right: 8px;
+}
+
+.hashtag-link:hover {
+    text-decoration: underline;
+}
+
+.view-comments {
+    display: block;
+    font-size: 14px;
+    color: #8e8e8e;
+    text-decoration: none;
+    padding: 4px 0;
+}
+
+.view-comments:hover {
+    color: #262626;
+}
+
+.outfit-link-small {
+    display: block;
+    font-size: 12px;
+    color: #8e8e8e;
+    text-decoration: none;
+    padding: 4px 0;
+    margin-top: 4px;
+}
+
+.outfit-link-small:hover {
+    color: #667eea;
+}
+
+/* Sidebar helpers */
+.user-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    text-align: center;
+    padding: 16px 0;
+}
+
+.user-stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #262626;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #8e8e8e;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+>>>>>>> main
 }
 
 /* Responsive */
 @media (max-width: 968px) {
     .social-layout {
         grid-template-columns: 1fr;
+<<<<<<< HEAD
     }
     
     .feed-sidebar {
@@ -658,10 +1065,22 @@
     
     .challenges-grid {
         grid-template-columns: 1fr;
+=======
+        max-width: 640px;
+    }
+
+    .feed-sidebar {
+        position: static;
+    }
+
+    .post-card {
+        max-width: 100%;
+>>>>>>> main
     }
 }
 
 @media (max-width: 640px) {
+<<<<<<< HEAD
     .post-outfit-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -684,3 +1103,240 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+=======
+    .social-layout {
+        padding: 0;
+    }
+
+    .post-card {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        margin-bottom: 16px;
+    }
+
+    .post-single-image {
+        max-height: 450px;
+    }
+
+    .post-image-grid-2,
+    .post-image-grid-3,
+    .post-image-grid-4,
+    .post-image-grid-5,
+    .post-image-grid-6,
+    .post-image-grid-7,
+    .post-image-grid-8 {
+        max-height: 450px;
+    }
+}
+
+/* ========================================
+   POST BADGES (GAMIFICATION)
+   ======================================== */
+
+.post-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    z-index: 10;
+    font-weight: 600;
+}
+
+.post-badge.iconic {
+    border: 2px solid gold;
+}
+
+.post-badge.star {
+    border: 2px solid silver;
+}
+
+.post-badge.viral {
+    border: 2px solid #FF5722;
+}
+
+.post-badge.appreciated {
+    border: 2px solid #E91E63;
+}
+
+/* ========================================
+   POST OUTFIT GRID
+   ======================================== */
+
+.post-outfit-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.post-outfit-item {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.post-outfit-item img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.item-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 12px;
+}
+
+/* ========================================
+   AI ENHANCED IMAGES
+   ======================================== */
+
+.ai-enhanced-image {
+    border: 3px solid #ff4081;
+    box-shadow: 0 0 10px rgba(255, 64, 129, 0.3);
+}
+
+.ai-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #ff4081;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    z-index: 10;
+}
+
+/* ========================================
+   BADGES SECTION (USER PROFILE)
+   ======================================== */
+
+.badges-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.badge-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 0;
+    border-left: 4px solid #FFD700;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.badge-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.badge-icon {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge-info {
+    flex: 1;
+}
+
+.badge-info strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.badge-info small {
+    color: #666;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.badge-time {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.no-badges {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+}
+
+.no-badges p {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+/* AI Preview Grid */
+.ai-previews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.preview-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 0;
+    text-align: center;
+}
+
+/* Responsive for new elements */
+@media (max-width: 768px) {
+    .post-outfit-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .badges-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .post-outfit-grid {
+        grid-template-columns: 1fr;
+    }
+}
+>>>>>>> main

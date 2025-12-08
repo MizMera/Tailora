@@ -1,0 +1,237 @@
+/**
+ * Tailora Delete Pages Components
+ * Modern design for account deletion flows
+ */
+
+/* ========================================
+   DELETE PAGES
+   ======================================== */
+
+/* Delete Page Layout */
+.delete-page-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--space-800);
+}
+
+.delete-page-content {
+    background: var(--color-secondary-bg);
+    padding: var(--space-800);
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* Danger Zone Card */
+.danger-zone {
+    max-width: 800px;
+    padding: var(--space-800);
+    background: #ffffff;
+    border: 2px solid transparent;
+    background-image: linear-gradient(white, white),
+        linear-gradient(135deg, #c62828 0%, #ff6f00 100%);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    position: relative;
+    transition: all var(--transition-base);
+}
+
+.danger-zone:hover {
+    box-shadow: 0 8px 24px rgba(198, 40, 40, 0.15);
+}
+
+.danger-zone-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-300);
+    margin-bottom: var(--space-400);
+}
+
+.danger-zone-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #c62828 0%, #ff6f00 100%);
+    color: #ffffff;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.danger-zone-title {
+    font-family: var(--font-secondary);
+    font-size: 24px;
+    font-weight: var(--font-weight-bold);
+    background: linear-gradient(135deg, #c62828 0%, #ff6f00 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.danger-zone-description {
+    font-family: var(--font-primary);
+    font-size: var(--font-size-body-medium);
+    color: var(--color-primary-text);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-600);
+}
+
+.danger-zone-description strong {
+    font-weight: var(--font-weight-semibold);
+    color: #c62828;
+}
+
+.danger-zone-hint {
+    font-family: var(--font-primary);
+    font-size: var(--font-size-caption);
+    color: var(--color-secondary-text);
+    margin-bottom: var(--space-600);
+}
+
+.danger-zone-hint strong {
+    color: var(--color-primary-text);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Warning Alert */
+.warning-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-300);
+    padding: var(--space-400);
+    margin-bottom: var(--space-600);
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border-left: 4px solid #ff9800;
+    transition: all var(--transition-base);
+}
+
+.warning-alert:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.warning-alert-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e65100;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.warning-alert-content {
+    flex: 1;
+}
+
+.warning-alert-text {
+    font-family: var(--font-primary);
+    font-size: var(--font-size-body-medium);
+    color: #e65100;
+    margin: 0;
+    line-height: var(--line-height-relaxed);
+}
+
+.warning-alert-text strong {
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Verification Input */
+.verification-field {
+    margin-bottom: var(--space-600);
+}
+
+.verification-label {
+    font-family: var(--font-primary);
+    font-size: var(--font-size-body-medium);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary-text);
+    display: block;
+    margin-bottom: var(--space-200);
+}
+
+.verification-input {
+    width: 100%;
+    max-width: 320px;
+    padding: var(--space-300) var(--space-400);
+    font-family: var(--font-primary);
+    font-size: 18px;
+    font-weight: var(--font-weight-medium);
+    letter-spacing: 4px;
+    text-align: center;
+    color: var(--color-primary-text);
+    background: var(--color-secondary-bg);
+    border: 2px solid var(--color-border);
+    border-radius: 0;
+    transition: all var(--transition-base);
+}
+
+.verification-input:focus {
+    outline: none;
+    border-color: #c62828;
+    box-shadow: 0 0 0 4px rgba(198, 40, 40, 0.1);
+}
+
+.verification-input::placeholder {
+    letter-spacing: normal;
+    font-weight: var(--font-weight-regular);
+    color: var(--color-secondary-text);
+}
+
+/* Delete Action Buttons */
+.delete-actions {
+    display: flex;
+    gap: var(--space-300);
+    flex-wrap: wrap;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
+    color: #ffffff;
+    border: none;
+    padding: var(--space-300) var(--space-600);
+    font-family: var(--font-secondary);
+    font-size: var(--font-size-body-medium);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(198, 40, 40, 0.3);
+}
+
+.btn-danger:active {
+    transform: translateY(0);
+}
+
+/* Delete Page Sidebar */
+.delete-sidebar-card {
+    background: #ffffff;
+    padding: var(--space-600);
+    border: 1px solid var(--color-border);
+    margin-bottom: var(--space-600);
+    transition: all var(--transition-base);
+}
+
+.delete-sidebar-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.delete-sidebar-title {
+    font-family: var(--font-secondary);
+    font-size: var(--font-size-h2);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary-text);
+    margin-bottom: var(--space-400);
+}
+
+.delete-sidebar-text {
+    font-family: var(--font-primary);
+    font-size: var(--font-size-body-medium);
+    color: var(--color-primary-text);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-400);
+}

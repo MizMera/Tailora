@@ -1,11 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
+<<<<<<< HEAD
+=======
+{% load planner_extras %}
+>>>>>>> main
 
 {% block title %}Calendar - Tailora{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/planner.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<<<<<<< HEAD
 {% endblock %}
 
 {% block content %}
@@ -30,6 +35,390 @@
     <div class="calendar-section content-section">
         <div class="calendar-header">
             <h2 class="section-title">{{ month_name }} {{ year }}</h2>
+=======
+<style>
+    /* =========================================
+       PREMIUM CALENDAR STYLES
+       ========================================= */
+    :root {
+        --cal-bg: #fff;
+        --cal-border: #e0e0e0;
+        --text-main: #2c2c2c;
+        --text-light: #757575;
+        --accent: #2c2c2c;
+    }
+
+    /* Page Layout */
+    .planner-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 32px;
+        align-items: start;
+    }
+
+    /* Calendar Card */
+    .calendar-section {
+        background: var(--cal-bg);
+        border: 1px solid var(--cal-border);
+        padding: 32px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-main);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0;
+    }
+
+    .calendar-nav {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* Calendar Grid */
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1px;
+        background: #f0f0f0;
+        /* Grid lines color */
+        border: 1px solid #f0f0f0;
+    }
+
+    .calendar-weekday {
+        background: #fafafa;
+        color: var(--text-light);
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        padding: 12px;
+        text-align: center;
+        letter-spacing: 0.5px;
+    }
+
+    .calendar-day {
+        background: #fff;
+        min-height: 120px;
+        padding: 8px;
+        position: relative;
+        transition: background 0.2s;
+    }
+
+    .calendar-day:hover {
+        background: #fdfdfd;
+    }
+
+    .calendar-day.today {
+        background: #fffdf5;
+        /* Subtle yellow tint for today */
+    }
+
+    .calendar-day.today::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--accent);
+    }
+
+    .day-number {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-main);
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .calendar-day.today .day-number {
+        font-weight: 700;
+    }
+
+    .calendar-day.empty {
+        background: #fafafa;
+    }
+
+    /* Events in Calendar */
+    .calendar-day-events {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .calendar-event-chip {
+        display: block;
+        padding: 4px 6px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #fff;
+        text-decoration: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        border-radius: 2px;
+        /* Slight rounded only */
+        transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .calendar-event-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 2;
+    }
+
+    /* Event Colors */
+    .calendar-event-chip.work {
+        background: #555;
+    }
+
+    .calendar-event-chip.casual {
+        background: #88c;
+    }
+
+    .calendar-event-chip.formal {
+        background: #2c2c2c;
+    }
+
+    .calendar-event-chip.party {
+        background: #dda855;
+    }
+
+    .calendar-event-chip.date {
+        background: #c55;
+    }
+
+    .calendar-event-chip.sports {
+        background: #6b9;
+    }
+
+    .calendar-event-chip.travel {
+        background: #96c;
+    }
+
+    .calendar-event-chip.other {
+        background: #999;
+    }
+
+    .more-events {
+        font-size: 10px;
+        color: var(--text-light);
+        text-align: center;
+        margin-top: 2px;
+        font-weight: 500;
+    }
+
+    /* Sidebar */
+    .sidebar-section {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* Weather Widget (Premium) */
+    .weather-widget-enhanced {
+        background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+        color: #fff;
+        padding: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .weather-location {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .weather-location-name {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .weather-curr-flex {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .weather-temp-main {
+        font-size: 56px;
+        font-weight: 300;
+        line-height: 1;
+        letter-spacing: -2px;
+    }
+
+    .weather-condition {
+        font-size: 16px;
+        font-weight: 400;
+        opacity: 0.8;
+        margin-top: 4px;
+    }
+
+    .weather-grid-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .w-detail {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .w-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        opacity: 0.5;
+        letter-spacing: 1px;
+    }
+
+    .w-val {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .clothing-suggestion {
+        background: rgba(255, 255, 255, 0.08);
+        /* Glassy */
+        padding: 16px;
+        border-left: 2px solid #f5a623;
+        font-size: 13px;
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Upcoming List */
+    .upcoming-item {
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+        border-bottom: 1px solid #f0f0f0;
+        text-decoration: none;
+        color: inherit;
+        transition: background 0.2s;
+    }
+
+    .upcoming-item:last-child {
+        border-bottom: none;
+    }
+
+    .upcoming-item:hover {
+        background: #fafafa;
+    }
+
+    .date-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        background: #f4e9cf;
+        color: #2c2c2c;
+    }
+
+    .db-day {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .db-month {
+        font-size: 10px;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    .u-info {
+        flex: 1;
+    }
+
+    .u-title {
+        font-weight: 600;
+        font-size: 15px;
+        margin-bottom: 4px;
+        color: var(--text-main);
+    }
+
+    .u-meta {
+        font-size: 12px;
+        color: var(--text-light);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Buttons */
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    /* Legend */
+    .legend-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--text-light);
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    @media (max-width: 900px) {
+        .planner-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar-section {
+            order: 2;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="planner-layout">
+
+    <!-- Main Calendar Area -->
+    <div class="calendar-section">
+        <div class="calendar-header">
+            <div>
+                <h1 class="section-title">{{ month_name }} {{ year }}</h1>
+                <p style="margin: 4px 0 0; color: #757575; font-size: 14px;">Use the calendar to plan your outfits.</p>
+            </div>
+>>>>>>> main
             <div class="calendar-nav">
                 <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-secondary btn-sm">← Prev</a>
                 <a href="?year={{ today.year }}&month={{ today.month }}" class="btn btn-secondary btn-sm">Today</a>
@@ -37,14 +426,22 @@
             </div>
         </div>
 
+<<<<<<< HEAD
         <div class="calendar-grid">
             <!-- Weekday headers -->
             {% for day in weekday_names %}
                 <div class="calendar-weekday">{{ day }}</div>
+=======
+        <div class="calendar-grid stagger-children">
+            <!-- Weekday headers -->
+            {% for day in weekday_names %}
+            <div class="calendar-weekday">{{ day|slice:":3" }}</div>
+>>>>>>> main
             {% endfor %}
 
             <!-- Calendar days -->
             {% for week in month_calendar %}
+<<<<<<< HEAD
                 {% for day in week %}
                     {% if day == 0 %}
                         <div class="calendar-day empty"></div>
@@ -107,10 +504,46 @@
         <div class="content-section">
             <h4 class="section-title">EVENT TYPES</h4>
             <div class="event-legend">
+=======
+            {% for day in week %}
+            {% if day == 0 %}
+            <div class="calendar-day empty"></div>
+            {% else %}
+            <div
+                class="calendar-day animate-fade-in-up {% if day == today.day and month == today.month and year == today.year %}today{% endif %}">
+                <span class="day-number">{{ day }}</span>
+
+                {% if day in events_by_date %}
+                <div class="calendar-day-events">
+                    {% with events_for_day=events_by_date|get_item:day %}
+                    {% for event in events_for_day %}
+                    {% if forloop.counter <= 3 %} <a href="{% url 'planner:event_detail' event.id %}"
+                        class="calendar-event-chip {{ event.occasion_type }}" title="{{ event.title }}">
+                        {{ event.title }}
+                        </a>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if events_for_day|length > 3 %}
+                        <span class="more-events">+{{ events_for_day|length|add:"-3" }} more</span>
+                        {% endif %}
+                        {% endwith %}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+        </div>
+
+        <div style="margin-top: 24px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="legend-grid">
+>>>>>>> main
                 <div class="legend-item"><span class="legend-dot work"></span> Work</div>
                 <div class="legend-item"><span class="legend-dot casual"></span> Casual</div>
                 <div class="legend-item"><span class="legend-dot formal"></span> Formal</div>
                 <div class="legend-item"><span class="legend-dot party"></span> Party</div>
+<<<<<<< HEAD
                 <div class="legend-item"><span class="legend-dot date"></span> Date</div>
                 <div class="legend-item"><span class="legend-dot sports"></span> Sports</div>
                 <div class="legend-item"><span class="legend-dot travel"></span> Travel</div>
@@ -119,3 +552,148 @@
     </div>
 </div>
 {% endblock %}
+=======
+            </div>
+            <a href="{% url 'planner:event_create' %}" class="btn btn-primary" style="border-radius:0;">+ Add Event</a>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar-section">
+
+        <!-- Premium Weather Widget -->
+        <div class="weather-widget-enhanced">
+            <div class="weather-location">
+                <span class="weather-location-name">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="margin-right:6px;">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    {{ weather_location|default:"Tunis" }}
+                </span>
+                <button onclick="document.getElementById('location-modal').style.display='flex'"
+                    style="background:rgba(255,255,255,0.15); border:none; color:#fff; font-size:10px; padding:4px 8px; cursor:pointer;">
+                    CHANGE
+                </button>
+            </div>
+
+            {% if current_weather %}
+            <div class="weather-curr-flex">
+                <span class="weather-temp-main">{{ current_weather.temperature }}°</span>
+                <div>
+                    <div class="weather-condition">{{ current_weather.condition|title }}</div>
+                    <div style="font-size:12px; opacity:0.6;">Feels like {{ current_weather.feels_like }}°</div>
+                </div>
+            </div>
+
+            <div class="weather-grid-details">
+                <div class="w-detail">
+                    <span class="w-label">Wind</span>
+                    <span class="w-val">{{ current_weather.wind_speed }} km/h</span>
+                </div>
+                <div class="w-detail">
+                    <span class="w-label">Humidity</span>
+                    <span class="w-val">{{ current_weather.humidity }}%</span>
+                </div>
+            </div>
+
+            <div class="clothing-suggestion">
+                <div
+                    style="font-weight:700; font-size:10px; text-transform:uppercase; margin-bottom:4px; color:#f5a623;">
+                    Styling Tip
+                </div>
+                {% if current_weather.temperature > 28 %}
+                Light fabrics and shorts recommended.
+                {% elif current_weather.temperature > 20 %}
+                Great weather for light layers.
+                {% elif current_weather.temperature > 12 %}
+                Bring a jacket or cardigan.
+                {% else %}
+                Bundle up with a warm coat.
+                {% endif %}
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5);">
+                Weather data unavailable
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Upcoming Events List -->
+        <div class="content-section" style="padding: 0; overflow: hidden; border: 1px solid #e0e0e0;">
+            <div style="padding: 16px; border-bottom: 1px solid #f0f0f0; background: #fafafa;">
+                <h3 style="margin: 0; font-size: 14px; font-weight: 700; text-transform: uppercase; color: #2c2c2c;">
+                    Upcoming Events</h3>
+            </div>
+
+            {% if upcoming_events %}
+            {% for event in upcoming_events|slice:":5" %}
+            <a href="{% url 'planner:event_detail' event.id %}" class="upcoming-item">
+                <div class="date-box">
+                    <span class="db-day">{{ event.date.day }}</span>
+                    <span class="db-month">{{ event.date|date:"M" }}</span>
+                </div>
+                <div class="u-info">
+                    <div class="u-title">{{ event.title }}</div>
+                    <div class="u-meta">
+                        <span>{{ event.time|date:"g:i A" }}</span>
+                        {% if event.outfit %}
+                        <span style="width:4px; height:4px; background:#ccc; border-radius:50%;"></span>
+                        <span style="color:#2ecc71;">Outfit Ready</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+            {% else %}
+            <div style="padding: 24px; text-align: center; color: #999; font-size: 13px;">
+                No upcoming events.
+            </div>
+            {% endif %}
+
+            <a href="{% url 'planner:event_list' %}"
+                style="display: block; padding: 12px; text-align: center; font-size: 12px; font-weight: 600; color: #2c2c2c; text-decoration: none; background: #fcfcfc; border-top: 1px solid #f0f0f0;">
+                VIEW ALL EVENTS →
+            </a>
+        </div>
+
+    </aside>
+</div>
+
+<!-- Location Change Modal -->
+<div id="location-modal"
+    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div
+        style="background: #fff; padding: 32px; width: 90%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+        <h3 style="margin: 0 0 20px; font-family: 'Istok Web', sans-serif; font-size: 20px;">Change Location</h3>
+        <form method="get" action="">
+            <input type="hidden" name="year" value="{{ year }}">
+            <input type="hidden" name="month" value="{{ month }}">
+            <div style="margin-bottom: 24px;">
+                <label
+                    style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase;">City
+                    Name</label>
+                <input type="text" name="location" value="{{ weather_location|default:'Tunis' }}"
+                    placeholder="e.g., Paris"
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; font-family: 'Inter', sans-serif; border-radius: 0;">
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="document.getElementById('location-modal').style.display='none'"
+                    class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Close modal when clicking outside
+    document.getElementById('location-modal').addEventListener('click', function (e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}
+>>>>>>> main

@@ -1,0 +1,11 @@
+/* Tailora - Outfits page styles */
+
+/* Page header polish */
+.page-header {
+  border-bottom: 1px solid #eaeaea;
+  padding-bottom: 8px;
+}
+
+.page-subtitle {
+  color: #757575;
+}

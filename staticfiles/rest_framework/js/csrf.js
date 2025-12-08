@@ -38,7 +38,10 @@ function sameOrigin(url) {
     !(/^(\/\/|http:|https:).*/.test(url));
 }
 
+<<<<<<< HEAD
 window.drf = JSON.parse(document.getElementById('drf_csrf').textContent);
+=======
+>>>>>>> main
 var csrftoken = window.drf.csrfToken;
 
 $.ajaxSetup({

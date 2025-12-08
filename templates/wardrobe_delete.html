@@ -4,6 +4,7 @@
 {% block title %}Delete {{ item.name }} - Tailora{% endblock %}
 
 {% block extra_css %}
+<<<<<<< HEAD
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 <style>
     .delete-warning {
@@ -20,10 +21,25 @@
         height: 80px;
         margin: 0 auto 20px;
         background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
+=======
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+    .danger-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .danger-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 24px;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+>>>>>>> main
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
+<<<<<<< HEAD
         color: white;
         font-size: 40px;
     }
@@ -64,10 +80,80 @@
     }
     
     .item-preview-image img {
+=======
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+        }
+
+        50% {
+            box-shadow: 0 0 0 20px rgba(255, 107, 107, 0);
+        }
+    }
+
+    .warning-card {
+        background: #fff5f5;
+        border: 2px solid #ff6b6b;
+        padding: 32px;
+        margin-bottom: 32px;
+    }
+
+    .warning-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        color: #c62828;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .warning-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #721c24;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .item-preview-card {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 32px;
+        margin-bottom: 32px;
+    }
+
+    .item-preview-grid {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 32px;
+        align-items: start;
+    }
+
+    .item-image-wrapper {
+        width: 200px;
+        height: 200px;
+        border: 1px solid #e0e0e0;
+        overflow: hidden;
+        background: #f9f9f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .item-image-wrapper img {
+>>>>>>> main
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
+<<<<<<< HEAD
     
     .item-preview-details h3 {
         font-size: 20px;
@@ -121,11 +207,98 @@
     
     .btn-cancel:hover {
         background: #e0e0e0;
+=======
+
+    .item-details h3 {
+        font-family: 'Inter', sans-serif;
+        font-size: 24px;
+        font-weight: 600;
+        color: #252320;
+        margin-bottom: 16px;
+    }
+
+    .item-details-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .item-details-list li {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #757575;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .item-details-list li:last-child {
+        border-bottom: none;
+    }
+
+    .item-details-list li strong {
+        color: #252320;
+        font-weight: 600;
+        display: inline-block;
+        min-width: 100px;
+    }
+
+    .form-actions-danger {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 32px;
+    }
+
+    .btn-cancel {
+        background: #cdcdcd;
+        color: #252320;
+        padding: 14px 24px;
+        border: none;
+        font-family: 'Istok Web', sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .btn-cancel:hover {
+        background: #b8b8b8;
+    }
+
+    .btn-delete {
+        background: #dc3545;
+        color: #ffffff;
+        padding: 14px 24px;
+        border: none;
+        font-family: 'Istok Web', sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-delete:hover {
+        background: #c82333;
+    }
+
+    @media (max-width: 768px) {
+        .item-preview-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .item-image-wrapper {
+            margin: 0 auto;
+        }
+>>>>>>> main
     }
 </style>
 {% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
 <div class="content-section" style="max-width: 700px; margin: 40px auto;">
     <div class="delete-warning">
         <div class="delete-icon">⚠️</div>
@@ -164,3 +337,125 @@
     </form>
 </div>
 {% endblock %}
+=======
+<div class="page-header">
+    <div class="header-content">
+        <h1 class="page-title">Delete Item</h1>
+        <p class="page-subtitle">Remove from wardrobe</p>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="danger-container">
+        <div style="text-align: center; padding: 40px 0 32px;">
+            <div class="danger-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+            </div>
+            <h2
+                style="font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 600; color: #252320; margin-bottom: 12px;">
+                Confirm Deletion
+            </h2>
+            <p style="font-family: 'Inter', sans-serif; font-size: 16px; color: #757575;">
+                Are you sure you want to remove this item from your wardrobe?
+            </p>
+        </div>
+
+        <div class="warning-card">
+            <div class="warning-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                    </path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                This action cannot be undone
+            </div>
+            <p class="warning-text">
+                Deleting this item will permanently remove it from your wardrobe and all associated outfits. This action
+                is irreversible.
+            </p>
+        </div>
+
+        <div class="item-preview-card">
+            <h3
+                style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #252320; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid #2c2c2c;">
+                Item Preview
+            </h3>
+
+            <div class="item-preview-grid">
+                <div class="item-image-wrapper">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                    {% else %}
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    {% endif %}
+                </div>
+
+                <div class="item-details">
+                    <h3>{{ item.name }}</h3>
+                    <ul class="item-details-list">
+                        {% if item.category %}
+                        <li><strong>Category:</strong> {{ item.category.name }}</li>
+                        {% endif %}
+                        {% if item.brand %}
+                        <li><strong>Brand:</strong> {{ item.brand }}</li>
+                        {% endif %}
+                        {% if item.color %}
+                        <li><strong>Color:</strong> {{ item.color }}</li>
+                        {% endif %}
+                        {% if item.size %}
+                        <li><strong>Size:</strong> {{ item.size }}</li>
+                        {% endif %}
+                        {% if item.times_worn > 0 %}
+                        <li><strong>Times Worn:</strong> {{ item.times_worn }}</li>
+                        {% endif %}
+                        {% if item.purchase_date %}
+                        <li><strong>Purchase Date:</strong> {{ item.purchase_date|date:"F d, Y" }}</li>
+                        {% endif %}
+                        {% if item.price %}
+                        <li><strong>Price:</strong> ${{ item.price }}</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions-danger">
+                <a href="{% url 'wardrobe_detail' item.id %}" class="btn-cancel">
+                    Cancel
+                </a>
+                <button type="button" class="btn btn-danger btn-lg delete-trigger" data-form-id="deleteForm"
+                    data-item-name="{{ item.name }}">
+                    Delete Item
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'js/confirm-modal.js' %}"></script>
+<script>
+    // Form submission handling
+    const deleteButtons = document.querySelectorAll('.delete-trigger');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const itemName = this.getAttribute('data-item-name');
+            if (confirm(`Are you absolutely sure you want to delete "${itemName}"? This action cannot be undone.`)) {
+                this.closest('form').submit();
+            }
+        });
+    });
+</script>
+{% endblock %}
+>>>>>>> main

@@ -11,6 +11,16 @@
     margin-top: 0;
 }
 
+<<<<<<< HEAD
+=======
+/* Simple stats grid used on stats pages */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+>>>>>>> main
 .stats-section {
     background: #ffffff;
     padding: 40px;
@@ -183,10 +193,21 @@
 }
 
 .warning-banner {
+<<<<<<< HEAD
     background: #2c2c2c;
     color: #ffffff;
     padding: 24px 40px;
     border-bottom: 1px solid #e0e0e0;
+=======
+    background: #f5f5f5;
+    /* Neutral background */
+    color: #2c2c2c;
+    padding: 24px 40px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+>>>>>>> main
 }
 
 .warning-title {
@@ -195,12 +216,18 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
+<<<<<<< HEAD
     margin-bottom: 8px;
+=======
+    margin-bottom: 4px;
+    color: #2c2c2c;
+>>>>>>> main
 }
 
 .warning-text {
     font-family: 'Inter', sans-serif;
     font-size: 14px;
+<<<<<<< HEAD
     color: #e0e0e0;
     margin-bottom: 16px;
 }
@@ -209,6 +236,17 @@
     background: #ffffff;
     color: #2c2c2c;
     padding: 12px 24px;
+=======
+    color: #757575;
+    margin-bottom: 0;
+}
+
+.warning-btn {
+    background: #2c2c2c;
+    /* Black button */
+    color: #ffffff;
+    padding: 10px 20px;
+>>>>>>> main
     font-family: 'Inter', sans-serif;
     font-size: 12px;
     font-weight: 600;
@@ -223,18 +261,31 @@
 }
 
 .warning-btn:hover {
+<<<<<<< HEAD
     background: #f0f0f0;
+=======
+    background: #000000;
+    transform: translateY(-1px);
+>>>>>>> main
 }
 
 @media (max-width: 768px) {
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
+<<<<<<< HEAD
     
     .stats-section {
         border-right: none;
     }
     
+=======
+
+    .stats-section {
+        border-right: none;
+    }
+
+>>>>>>> main
     .actions-grid {
         grid-template-columns: 1fr;
     }
@@ -242,7 +293,12 @@
 
 .dashboard-container {
     min-height: 100vh;
+<<<<<<< HEAD
     background: #f4e9cf; /* Figma primary background */
+=======
+    background: #f4e9cf;
+    /* Figma primary background */
+>>>>>>> main
     font-family: 'Inter', sans-serif;
 }
 
@@ -484,7 +540,11 @@
     transition: all 0.2s;
 }
 
+<<<<<<< HEAD
 .color-item input[type="checkbox"]:checked + .color-box {
+=======
+.color-item input[type="checkbox"]:checked+.color-box {
+>>>>>>> main
     border-color: #7b513b;
     box-shadow: 0 0 0 2px #dad3c2;
 }
@@ -495,6 +555,7 @@
 }
 
 /* Color Classes */
+<<<<<<< HEAD
 .color-black { background: #000000; }
 .color-white { background: #FFFFFF; border: 1px solid #ddd; }
 .color-gray { background: #808080; }
@@ -505,6 +566,48 @@
 .color-pink { background: #FFC0CB; }
 .color-brown { background: #A52A2A; }
 .color-beige { background: #F5DEB3; }
+=======
+.color-black {
+    background: #000000;
+}
+
+.color-white {
+    background: #FFFFFF;
+    border: 1px solid #ddd;
+}
+
+.color-gray {
+    background: #808080;
+}
+
+.color-blue {
+    background: #0000FF;
+}
+
+.color-red {
+    background: #FF0000;
+}
+
+.color-green {
+    background: #008000;
+}
+
+.color-yellow {
+    background: #FFFF00;
+}
+
+.color-pink {
+    background: #FFC0CB;
+}
+
+.color-brown {
+    background: #A52A2A;
+}
+
+.color-beige {
+    background: #F5DEB3;
+}
+>>>>>>> main
 
 /* Form Actions */
 .form-actions {
@@ -621,16 +724,25 @@
         text-align: center;
         padding: 20px;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     .header-actions {
         flex-direction: column;
         width: 100%;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     .header-actions .btn,
     .header-actions .logout-btn {
         width: 100%;
     }
+<<<<<<< HEAD
     
     .dashboard-content {
         padding: 20px;
@@ -660,11 +772,46 @@
         font-size: 18px;
     }
     
+=======
+
+    .dashboard-content {
+        padding: 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .checkbox-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .color-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .settings-section {
+        padding: 16px;
+    }
+
+    .page-title {
+        font-size: 24px;
+    }
+
+    .section-title {
+        font-size: 18px;
+    }
+
+>>>>>>> main
     .form-actions {
         flex-direction: column;
         gap: 12px;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     .form-actions .btn {
         width: 100%;
     }
@@ -733,4 +880,8 @@
     color: #7b513b;
     font-weight: bold;
     font-size: 18px;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> main

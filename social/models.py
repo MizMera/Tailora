@@ -42,6 +42,13 @@ class LookbookPost(models.Model):
     caption = models.TextField(blank=True)
     hashtags = models.JSONField(default=list, blank=True)  # e.g., ["#mariage", "#lookdujour"]
     
+<<<<<<< HEAD
+=======
+    # AI Enhanced Images
+    # Dictionary mapping outfit item IDs to enhanced image paths: { "item_id": "path/to/image.jpg" }
+    enhanced_images = models.JSONField(default=dict, blank=True)
+    
+>>>>>>> main
     # Visibility
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')
     

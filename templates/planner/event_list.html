@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
+<<<<<<< HEAD
 {% block title %}Events - Tailora{% endblock %}
 
 {% block extra_css %}
@@ -129,3 +130,495 @@
     {% endif %}
 </div>
 {% endblock %}
+=======
+{% block title %}All Events - Tailora{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =========================================
+       THEME VARIABLES
+       ========================================= */
+    :root {
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
+    }
+
+    /* =========================================
+       LAYOUT
+       ========================================= */
+    .planner-wrapper {
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        padding: 40px 24px;
+    }
+
+    .planner-container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    /* Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    /* =========================================
+       STATS GRID
+       ========================================= */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 32px;
+    }
+
+    .stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+        border-color: #ccc;
+    }
+
+    .stat-value {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 36px;
+        font-weight: 700;
+        color: var(--text-main);
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+
+    .stat-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    /* =========================================
+       FILTERS
+       ========================================= */
+    .filter-section {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        padding: 20px;
+        margin-bottom: 32px;
+    }
+
+    .filter-form {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .input-control {
+        width: 100%;
+        padding: 10px 12px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 0; /* Sharp look */
+        background: #fff;
+        color: var(--text-main);
+        outline: none;
+        height: 42px;
+        box-sizing: border-box;
+    }
+
+    .input-control:focus {
+        border-color: var(--text-main);
+    }
+
+    .search-wrapper {
+        position: relative;
+    }
+
+    .search-spinner {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: none;
+        animation: spin 1s linear infinite;
+    }
+
+    /* =========================================
+       EVENTS LIST
+       ========================================= */
+    .events-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .event-card {
+        display: flex;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        transition: all 0.2s;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+    }
+
+    .event-card:hover {
+        border-color: #bbb;
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* Date Column */
+    .event-date-col {
+        width: 90px;
+        background: #f4f4f4;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        flex-shrink: 0;
+        border-right: 1px solid var(--border-color);
+    }
+
+    .date-day {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-main);
+        line-height: 1;
+    }
+
+    .date-month {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        text-transform: uppercase;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+
+    /* Info Column */
+    .event-info-col {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .event-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+    }
+
+    .event-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0;
+    }
+
+    .event-meta {
+        display: flex;
+        gap: 16px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: var(--text-muted);
+        align-items: center;
+    }
+
+    /* Badges */
+    .badge {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        letter-spacing: 0.5px;
+        border-radius: 0;
+    }
+
+    .badge-occasion { background: #eee; color: #333; }
+    .badge-completed { background: #dcedc8; color: #33691e; }
+    
+    .outfit-status {
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .status-ok { color: #2e7d32; font-weight: 500; }
+    .status-missing { color: #e65100; font-weight: 500; }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 20px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 0;
+    }
+
+    .btn-primary { background: var(--text-main); color: #fff; border-color: var(--text-main); }
+    .btn-primary:hover { background: #000; }
+    
+    .btn-secondary { background: #fff; color: var(--text-main); border-color: #ccc; }
+    .btn-secondary:hover { background: #f5f5f5; }
+
+    /* Animations */
+    @keyframes spin { from { transform: translateY(-50%) rotate(0deg); } to { transform: translateY(-50%) rotate(360deg); } }
+    .stagger-children > * { animation: fadeInUp 0.4s ease both; }
+    .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+    .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+    .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 800px) {
+        .filter-form { grid-template-columns: 1fr; }
+        .event-card { flex-direction: column; }
+        .event-date-col { width: 100%; flex-direction: row; gap: 8px; padding: 10px; border-right: none; border-bottom: 1px solid #eee; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="planner-wrapper">
+    <div class="planner-container">
+        
+        <!-- Header -->
+        <header class="page-header">
+            <div>
+                <h1 class="page-title">All Events</h1>
+                <p class="page-subtitle">Manage your schedule and outfits</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <a href="{% url 'planner:calendar' %}" class="btn btn-secondary">Calendar View</a>
+                <a href="{% url 'planner:event_create' %}" class="btn btn-primary">+ New Event</a>
+            </div>
+        </header>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div style="padding: 12px; margin-bottom: 24px; background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; font-size: 14px;">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Quick Stats -->
+        <div class="stats-grid stagger-children">
+            <div class="stat-card">
+                <span class="stat-value">{{ total_events }}</span>
+                <span class="stat-label">Total Events</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{ upcoming_count }}</span>
+                <span class="stat-label">Upcoming</span>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid #f5a623;">
+                <span class="stat-value">{{ no_outfit_count }}</span>
+                <span class="stat-label">Needs Outfit</span>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <form method="get" id="filter-form" class="filter-form">
+                
+                <!-- Search -->
+                <div class="search-wrapper">
+                    <input type="text" name="search" id="search-input" 
+                           placeholder="Search events..." value="{{ search_query|default:'' }}" 
+                           class="input-control" autocomplete="off">
+                    <svg class="search-spinner" id="search-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="32"></circle>
+                    </svg>
+                </div>
+
+                <!-- Occasion -->
+                <select name="occasion" class="input-control" onchange="this.form.submit()">
+                    <option value="">All Occasions</option>
+                    {% for value, label in occasion_choices %}
+                    <option value="{{ value }}" {% if selected_occasion == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Status -->
+                <select name="status" class="input-control" onchange="this.form.submit()">
+                    <option value="">All Status</option>
+                    <option value="upcoming" {% if selected_status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                    <option value="past" {% if selected_status == 'past' %}selected{% endif %}>Past</option>
+                    <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="no_outfit" {% if selected_status == 'no_outfit' %}selected{% endif %}>Missing Outfit</option>
+                </select>
+
+                <!-- Reset -->
+                {% if search_query or selected_occasion or selected_status %}
+                    <a href="{% url 'planner:event_list' %}" class="btn btn-secondary" style="height: 42px; width: 100%;">Clear</a>
+                {% else %}
+                    <button type="button" class="btn btn-secondary" disabled style="opacity: 0.5; height: 42px; width: 100%;">Clear</button>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Events List -->
+        <div class="content-section">
+            {% if events %}
+            <div class="events-list stagger-children">
+                {% for event in events %}
+                <a href="{% url 'planner:event_detail' event.id %}" class="event-card">
+                    <!-- Date Box -->
+                    <div class="event-date-col">
+                        <span class="date-day">{{ event.date.day }}</span>
+                        <span class="date-month">{{ event.date|date:"M" }}</span>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="event-info-col">
+                        <div class="event-header">
+                            <h3 class="event-title" {% if event.is_completed %}style="text-decoration: line-through; color: #999;"{% endif %}>
+                                {{ event.title }}
+                            </h3>
+                            <div style="display: flex; gap: 8px;">
+                                {% if event.is_completed %}
+                                    <span class="badge badge-completed">Completed</span>
+                                {% endif %}
+                                <span class="badge badge-occasion">{{ event.get_occasion_type_display }}</span>
+                            </div>
+                        </div>
+
+                        <div class="event-meta">
+                            {% if event.time %}
+                                <span>{{ event.time|date:"g:i A" }}</span>
+                            {% endif %}
+                            
+                            <!-- Outfit Status Indicator -->
+                            {% if event.outfit %}
+                                <div class="outfit-status status-ok">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span>{{ event.outfit.name }}</span>
+                                </div>
+                            {% else %}
+                                <div class="outfit-status status-missing">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                    </svg>
+                                    <span>No Outfit</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div style="text-align: center; padding: 60px 20px; background: #fff; border: 2px dashed #ddd;">
+                <div style="width: 48px; height: 48px; background: #f0f0f0; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </div>
+                <h3 style="font-family: 'Istok Web'; font-size: 20px; color: #333; margin-bottom: 8px;">No Events Found</h3>
+                <p style="color: #777; margin-bottom: 24px;">
+                    {% if search_query or selected_occasion or selected_status %}
+                        Try adjusting your filters to find what you're looking for.
+                    {% else %}
+                        Get started by adding your first event to the calendar.
+                    {% endif %}
+                </p>
+                <a href="{% url 'planner:event_create' %}" class="btn btn-primary">Create Event</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-input');
+        const filterForm = document.getElementById('filter-form');
+        const spinner = document.getElementById('search-spinner');
+        let timeout = null;
+
+        if (searchInput && filterForm) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                if(spinner) spinner.style.display = 'block';
+                
+                // Debounce submit by 500ms
+                timeout = setTimeout(function() {
+                    filterForm.submit();
+                }, 500);
+            });
+            
+            // Focus input if search param exists
+            const urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.has('search')) {
+                const len = searchInput.value.length;
+                searchInput.focus();
+                searchInput.setSelectionRange(len, len);
+            }
+        }
+    });
+</script>
+{% endblock %}
+>>>>>>> main

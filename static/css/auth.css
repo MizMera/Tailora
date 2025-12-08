@@ -20,6 +20,10 @@ body {
     from {
         opacity: 0;
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
     to {
         opacity: 1;
     }
@@ -33,6 +37,10 @@ body.fade-out {
     from {
         opacity: 1;
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
     to {
         opacity: 0;
     }
@@ -279,7 +287,11 @@ body.fade-out {
     .auth-title {
         font-size: 64px;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     .auth-subtitle {
         font-size: 32px;
     }
@@ -289,17 +301,26 @@ body.fade-out {
     .auth-container {
         flex-direction: column;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     .auth-image-section {
         max-width: 100%;
         min-height: 300px;
         max-height: 400px;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     .auth-form-section {
         min-width: 100%;
         padding: 24px;
     }
+<<<<<<< HEAD
     
     .auth-title {
         font-size: 48px;
@@ -313,12 +334,31 @@ body.fade-out {
         padding: 32px 24px;
     }
     
+=======
+
+    .auth-title {
+        font-size: 48px;
+    }
+
+    .auth-subtitle {
+        font-size: 24px;
+    }
+
+    .auth-form-container {
+        padding: 32px 24px;
+    }
+
+>>>>>>> main
     .auth-buttons {
         flex-direction: column;
         gap: 12px;
         margin-top: 16px;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     .btn {
         width: 100%;
     }
@@ -328,11 +368,19 @@ body.fade-out {
     .auth-title {
         font-size: 36px;
     }
+<<<<<<< HEAD
     
     .auth-subtitle {
         font-size: 20px;
     }
     
+=======
+
+    .auth-subtitle {
+        font-size: 20px;
+    }
+
+>>>>>>> main
     .auth-header {
         margin-bottom: 32px;
     }
@@ -408,7 +456,11 @@ body.fade-out {
     flex-shrink: 0;
 }
 
+<<<<<<< HEAD
 .checkbox-item input[type="checkbox"]:checked + span {
+=======
+.checkbox-item input[type="checkbox"]:checked+span {
+>>>>>>> main
     font-weight: 600;
     color: #252320;
 }
@@ -446,6 +498,7 @@ body.fade-out {
     font-size: 13px;
     color: #252320;
     font-weight: 400;
+<<<<<<< HEAD
 }
 
 /* Color Grid */
@@ -535,6 +588,8 @@ select.input-control:focus {
 
 .step {
     display: flex;
+=======
+>>>>>>> main
     flex-direction: column;
     align-items: center;
     gap: 6px;
@@ -611,6 +666,10 @@ select.input-control:focus {
         opacity: 0;
         transform: translateX(30px);
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
     to {
         opacity: 1;
         transform: translateX(0);
@@ -622,6 +681,10 @@ select.input-control:focus {
         opacity: 1;
         transform: translateX(0);
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
     to {
         opacity: 0;
         transform: translateX(-30px);
@@ -633,6 +696,10 @@ select.input-control:focus {
         opacity: 1;
         transform: translateX(0);
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
     to {
         opacity: 0;
         transform: translateX(30px);
@@ -896,6 +963,7 @@ select.input-control:focus {
     .checkbox-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+<<<<<<< HEAD
     
     .color-grid {
         grid-template-columns: repeat(3, 1fr);
@@ -913,23 +981,58 @@ select.input-control:focus {
         width: 40px;
     }
     
+=======
+
+    .color-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .section-title {
+        font-size: 16px;
+    }
+
+    .step-indicator {
+        gap: 12px;
+    }
+
+    .step-line {
+        width: 40px;
+    }
+
+>>>>>>> main
     .step-number {
         width: 32px;
         height: 32px;
         font-size: 14px;
     }
+<<<<<<< HEAD
     
     .form-grid {
         grid-template-columns: 1fr;
     }
     
+=======
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+>>>>>>> main
     .dashboard-header {
         flex-direction: column;
         gap: 16px;
         text-align: center;
     }
+<<<<<<< HEAD
     
     .dashboard-content {
         padding: 20px;
     }
 }
+=======
+
+    .dashboard-content {
+        padding: 20px;
+    }
+}
+>>>>>>> main

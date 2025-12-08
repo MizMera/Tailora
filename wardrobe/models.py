@@ -31,10 +31,17 @@ class ClothingItem(models.Model):
     Main model for managing user's wardrobe
     """
     SEASON_CHOICES = [
+<<<<<<< HEAD
         ('Spring', 'Printemps'),
         ('Summer', 'Été'),
         ('Fall', 'Automne'),
         ('Winter', 'Hiver'),
+=======
+        ('spring', 'Printemps'),
+        ('summer', 'Été'),
+        ('fall', 'Automne'),
+        ('winter', 'Hiver'),
+>>>>>>> main
         ('all_seasons', 'Toutes Saisons'),
     ]
     

@@ -30,7 +30,11 @@ def outfit_gallery_view(request):
         outfits = outfits.filter(
             Q(name__icontains=search_query) |
             Q(description__icontains=search_query) |
+<<<<<<< HEAD
             Q(style_tags__contains=[search_query])
+=======
+            Q(style_tags__icontains=search_query)
+>>>>>>> main
         )
     
     # Pagination
@@ -62,6 +66,20 @@ def outfit_create_view(request):
     """
     user = request.user
     
+<<<<<<< HEAD
+=======
+    # Check outfit limit
+    outfit_count = Outfit.objects.filter(user=user).count()
+    max_outfits = user.get_max_outfits()
+    if outfit_count >= max_outfits:
+        messages.warning(
+            request, 
+            f"You have reached your limit of {max_outfits} outfits. "
+            f"Upgrade to Premium to create more."
+        )
+        return redirect('outfits:outfit_gallery')
+
+>>>>>>> main
     if request.method == 'POST':
         # Get form data
         name = request.POST.get('name')
@@ -100,6 +118,12 @@ def outfit_create_view(request):
                 except ClothingItem.DoesNotExist:
                     pass
             
+<<<<<<< HEAD
+=======
+            # Update user's outfit count
+            user.increment_outfits_count()
+            
+>>>>>>> main
             messages.success(request, f'{name} has been created successfully!')
             return redirect('outfits:outfit_detail', outfit_id=outfit.id)
         
@@ -210,6 +234,16 @@ def outfit_delete_view(request, outfit_id):
     if request.method == 'POST':
         outfit_name = outfit.name
         outfit.delete()
+<<<<<<< HEAD
+=======
+        
+        # Update user's outfit count
+        user = request.user
+        if user.outfits_created_count > 0:
+            user.outfits_created_count -= 1
+            user.save(update_fields=['outfits_created_count'])
+        
+>>>>>>> main
         messages.success(request, f'{outfit_name} has been deleted.')
         return redirect('outfits:outfit_gallery')
     
@@ -269,3 +303,282 @@ def outfit_stats_view(request):
     }
     
     return render(request, 'outfit_stats.html', context)
+<<<<<<< HEAD
+=======
+
+
+# ==================== REST API Views ====================
+
+from rest_framework import viewsets, status, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+from .serializers import (
+    OutfitSerializer,
+    OutfitDetailSerializer,
+    OutfitCreateSerializer,
+    OutfitUpdateSerializer,
+    OutfitItemSerializer
+)
+from rest_framework.exceptions import ValidationError
+
+
+class OutfitPagination(PageNumberPagination):
+    """Custom pagination for outfits"""
+    page_size = 12
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
+
+class OutfitViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for outfit management
+    Provides CRUD operations for outfits
+    
+    Endpoints:
+    - GET /api/outfits/ - List all user's outfits
+    - POST /api/outfits/ - Create new outfit
+    - GET /api/outfits/{id}/ - Get outfit details
+    - PUT /api/outfits/{id}/ - Update outfit
+    - DELETE /api/outfits/{id}/ - Delete outfit
+    
+    Custom actions:
+    - POST /api/outfits/{id}/toggle_favorite/ - Toggle favorite status
+    - POST /api/outfits/{id}/add_item/ - Add item to outfit
+    - POST /api/outfits/{id}/remove_item/ - Remove item from outfit
+    - POST /api/outfits/{id}/duplicate/ - Duplicate outfit
+    - GET /api/outfits/stats/ - Get outfit statistics
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = OutfitPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['occasion', 'favorite', 'source']
+    search_fields = ['name', 'description', 'style_tags']
+    ordering_fields = ['created_at', 'times_worn', 'name']
+    ordering = ['-created_at']
+    
+    def get_queryset(self):
+        """Users can only access their own outfits"""
+        return Outfit.objects.filter(user=self.request.user).prefetch_related(
+            'outfit_items',
+            'outfit_items__clothing_item',
+            'items'
+        )
+    
+    def get_serializer_class(self):
+        """Return appropriate serializer based on action"""
+        if self.action == 'list':
+            return OutfitSerializer
+        elif self.action == 'create':
+            return OutfitCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return OutfitUpdateSerializer
+        return OutfitDetailSerializer
+    
+    def perform_create(self, serializer):
+        """Automatically associate outfit with current user and check limits"""
+        user = self.request.user
+        outfit_count = Outfit.objects.filter(user=user).count()
+        max_outfits = user.get_max_outfits()
+        if outfit_count >= max_outfits:
+            raise ValidationError(
+                f"You have reached your limit of {max_outfits} outfits. "
+                f"Upgrade to Premium to create more."
+            )
+        serializer.save()
+    
+    def perform_destroy(self, instance):
+        """Decrement user's outfit count on delete"""
+        user = self.request.user
+        instance.delete()
+        # Update count
+        user.outfits_created_count = max(0, user.outfits_created_count - 1)
+        user.save(update_fields=['outfits_created_count'])
+    
+    @action(detail=True, methods=['post'])
+    def toggle_favorite(self, request, pk=None):
+        """
+        Toggle favorite status of an outfit
+        POST /api/outfits/{id}/toggle_favorite/
+        """
+        outfit = self.get_object()
+        outfit.favorite = not outfit.favorite
+        outfit.save(update_fields=['favorite'])
+        
+        return Response({
+            'status': 'success',
+            'favorite': outfit.favorite,
+            'message': f'Outfit {"added to" if outfit.favorite else "removed from"} favorites'
+        })
+    
+    @action(detail=True, methods=['post'])
+    def add_item(self, request, pk=None):
+        """
+        Add item to outfit
+        POST /api/outfits/{id}/add_item/
+        Body: {
+            "clothing_item_id": "uuid",
+            "layer": "base|mid|outer|accessory|shoes",
+            "position": 0
+        }
+        """
+        outfit = self.get_object()
+        clothing_item_id = request.data.get('clothing_item_id')
+        
+        if not clothing_item_id:
+            return Response(
+                {'error': 'clothing_item_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Verify item exists and belongs to user
+        try:
+            clothing_item = ClothingItem.objects.get(
+                id=clothing_item_id,
+                user=request.user
+            )
+        except ClothingItem.DoesNotExist:
+            return Response(
+                {'error': 'Clothing item not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Check if item already in outfit
+        if OutfitItem.objects.filter(outfit=outfit, clothing_item=clothing_item).exists():
+            return Response(
+                {'error': 'Item already in outfit'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create outfit item
+        outfit_item = OutfitItem.objects.create(
+            outfit=outfit,
+            clothing_item=clothing_item,
+            layer=request.data.get('layer', 'base'),
+            position=request.data.get('position', 0),
+            x_position=request.data.get('x_position'),
+            y_position=request.data.get('y_position')
+        )
+        
+        serializer = OutfitItemSerializer(outfit_item)
+        return Response({
+            'status': 'success',
+            'message': 'Item added to outfit',
+            'outfit_item': serializer.data
+        }, status=status.HTTP_201_CREATED)
+    
+    @action(detail=True, methods=['post'])
+    def remove_item(self, request, pk=None):
+        """
+        Remove item from outfit
+        POST /api/outfits/{id}/remove_item/
+        Body: {"clothing_item_id": "uuid"}
+        """
+        outfit = self.get_object()
+        clothing_item_id = request.data.get('clothing_item_id')
+        
+        if not clothing_item_id:
+            return Response(
+                {'error': 'clothing_item_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            outfit_item = OutfitItem.objects.get(
+                outfit=outfit,
+                clothing_item_id=clothing_item_id
+            )
+            outfit_item.delete()
+            
+            return Response({
+                'status': 'success',
+                'message': 'Item removed from outfit'
+            })
+        except OutfitItem.DoesNotExist:
+            return Response(
+                {'error': 'Item not in outfit'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    @action(detail=True, methods=['post'])
+    def duplicate(self, request, pk=None):
+        """
+        Duplicate an outfit
+        POST /api/outfits/{id}/duplicate/
+        """
+        original_outfit = self.get_object()
+        
+        # Create duplicate
+        duplicate_outfit = Outfit.objects.create(
+            user=request.user,
+            name=f"{original_outfit.name} (Copy)",
+            description=original_outfit.description,
+            occasion=original_outfit.occasion,
+            style_tags=original_outfit.style_tags,
+            source='user',
+            min_temperature=original_outfit.min_temperature,
+            max_temperature=original_outfit.max_temperature,
+            suitable_weather=original_outfit.suitable_weather
+        )
+        
+        # Copy outfit items
+        for outfit_item in original_outfit.outfit_items.all():
+            OutfitItem.objects.create(
+                outfit=duplicate_outfit,
+                clothing_item=outfit_item.clothing_item,
+                layer=outfit_item.layer,
+                position=outfit_item.position,
+                x_position=outfit_item.x_position,
+                y_position=outfit_item.y_position
+            )
+        
+        # Update user count
+        request.user.increment_outfits_count()
+        
+        serializer = OutfitDetailSerializer(duplicate_outfit)
+        return Response({
+            'status': 'success',
+            'message': 'Outfit duplicated successfully',
+            'outfit': serializer.data
+        }, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """
+        Get outfit statistics
+        GET /api/outfits/stats/
+        """
+        user = request.user
+        outfits = self.get_queryset()
+        
+        # Calculate statistics
+        stats = {
+            'total_outfits': outfits.count(),
+            'by_occasion': {},
+            'favorite_count': outfits.filter(favorite=True).count(),
+            'most_worn': [],
+            'recent_outfits': [],
+        }
+        
+        # Group by occasion
+        occasion_counts = outfits.values('occasion').annotate(count=Count('id'))
+        for item in occasion_counts:
+            occasion_name = dict(Outfit.OCCASION_CHOICES).get(item['occasion'], item['occasion'])
+            stats['by_occasion'][occasion_name] = item['count']
+        
+        # Most worn outfits
+        most_worn = outfits.filter(times_worn__gt=0).order_by('-times_worn')[:5]
+        stats['most_worn'] = OutfitSerializer(most_worn, many=True).data
+        
+        # Recent outfits
+        recent = outfits.order_by('-created_at')[:5]
+        stats['recent_outfits'] = OutfitSerializer(recent, many=True).data
+        
+        # Outfit limit info
+        stats['max_outfits'] = user.get_max_outfits()
+        stats['remaining_slots'] = max(0, stats['max_outfits'] - stats['total_outfits'])
+        
+        return Response(stats)
+>>>>>>> main

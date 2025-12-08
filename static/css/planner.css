@@ -81,7 +81,12 @@
 }
 
 .calendar-day.today {
+<<<<<<< HEAD
     background: linear-gradient(135deg, #fffbe6 0%, #fff9d6 100%);
+=======
+    background: #fffbe6;
+    /* Solid light yellow */
+>>>>>>> main
     box-shadow: inset 0 0 0 2px #2c2c2c;
 }
 
@@ -109,7 +114,12 @@
     display: block;
     height: 8px;
     margin: 2px 0;
+<<<<<<< HEAD
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+=======
+    box-shadow: none;
+    /* Removed shadow */
+>>>>>>> main
     transition: transform 0.2s;
 }
 
@@ -117,6 +127,7 @@
     transform: scaleY(1.2);
 }
 
+<<<<<<< HEAD
 .event-indicator.work { background: linear-gradient(90deg, #4a90e2, #5ba3f5); }
 .event-indicator.casual { background: linear-gradient(90deg, #7ed321, #94e945); }
 .event-indicator.formal { background: linear-gradient(90deg, #bd10e0, #d035f3); }
@@ -125,6 +136,39 @@
 .event-indicator.sports { background: linear-gradient(90deg, #50e3c2, #6ff5d5); }
 .event-indicator.travel { background: linear-gradient(90deg, #9013fe, #a739ff); }
 .event-indicator.other { background: linear-gradient(90deg, #8b8b8b, #a0a0a0); }
+=======
+.event-indicator.work {
+    background: #4a90e2;
+}
+
+.event-indicator.casual {
+    background: #7ed321;
+}
+
+.event-indicator.formal {
+    background: #bd10e0;
+}
+
+.event-indicator.party {
+    background: #f5a623;
+}
+
+.event-indicator.date {
+    background: #e94b3c;
+}
+
+.event-indicator.sports {
+    background: #50e3c2;
+}
+
+.event-indicator.travel {
+    background: #9013fe;
+}
+
+.event-indicator.other {
+    background: #8b8b8b;
+}
+>>>>>>> main
 
 /* Upcoming Events Sidebar */
 .upcoming-list {
@@ -145,6 +189,7 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
+<<<<<<< HEAD
 .upcoming-item:hover {
     background: #fff;
     border-color: #2c2c2c;
@@ -296,6 +341,11 @@
     margin-top: 6px;
     letter-spacing: 1px;
     font-weight: 700;
+=======
+margin-top: 6px;
+letter-spacing: 1px;
+font-weight: 700;
+>>>>>>> main
 }
 
 .event-main-info {
@@ -317,6 +367,7 @@
 
 .occasion-badge {
     padding: 6px 14px;
+<<<<<<< HEAD
     
     font-size: 11px;
     font-weight: 700;
@@ -337,6 +388,12 @@
 
 .event-time, .event-location {
     font-size: 14px;
+=======
+
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+>>>>>>> main
     color: #666;
     margin: 4px 0;
 }
@@ -373,6 +430,7 @@
     padding: 6px 14px;
     font-size: 11px;
     font-weight: 700;
+<<<<<<< HEAD
     text-transform: uppercase;
     letter-spacing: 0.5px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -393,6 +451,8 @@
 .event-card-actions {
     padding: 16px 20px;
     border-top: 1px solid #f0f0f0;
+=======
+>>>>>>> main
     display: flex;
     gap: 8px;
 }
@@ -626,6 +686,7 @@
 /* Quick Stats */
 .quick-stats {
     display: grid;
+<<<<<<< HEAD
     grid-template-columns: repeat(3, 1fr);
     gap: 18px;
     margin: 24px 0;
@@ -644,6 +705,8 @@
 .stat-box:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
+=======
+>>>>>>> main
 }
 
 .stat-value {
@@ -697,12 +760,17 @@
 .occasion-bar {
     height: 10px;
     background: #f5f5f5;
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> main
     overflow: hidden;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .occasion-bar-fill {
+<<<<<<< HEAD
     height: 100%;
     transition: width 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -720,6 +788,8 @@
 .popular-outfits-list,
 .next-events-list {
     display: flex;
+=======
+>>>>>>> main
     flex-direction: column;
     gap: 14px;
 }
@@ -766,6 +836,7 @@
 }
 
 .next-event-item:hover {
+<<<<<<< HEAD
     background: #fff;
     border-color: #2c2c2c;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
@@ -787,6 +858,8 @@
 .mini-day {
     font-size: 18px;
     font-weight: 800;
+=======
+>>>>>>> main
     line-height: 1;
 }
 
@@ -815,6 +888,7 @@
 }
 
 .event-mini-occasion {
+<<<<<<< HEAD
     font-size: 12px;
     color: #666;
 }
@@ -857,6 +931,8 @@
     font-size: 12px;
     color: #666;
     font-weight: 700;
+=======
+>>>>>>> main
     text-transform: uppercase;
 }
 
@@ -887,8 +963,44 @@
     line-height: 1.5;
 }
 
+<<<<<<< HEAD
 /* Responsive */
 @media (max-width: 1200px) {
+=======
+/* Event Legend */
+.event-legend {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #666;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.legend-dot.work { background: #4a90e2; }
+.legend-dot.casual { background: #7ed321; }
+.legend-dot.formal { background: #bd10e0; }
+.legend-dot.party { background: #f5a623; }
+.legend-dot.date { background: #e94b3c; }
+.legend-dot.sports { background: #50e3c2; }
+.legend-dot.travel { background: #9013fe; }
+.legend-dot.other { background: #8b8b8b; }
+
+/* Responsive */
+@media (max-width: 1200px) {
+
+>>>>>>> main
     .planner-layout,
     .event-detail-layout {
         grid-template-columns: 1fr 300px;
@@ -896,15 +1008,24 @@
 }
 
 @media (max-width: 1024px) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
     .planner-layout,
     .event-detail-layout {
         grid-template-columns: 1fr;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     .sidebar-section,
     .event-detail-sidebar {
         order: -1;
     }
+<<<<<<< HEAD
     
     .calendar-grid {
         font-size: 14px;
@@ -918,6 +1039,21 @@
         grid-template-columns: 1fr;
     }
     
+=======
+
+    .calendar-grid {
+        font-size: 14px;
+    }
+
+    .calendar-day {
+        min-height: 90px;
+    }
+
+    .stats-two-column {
+        grid-template-columns: 1fr;
+    }
+
+>>>>>>> main
     .event-legend {
         grid-template-columns: 1fr;
     }
@@ -927,16 +1063,25 @@
     .quick-stats {
         grid-template-columns: 1fr;
     }
+<<<<<<< HEAD
     
     .form-grid {
         grid-template-columns: 1fr;
     }
     
+=======
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+>>>>>>> main
     .calendar-header {
         flex-direction: column;
         gap: 16px;
         align-items: flex-start;
     }
+<<<<<<< HEAD
     
     .calendar-nav {
         width: 100%;
@@ -946,15 +1091,31 @@
         flex: 1;
     }
     
+=======
+
+    .calendar-nav {
+        width: 100%;
+    }
+
+    .calendar-nav .btn {
+        flex: 1;
+    }
+
+>>>>>>> main
     .calendar-weekday {
         font-size: 11px;
         padding: 10px 6px;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     .calendar-day {
         min-height: 70px;
         padding: 6px;
     }
+<<<<<<< HEAD
     
     .day-number {
         font-size: 14px;
@@ -968,38 +1129,81 @@
         grid-template-columns: 1fr;
     }
     
+=======
+
+    .day-number {
+        font-size: 14px;
+    }
+
+    .event-indicator {
+        height: 6px;
+    }
+
+    .suggestions-grid {
+        grid-template-columns: 1fr;
+    }
+
+>>>>>>> main
     .event-card-header {
         flex-direction: column;
         gap: 12px;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     .event-date-badge,
     .badge-day {
         align-self: flex-start;
     }
+<<<<<<< HEAD
     
     .outfit-items-grid {
         grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
     }
     
+=======
+
+    .outfit-items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    }
+
+>>>>>>> main
     .page-header {
         flex-direction: column;
         gap: 16px;
         align-items: flex-start;
     }
+<<<<<<< HEAD
     
     .page-header .btn {
         width: 100%;
     }
     
+=======
+
+    .page-header .btn {
+        width: 100%;
+    }
+
+>>>>>>> main
     .header-actions {
         width: 100%;
         display: flex;
         flex-direction: column;
         gap: 10px;
     }
+<<<<<<< HEAD
     
     .header-actions .btn {
         width: 100%;
     }
 }
+=======
+
+    .header-actions .btn {
+        width: 100%;
+    }
+}
+>>>>>>> main

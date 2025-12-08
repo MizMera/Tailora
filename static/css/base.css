@@ -24,6 +24,7 @@ body {
     padding: 0;
 }
 
+<<<<<<< HEAD
 /* Main Container - White Box */
 .tailora-container {
     width: 100%;
@@ -35,6 +36,18 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+=======
+/* Main Container - Controls app width */
+.tailora-container {
+    width: 100%;
+    max-width: 1200px;
+    min-height: 100vh;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+>>>>>>> main
 }
 
 /* Header - Tailora Logo + Navigation */
@@ -141,11 +154,19 @@ body {
 }
 
 /* Section spacing */
+<<<<<<< HEAD
 .content-section + .content-section {
     margin-top: 24px;
 }
 
 .filter-section + .content-section {
+=======
+.content-section+.content-section {
+    margin-top: 24px;
+}
+
+.filter-section+.content-section {
+>>>>>>> main
     margin-top: 24px;
 }
 
@@ -272,6 +293,10 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
     to {
         opacity: 1;
         transform: translateY(0);
@@ -289,7 +314,12 @@ body {
     content: '';
     position: absolute;
     inset: 0;
+<<<<<<< HEAD
     background: #f4e9cf; /* same as content background for a clean wipe */
+=======
+    background: #f4e9cf;
+    /* same as content background for a clean wipe */
+>>>>>>> main
     transform: translateX(0%);
     animation: tailoraWipe 650ms cubic-bezier(0.4, 0.0, 0.2, 1) both;
     pointer-events: none;
@@ -317,6 +347,7 @@ body {
 }
 
 @keyframes tailoraWipe {
+<<<<<<< HEAD
     from { transform: translateX(0%); }
     to { transform: translateX(100%); }
 }
@@ -330,10 +361,50 @@ body {
     0% { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
     35% { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
     100% { opacity: 0; transform: translate(-50%, -50%) scale(1.06); }
+=======
+    from {
+        transform: translateX(0%);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes riseIn {
+    from {
+        transform: translateY(12px);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes logoPop {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.92);
+    }
+
+    35% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.06);
+    }
+>>>>>>> main
 }
 
 /* Accessibility: Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
     .page-reveal::after,
     .page-reveal::before,
     .page-reveal .tailora-header,
@@ -341,4 +412,8 @@ body {
         animation: none !important;
         transform: none !important;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> main
