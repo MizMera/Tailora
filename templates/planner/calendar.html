@@ -16,6 +16,7 @@
         max-height: 60px;
         overflow-y: auto;
     }
+
     .calendar-event-chip {
         display: flex;
         align-items: center;
@@ -31,33 +32,61 @@
         text-overflow: ellipsis;
         transition: transform 0.2s, box-shadow 0.2s;
     }
+
     .calendar-event-chip:hover {
         transform: scale(1.05);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
-    .calendar-event-chip.work { background: #4a90e2; }
-    .calendar-event-chip.casual { background: #7ed321; }
-    .calendar-event-chip.formal { background: #bd10e0; }
-    .calendar-event-chip.party { background: #f5a623; }
-    .calendar-event-chip.date { background: #e94b3c; }
-    .calendar-event-chip.sports { background: #50e3c2; color: #2c2c2c; }
-    .calendar-event-chip.travel { background: #9013fe; }
-    .calendar-event-chip.other { background: #8b8b8b; }
-    
+
+    .calendar-event-chip.work {
+        background: #4a90e2;
+    }
+
+    .calendar-event-chip.casual {
+        background: #7ed321;
+    }
+
+    .calendar-event-chip.formal {
+        background: #bd10e0;
+    }
+
+    .calendar-event-chip.party {
+        background: #f5a623;
+    }
+
+    .calendar-event-chip.date {
+        background: #e94b3c;
+    }
+
+    .calendar-event-chip.sports {
+        background: #50e3c2;
+        color: #2c2c2c;
+    }
+
+    .calendar-event-chip.travel {
+        background: #9013fe;
+    }
+
+    .calendar-event-chip.other {
+        background: #8b8b8b;
+    }
+
     /* Enhanced Weather Widget - Consistent with App Design */
     .weather-widget-enhanced {
         padding: 20px;
         background: #2c2c2c;
         color: #fff;
     }
+
     .weather-location {
         display: flex;
         align-items: center;
         justify-content: space-between;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 1px solid rgba(255,255,255,0.15);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     }
+
     .weather-location-name {
         font-size: 14px;
         font-weight: 600;
@@ -66,68 +95,108 @@
         gap: 6px;
         color: #f4e9cf;
     }
+
     .weather-main-display {
         display: flex;
         align-items: center;
         gap: 16px;
         margin-bottom: 16px;
     }
+
     .weather-icon-large {
-        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
     }
+
+    .weather-icon-large::before {
+        content: '';
+        width: 24px;
+        height: 24px;
+        background: #f4e9cf;
+        border-radius: 50%;
+    }
+
+    .weather-icon-large.cloudy::before {
+        border-radius: 12px;
+        width: 28px;
+        height: 18px;
+    }
+
+    .weather-icon-large.rainy::before {
+        border-radius: 12px 12px 4px 4px;
+        width: 24px;
+        height: 20px;
+    }
+
     .weather-temp-main {
         font-size: 48px;
         font-weight: 700;
         line-height: 1;
         color: #fff;
     }
+
     .weather-condition {
         font-size: 14px;
         opacity: 0.9;
         text-transform: capitalize;
         color: #f4e9cf;
     }
+
     .weather-details-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
         padding: 16px 0;
-        border-top: 1px solid rgba(255,255,255,0.15);
-        border-bottom: 1px solid rgba(255,255,255,0.15);
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
         margin-bottom: 16px;
     }
+
     .weather-detail-item {
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 13px;
-        color: rgba(255,255,255,0.85);
+        color: rgba(255, 255, 255, 0.85);
     }
-    .weather-detail-icon {
-        font-size: 14px;
-        opacity: 0.8;
+
+    .weather-detail-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: rgba(255, 255, 255, 0.6);
     }
+
     .outfit-suggestion {
-        padding: 10px;
-        background: rgba(255,255,255,0.15);
-        border-radius: 8px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.1);
         font-size: 12px;
-        display: flex;
-        align-items: flex-start;
-        gap: 8px;
     }
-    .outfit-suggestion-icon {
-        font-size: 18px;
+
+    .outfit-suggestion-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #f4e9cf;
+        margin-bottom: 4px;
+        font-weight: 600;
     }
-    .outfit-suggestion-text strong {
-        display: block;
-        margin-bottom: 2px;
+
+    .outfit-suggestion-text {
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.4;
     }
-    
+
     /* Forecast List Enhanced */
     .forecast-list-enhanced {
         margin-top: 16px;
     }
+
     .forecast-day-item {
         display: flex;
         align-items: center;
@@ -138,15 +207,18 @@
         margin-bottom: 8px;
         transition: all 0.2s;
     }
+
     .forecast-day-item:hover {
         background: #f0f0f0;
         transform: translateX(4px);
     }
+
     .forecast-day-name {
         font-weight: 600;
         font-size: 13px;
         min-width: 80px;
     }
+
     .forecast-condition {
         display: flex;
         align-items: center;
@@ -154,25 +226,29 @@
         font-size: 12px;
         color: #666;
     }
+
     .forecast-temps {
         display: flex;
         gap: 8px;
         font-size: 13px;
     }
+
     .temp-high {
         font-weight: 700;
         color: #e94b3c;
     }
+
     .temp-low {
         color: #4a90e2;
     }
-    
+
     /* Location Selector */
     .location-selector {
         display: flex;
         gap: 8px;
         margin-bottom: 16px;
     }
+
     .location-selector input {
         flex: 1;
         padding: 8px 12px;
@@ -180,6 +256,7 @@
         border-radius: 6px;
         font-size: 13px;
     }
+
     .location-selector button {
         padding: 8px 16px;
         background: #2c2c2c;
@@ -190,10 +267,11 @@
         font-size: 12px;
         font-weight: 600;
     }
+
     .location-selector button:hover {
         background: #444;
     }
-    
+
     /* More Events Indicator */
     .more-events {
         font-size: 9px;
@@ -248,22 +326,24 @@
             {% if day == 0 %}
             <div class="calendar-day empty"></div>
             {% else %}
-            <div class="calendar-day {% if day == today.day and month == today.month and year == today.year %}today{% endif %}">
+            <div
+                class="calendar-day {% if day == today.day and month == today.month and year == today.year %}today{% endif %}">
                 <span class="day-number">{{ day }}</span>
                 {% if day in events_by_date %}
                 <div class="calendar-day-events">
                     {% for event in events_by_date|dictsort:day %}
-                    {% if forloop.counter <= 2 %}
-                    <a href="{% url 'planner:event_detail' event.id %}" class="calendar-event-chip {{ event.occasion_type }}" title="{{ event.title }}{% if event.time %} at {{ event.time|date:'g:i A' }}{% endif %}">
+                    {% if forloop.counter <= 2 %} <a href="{% url 'planner:event_detail' event.id %}"
+                        class="calendar-event-chip {{ event.occasion_type }}"
+                        title="{{ event.title }}{% if event.time %} at {{ event.time|date:'g:i A' }}{% endif %}">
                         {{ event.title|truncatechars:12 }}
-                    </a>
-                    {% endif %}
-                    {% endfor %}
-                    {% with event_count=events_by_date|length %}
-                    {% if event_count > 2 %}
-                    <span class="more-events">+{{ event_count|add:"-2" }} more</span>
-                    {% endif %}
-                    {% endwith %}
+                        </a>
+                        {% endif %}
+                        {% endfor %}
+                        {% with event_count=events_by_date|length %}
+                        {% if event_count > 2 %}
+                        <span class="more-events">+{{ event_count|add:"-2" }} more</span>
+                        {% endif %}
+                        {% endwith %}
                 </div>
                 {% endif %}
             </div>
@@ -279,49 +359,43 @@
         <div class="content-section" style="margin-bottom: 1.5rem; padding: 0; overflow: hidden;">
             <div class="weather-widget-enhanced">
                 <div class="weather-location">
-                    <span class="weather-location-name">📍 {{ weather_location|default:"Tunis" }}</span>
-                    <button onclick="document.getElementById('location-modal').style.display='flex'" style="background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">Change</button>
+                    <span class="weather-location-name">{{ weather_location|default:"Tunis" }}</span>
+                    <button onclick="document.getElementById('location-modal').style.display='flex'"
+                        style="background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">Change</button>
                 </div>
                 {% if current_weather %}
                 <div class="weather-main-display">
-                    <span class="weather-icon-large">
-                        {% if current_weather.condition == 'clear' %}☀️
-                        {% elif current_weather.condition == 'clouds' %}☁️
-                        {% elif current_weather.condition == 'rain' or current_weather.condition == 'drizzle' %}🌧️
-                        {% elif current_weather.condition == 'thunderstorm' %}⛈️
-                        {% elif current_weather.condition == 'snow' %}❄️
-                        {% elif current_weather.condition == 'mist' or current_weather.condition == 'fog' %}🌫️
-                        {% else %}🌤️{% endif %}
-                    </span>
+                    <span
+                        class="weather-icon-large {% if current_weather.condition == 'clouds' %}cloudy{% elif current_weather.condition == 'rain' or current_weather.condition == 'drizzle' %}rainy{% endif %}"></span>
                     <div>
                         <div class="weather-temp-main">{{ current_weather.temperature }}°</div>
-                        <div class="weather-condition">{{ current_weather.description|default:current_weather.condition }}</div>
+                        <div class="weather-condition">{{ current_weather.condition|title }}</div>
                     </div>
                 </div>
-                
+
                 <div class="weather-details-grid">
                     <div class="weather-detail-item">
-                        <span class="weather-detail-icon">🌡️</span>
-                        <span>Feels {{ current_weather.feels_like }}°C</span>
+                        <span class="weather-detail-label">Feels Like</span>
+                        <span>{{ current_weather.feels_like }}°C</span>
                     </div>
                     <div class="weather-detail-item">
-                        <span class="weather-detail-icon">💧</span>
-                        <span>{{ current_weather.humidity }}% humidity</span>
+                        <span class="weather-detail-label">Humidity</span>
+                        <span>{{ current_weather.humidity }}%</span>
                     </div>
                     <div class="weather-detail-item">
-                        <span class="weather-detail-icon">💨</span>
+                        <span class="weather-detail-label">Wind</span>
                         <span>{{ current_weather.wind_speed }} km/h</span>
                     </div>
                     <div class="weather-detail-item">
-                        <span class="weather-detail-icon">📊</span>
-                        <span>{% if current_weather.temperature > 30 %}Hot{% elif current_weather.temperature > 20 %}Warm{% elif current_weather.temperature > 10 %}Cool{% else %}Cold{% endif %}</span>
+                        <span class="weather-detail-label">Comfort</span>
+                        <span>{% if current_weather.temperature > 30 %}Hot{% elif current_weather.temperature > 20
+                            %}Warm{% elif current_weather.temperature > 10 %}Cool{% else %}Cold{% endif %}</span>
                     </div>
                 </div>
-                
+
                 <div class="outfit-suggestion">
-                    <span class="outfit-suggestion-icon">👔</span>
+                    <div class="outfit-suggestion-label">Today's Suggestion</div>
                     <div class="outfit-suggestion-text">
-                        <strong>Today's Suggestion</strong>
                         {% if current_weather.temperature > 28 %}
                         Light, breathable fabrics. Consider shorts or a light dress.
                         {% elif current_weather.temperature > 20 %}
@@ -338,25 +412,24 @@
                 </div>
                 {% else %}
                 <div style="padding: 20px; text-align: center; opacity: 0.8;">
-                    <span style="font-size: 32px;">🌤️</span>
+                    <div
+                        style="width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 8px;">
+                    </div>
                     <p style="margin: 8px 0 0;">Weather data unavailable</p>
                 </div>
                 {% endif %}
             </div>
-            
+
             {% if weather_forecast %}
             <div class="forecast-list-enhanced" style="padding: 16px;">
-                <h4 style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 12px;">5-Day Forecast</h4>
+                <h4
+                    style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 12px;">
+                    5-Day Forecast</h4>
                 {% for day in weather_forecast %}
                 <div class="forecast-day-item">
                     <span class="forecast-day-name">{{ day.day_name|slice:":3" }}</span>
                     <span class="forecast-condition">
-                        {% if day.condition == 'clear' %}☀️
-                        {% elif day.condition == 'clouds' %}☁️
-                        {% elif day.condition == 'rain' %}🌧️
-                        {% elif day.condition == 'snow' %}❄️
-                        {% else %}🌤️{% endif %}
-                        {{ day.condition }}
+                        {{ day.condition|capfirst }}
                     </span>
                     <div class="forecast-temps">
                         <span class="temp-high">{{ day.temp_max }}°</span>
@@ -419,7 +492,8 @@
 </div>
 
 <!-- Location Change Modal -->
-<div id="location-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+<div id="location-modal"
+    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #fff; padding: 24px; border-radius: 12px; max-width: 400px; width: 90%;">
         <h3 style="margin: 0 0 16px; font-size: 18px;">Change Weather Location</h3>
         <form method="get" action="">
@@ -427,23 +501,28 @@
             <input type="hidden" name="month" value="{{ month }}">
             <div style="margin-bottom: 16px;">
                 <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600;">City Name</label>
-                <input type="text" name="location" value="{{ weather_location|default:'Tunis' }}" placeholder="e.g., Paris, London, New York" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-                <small style="color: #888; font-size: 11px; margin-top: 4px; display: block;">Enter city name (optionally with country code: Paris,FR)</small>
+                <input type="text" name="location" value="{{ weather_location|default:'Tunis' }}"
+                    placeholder="e.g., Paris, London, New York"
+                    style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                <small style="color: #888; font-size: 11px; margin-top: 4px; display: block;">Enter city name
+                    (optionally with country code: Paris,FR)</small>
             </div>
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button type="button" onclick="document.getElementById('location-modal').style.display='none'" style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Cancel</button>
-                <button type="submit" style="padding: 10px 20px; background: #2c2c2c; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Update</button>
+                <button type="button" onclick="document.getElementById('location-modal').style.display='none'"
+                    style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Cancel</button>
+                <button type="submit"
+                    style="padding: 10px 20px; background: #2c2c2c; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Update</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-// Close modal when clicking outside
-document.getElementById('location-modal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        this.style.display = 'none';
-    }
-});
+    // Close modal when clicking outside
+    document.getElementById('location-modal').addEventListener('click', function (e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+        }
+    });
 </script>
 {% endblock %}

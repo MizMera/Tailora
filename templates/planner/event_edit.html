@@ -6,6 +6,79 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/planner.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    .location-picker-container {
+        margin-top: 12px;
+    }
+
+    .location-search-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .location-search-row input {
+        flex: 1;
+    }
+
+    .location-map {
+        height: 300px;
+        border: 1px solid #e0e0e0;
+        background: #f5f5f5;
+    }
+
+    .location-help {
+        font-size: 12px;
+        color: #888;
+        margin-top: 8px;
+    }
+
+    .location-result {
+        margin-top: 8px;
+        padding: 10px;
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        font-size: 13px;
+        display: none;
+    }
+
+    .location-result.active {
+        display: block;
+    }
+
+    .search-results-dropdown {
+        position: absolute;
+        z-index: 1000;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        max-height: 200px;
+        overflow-y: auto;
+        width: calc(100% - 100px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: none;
+    }
+
+    .search-results-dropdown.active {
+        display: block;
+    }
+
+    .search-result-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 13px;
+    }
+
+    .search-result-item:hover {
+        background: #f5f5f5;
+    }
+
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -17,75 +90,241 @@
 </div>
 
 {% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+{% endfor %}
 {% endif %}
 
 <div class="content-section" style="max-width: 800px; margin: 0 auto;">
     <form method="post" class="event-form">
         {% csrf_token %}
-        
+
         <div class="form-section">
             <h3 class="section-title">EVENT DETAILS</h3>
-            
+
             <div class="form-grid">
                 <div class="form-group full-width">
                     <label for="title" class="form-label">Event Title *</label>
                     <input type="text" id="title" name="title" class="input-control" required value="{{ event.title }}">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="date" class="form-label">Date *</label>
-                    <input type="date" id="date" name="date" class="input-control" required value="{{ event.date|date:'Y-m-d' }}">
+                    <input type="date" id="date" name="date" class="input-control" required
+                        value="{{ event.date|date:'Y-m-d' }}">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="time" class="form-label">Time</label>
-                    <input type="time" id="time" name="time" class="input-control" value="{% if event.time %}{{ event.time|date:'H:i' }}{% endif %}">
+                    <input type="time" id="time" name="time" class="input-control"
+                        value="{% if event.time %}{{ event.time|date:'H:i' }}{% endif %}">
                 </div>
-                
+
                 <div class="form-group full-width">
                     <label for="occasion_type" class="form-label">Occasion Type *</label>
                     <select id="occasion_type" name="occasion_type" class="input-control" required>
                         {% for value, label in occasion_choices %}
-                            <option value="{{ value }}" {% if event.occasion_type == value %}selected{% endif %}>{{ label }}</option>
+                        <option value="{{ value }}" {% if event.occasion_type==value %}selected{% endif %}>{{ label }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
-                
-                <div class="form-group full-width">
+
+                <div class="form-group full-width" style="position: relative;">
                     <label for="location" class="form-label">Location</label>
-                    <input type="text" id="location" name="location" class="input-control" value="{{ event.location }}">
+                    <div class="location-search-row">
+                        <input type="text" id="location-search" class="input-control"
+                            placeholder="Search for a place..." value="{{ event.location }}">
+                        <button type="button" id="search-btn" class="btn btn-secondary">Search</button>
+                    </div>
+                    <div id="search-results" class="search-results-dropdown"></div>
+
+                    <!-- Hidden field for the actual location value -->
+                    <input type="hidden" id="location" name="location" value="{{ event.location }}">
+
+                    <!-- Map Container -->
+                    <div class="location-picker-container">
+                        <div id="location-map" class="location-map"></div>
+                        <p class="location-help">Click on the map to select a location, or search above</p>
+                    </div>
+
+                    <!-- Selected Location Display -->
+                    <div id="selected-location" class="location-result {% if event.location %}active{% endif %}">
+                        <strong>Selected:</strong> <span id="location-display">{{ event.location }}</span>
+                    </div>
                 </div>
-                
+
                 <div class="form-group full-width">
                     <label for="notes" class="form-label">Notes</label>
                     <textarea id="notes" name="notes" class="input-control" rows="3">{{ event.notes }}</textarea>
                 </div>
             </div>
         </div>
-        
+
         <div class="form-section">
             <h3 class="section-title">OUTFIT PLANNING</h3>
-            
+
             <div class="form-group">
                 <label for="outfit" class="form-label">Assigned Outfit</label>
                 <select id="outfit" name="outfit" class="input-control">
                     <option value="">No outfit</option>
                     {% for outfit in outfits %}
-                        <option value="{{ outfit.id }}" {% if event.outfit and event.outfit.id == outfit.id %}selected{% endif %}>
-                            {{ outfit.name }} ({{ outfit.get_occasion_display }})
-                        </option>
+                    <option value="{{ outfit.id }}" {% if event.outfit and event.outfit.id==outfit.id %}selected{% endif
+                        %}>
+                        {{ outfit.name }} ({{ outfit.get_occasion_display }})
+                    </option>
                     {% endfor %}
                 </select>
             </div>
         </div>
-        
+
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save Changes</button>
             <a href="{% url 'planner:event_detail' event.id %}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Default center (Tunis) or try to geocode existing location
+        const defaultLat = 36.8065;
+        const defaultLng = 10.1815;
+        const existingLocation = "{{ event.location|escapejs }}";
+
+        // Initialize map
+        const map = L.map('location-map').setView([defaultLat, defaultLng], 13);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        // Create a draggable marker
+        let marker = null;
+
+        // Location input elements
+        const searchInput = document.getElementById('location-search');
+        const searchBtn = document.getElementById('search-btn');
+        const locationInput = document.getElementById('location');
+        const searchResults = document.getElementById('search-results');
+        const selectedLocation = document.getElementById('selected-location');
+        const locationDisplay = document.getElementById('location-display');
+
+        // Function to set location
+        function setLocation(lat, lng, displayName) {
+            // Update or create marker
+            if (marker) {
+                marker.setLatLng([lat, lng]);
+            } else {
+                marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+                // Handle marker drag
+                marker.on('dragend', function (e) {
+                    const pos = e.target.getLatLng();
+                    reverseGeocode(pos.lat, pos.lng);
+                });
+            }
+
+            // Center map on location
+            map.setView([lat, lng], 15);
+
+            // Update hidden input and display
+            if (displayName) {
+                locationInput.value = displayName;
+                locationDisplay.textContent = displayName;
+                selectedLocation.classList.add('active');
+            }
+
+            // Hide search results
+            searchResults.classList.remove('active');
+        }
+
+        // Reverse geocode (get address from coordinates)
+        function reverseGeocode(lat, lng) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.display_name) {
+                        const shortAddress = data.display_name.split(',').slice(0, 3).join(',');
+                        locationInput.value = shortAddress;
+                        locationDisplay.textContent = shortAddress;
+                        selectedLocation.classList.add('active');
+                    }
+                })
+                .catch(err => console.error('Reverse geocode error:', err));
+        }
+
+        // Search for location
+        function searchLocation(query) {
+            if (!query.trim()) return;
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+                .then(response => response.json())
+                .then(data => {
+                    searchResults.innerHTML = '';
+
+                    if (data.length === 0) {
+                        searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+                        searchResults.classList.add('active');
+                        return;
+                    }
+
+                    data.forEach(result => {
+                        const item = document.createElement('div');
+                        item.className = 'search-result-item';
+                        item.textContent = result.display_name;
+                        item.addEventListener('click', function () {
+                            setLocation(parseFloat(result.lat), parseFloat(result.lon), result.display_name);
+                            searchInput.value = result.display_name.split(',').slice(0, 2).join(',');
+                        });
+                        searchResults.appendChild(item);
+                    });
+
+                    searchResults.classList.add('active');
+                })
+                .catch(err => console.error('Search error:', err));
+        }
+
+        // Search button click
+        searchBtn.addEventListener('click', function () {
+            searchLocation(searchInput.value);
+        });
+
+        // Enter key in search
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchLocation(searchInput.value);
+            }
+        });
+
+        // Click on map to set location
+        map.on('click', function (e) {
+            setLocation(e.latlng.lat, e.latlng.lng, '');
+            reverseGeocode(e.latlng.lat, e.latlng.lng);
+        });
+
+        // Hide results when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!searchResults.contains(e.target) && e.target !== searchInput) {
+                searchResults.classList.remove('active');
+            }
+        });
+
+        // If there's an existing location, try to geocode it
+        if (existingLocation) {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(existingLocation)}&limit=1`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        setLocation(parseFloat(data[0].lat), parseFloat(data[0].lon), existingLocation);
+                    }
+                })
+                .catch(err => console.error('Initial geocode error:', err));
+        }
+    });
+</script>
 {% endblock %}
