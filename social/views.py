@@ -71,6 +71,14 @@ def create_post(request):
         visibility = request.POST.get('visibility', 'public')
         hashtags = request.POST.get('hashtags', '').split()
         
+        # Get enhanced images from hidden JSON field
+        import json
+        enhanced_images_json = request.POST.get('enhanced_images', '{}')
+        try:
+            enhanced_images = json.loads(enhanced_images_json)
+        except json.JSONDecodeError:
+            enhanced_images = {}
+        
         if not outfit_id:
             messages.error(request, 'Please select an outfit.')
             return redirect('social:create_post')
@@ -82,7 +90,8 @@ def create_post(request):
             outfit=outfit,
             caption=caption,
             visibility=visibility,
-            hashtags=hashtags
+            hashtags=hashtags,
+            enhanced_images=enhanced_images
         )
         
         messages.success(request, 'Post created successfully!')
@@ -429,6 +438,46 @@ def challenge_detail(request, challenge_id):
     }
     
     return render(request, 'social/challenge_detail.html', context)
+
+
+@login_required
+def ai_preview(request, outfit_id):
+    """
+    Generate AI-enhanced previews for outfit items.
+    For now, this is a mock implementation that returns the original images.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+        
+    outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
+    style = request.POST.get('style', 'auto')
+    
+    # Mock AI enhancement - in production this would call an AI service
+    enhanced_images = {}
+    previews = []
+    
+    for item in outfit.items.all():
+        if item.image:
+            # For prototype, we just return the original image
+            # In a real app, this would return a processed image URL
+            original_url = item.image.url
+            enhanced_url = item.image.url
+            
+            # Store relative path for database
+            enhanced_images[str(item.id)] = item.image.name
+            
+            previews.append({
+                'item': {'name': item.name},
+                'original': original_url,
+                'enhanced': enhanced_url
+            })
+            
+    return JsonResponse({
+        'status': 'success', 
+        'enhanced_images': enhanced_images,
+        'previews': previews,
+        'style': style
+    })
 
 
 # ==================== REST API Views ====================

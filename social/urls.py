@@ -41,6 +41,9 @@ urlpatterns = [
     path('challenges/', views.challenges_list, name='challenges_list'),
     path('challenge/<uuid:challenge_id>/', views.challenge_detail, name='challenge_detail'),
     
+    # AI Feature
+    path('ai-preview/<uuid:outfit_id>/', views.ai_preview, name='ai_preview'),
+    
     # REST API routes
     path('', include(router.urls)),
 ]
