@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Challenge - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.form-grid-full {
+    grid-column: 1 / -1;
+}
+.challenge-preview {
+    background: #fafafa;
+    padding: 24px;
+    border-radius: 8px;
+    margin-top: 24px;
+}
+.preview-title {
+    font-family: 'Istok Web', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c2c2c;
+    margin-bottom: 16px;
+}
+.rule-examples {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 16px;
+    margin-top: 16px;
+}
+.rule-example {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #757575;
+    margin-bottom: 8px;
+    padding-left: 12px;
+    border-left: 2px solid #e0e0e0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 class="page-title">Create Style Challenge</h1>
+            <p class="page-subtitle">Design a new challenge for yourself and others</p>
+        </div>
+        <a href="{% url 'outfits:challenges_list' %}" class="btn btn-secondary">Back to Challenges</a>
+    </div>
+</div>
+
+<!-- Messages -->
+{% if messages %}
+<div style="margin-bottom: 24px;">
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Create Form -->
+<div class="content-section">
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="settings-section">
+            <h3 class="section-title">Basic Information</h3>
+            <div class="form-grid">
+                <div class="input-field">
+                    <label for="name" class="input-label">Challenge Name *</label>
+                    <input type="text" id="name" name="name" class="input-control" required 
+                           placeholder="e.g., 7-Day Capsule Wardrobe Challenge">
+                </div>
+                <div class="input-field">
+                    <label for="challenge_type" class="input-label">Challenge Type</label>
+                    <select id="challenge_type" name="challenge_type" class="input-control">
+                        {% for value, label in challenge_types %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-grid-full">
+                <div class="input-field">
+                    <label for="description" class="input-label">Description *</label>
+                    <textarea id="description" name="description" class="input-control" rows="4" required 
+                              placeholder="Describe what participants will do in this challenge..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Challenge Settings -->
+        <div class="settings-section">
+            <h3 class="section-title">Challenge Settings</h3>
+            <div class="form-grid">
+                <div class="input-field">
+                    <label for="duration_days" class="input-label">Duration (Days) *</label>
+                    <input type="number" id="duration_days" name="duration_days" class="input-control" 
+                           value="7" min="1" max="30" required>
+                </div>
+                <div class="input-field">
+                    <label class="checkbox-item-inline" style="display: flex; align-items: center; gap: 8px; margin-top: 32px;">
+                        <input type="checkbox" name="is_public" value="true">
+                        <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">
+                            Make this challenge public
+                        </span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Challenge Rules -->
+        <div class="settings-section">
+            <h3 class="section-title">Challenge Rules</h3>
+            <div class="form-grid-full">
+                <div class="input-field">
+                    <label for="rules" class="input-label">Custom Rules (Optional)</label>
+                    <textarea id="rules" name="rules" class="input-control" rows="6" 
+                              placeholder="Define specific rules for this challenge. For example:
+• Create outfits using only 10 core items
+• Focus on monochromatic color schemes
+• Incorporate at least one sustainable item per outfit
+• etc..."></textarea>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin-top: 8px;">
+                        If no custom rules are provided, the challenge will use default rules based on the challenge type.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Challenge Preview -->
+        <div class="challenge-preview">
+            <h3 class="preview-title">Challenge Preview</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div>
+                    <label style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Type
+                    </label>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; margin: 4px 0 0 0;" id="previewType">
+                        Capsule Wardrobe
+                    </p>
+                </div>
+                <div>
+                    <label style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Duration
+                    </label>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; margin: 4px 0 0 0;" id="previewDuration">
+                        7 days
+                    </p>
+                </div>
+                <div>
+                    <label style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Visibility
+                    </label>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; margin: 4px 0 0 0;" id="previewVisibility">
+                        Private
+                    </p>
+                </div>
+            </div>
+            
+            <div class="rule-examples">
+                <label style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Example Rules
+                </label>
+                <div id="ruleExamples">
+                    <div class="rule-example">Create and submit 7 unique outfits</div>
+                    <div class="rule-example">Each outfit must follow the challenge theme</div>
+                    <div class="rule-example">Complete all outfits before the end date</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <a href="{% url 'outfits:challenges_list' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Create Challenge</button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const challengeTypeSelect = document.getElementById('challenge_type');
+    const durationInput = document.getElementById('duration_days');
+    const publicCheckbox = document.querySelector('input[name="is_public"]');
+    
+    const previewType = document.getElementById('previewType');
+    const previewDuration = document.getElementById('previewDuration');
+    const previewVisibility = document.getElementById('previewVisibility');
+    const ruleExamples = document.getElementById('ruleExamples');
+    
+    // Challenge type examples
+    const challengeExamples = {
+        'capsule': [
+            'Create outfits using a limited number of core items',
+            'Focus on versatility and mix-and-match potential',
+            'Show how few items can create many different looks'
+        ],
+        'color': [
+            'Create outfits based on a specific color palette',
+            'Experiment with monochromatic or complementary colors',
+            'Show your personal color style preferences'
+        ],
+        'item': [
+            'Create outfits featuring a specific type of item',
+            'Show different ways to style the same piece',
+            'Demonstrate item versatility across occasions'
+        ],
+        'style': [
+            'Explore and define your personal style',
+            'Try new style directions you haven\'t explored',
+            'Document your style evolution journey'
+        ],
+        'sustainability': [
+            'Focus on sustainable and ethical fashion choices',
+            'Incorporate second-hand or upcycled items',
+            'Demonstrate conscious consumption practices'
+        ]
+    };
+    
+    function updatePreview() {
+        // Update type
+        const selectedType = challengeTypeSelect.options[challengeTypeSelect.selectedIndex].text;
+        previewType.textContent = selectedType;
+        
+        // Update duration
+        previewDuration.textContent = durationInput.value + ' days';
+        
+        // Update visibility
+        previewVisibility.textContent = publicCheckbox.checked ? 'Public' : 'Private';
+        
+        // Update rule examples
+        const examples = challengeExamples[challengeTypeSelect.value] || challengeExamples['capsule'];
+        ruleExamples.innerHTML = '';
+        examples.forEach(example => {
+            const div = document.createElement('div');
+            div.className = 'rule-example';
+            div.textContent = example;
+            ruleExamples.appendChild(div);
+        });
+    }
+    
+    // Add event listeners
+    challengeTypeSelect.addEventListener('change', updatePreview);
+    durationInput.addEventListener('input', updatePreview);
+    publicCheckbox.addEventListener('change', updatePreview);
+    
+    // Initial update
+    updatePreview();
+});
+</script>
+{% endblock %}

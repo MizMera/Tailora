@@ -550,6 +550,8 @@ def api_analyze_image(request):
     API: Analyze uploaded image using AI to extract clothing metadata
     """
     try:
+        from .category_mapper import CategoryMapper
+        
         image_file = request.FILES.get('image')
 
         if not image_file:
@@ -569,11 +571,23 @@ def api_analyze_image(request):
         analyzer = get_image_analyzer()
         analysis = analyzer.analyze_image(image_file)
 
-        # Get category suggestions
-        category_suggestions = analyzer.get_category_suggestions(analysis)
+        # Get suggested category based on AI detection
+        suggested_category = CategoryMapper.get_category_for_ai_detection(
+            ai_category=analysis.get('category'),
+            item_type=analysis.get('item_type'),
+            user=request.user
+        )
+        
+        # Get list of category name suggestions
+        category_suggestions = CategoryMapper.get_suggested_categories(
+            ai_category=analysis.get('category'),
+            item_type=analysis.get('item_type')
+        )
 
         response_data = {
             'analysis': analysis,
+            'suggested_category_id': str(suggested_category.id) if suggested_category else None,
+            'suggested_category_name': suggested_category.name if suggested_category else None,
             'category_suggestions': category_suggestions,
             'success': True
         }
@@ -582,6 +596,8 @@ def api_analyze_image(request):
 
     except Exception as e:
         print(f"AI analysis error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return Response(
             {
                 'error': 'Failed to analyze image',

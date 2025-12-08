@@ -1,337 +1,479 @@
-# 🎨 Tailora - StyleAI: Votre Coach et Styliste de Garde-Robe Virtuelle
+# 🎨 Tailora - AI-Powered Wardrobe Management System
 
-## 📋 Description du Projet
+## 📋 Project Description
 
-Tailora est une application mobile innovante qui permet aux utilisateurs de numériser leur garde-robe, de recevoir des suggestions de tenues intelligentes propulsées par l'IA, de planifier leurs looks et d'adopter une consommation de mode plus durable.
+Tailora is a comprehensive Django-based web application that revolutionizes wardrobe management through AI-powered features. Users can digitize their wardrobe, receive intelligent outfit suggestions, plan their looks, and embrace sustainable fashion consumption. The app combines computer vision, machine learning, and fashion expertise to provide personalized styling recommendations.
 
-## 🏗️ Architecture du Projet
+## 🏗️ Architecture Overview
 
-Le projet est structuré en 6 modules principaux :
+The project follows a modular Django architecture with 6 core modules:
 
-### Module 1 : Gestion des Utilisateurs et Profil de Style (`users`)
-**Responsable : Étudiant 1**
-
-Gère l'identité des utilisateurs et leurs préférences de style.
-
-**Fonctionnalités CRUD :**
-- ✅ Création de compte sécurisé (email, mot de passe, nom)
-- ✅ Affichage du profil utilisateur
-- ✅ Modification du profil et du "Profil de Style" (couleurs, styles, marques, morphologie)
-- ✅ Suppression du compte et données associées
-
-**Fonctionnalités Avancées :**
-- Authentification JWT robuste
-- Questionnaire d'accueil (Onboarding)
-- Système de notifications
-
-**Models :**
-- `User` : Modèle utilisateur étendu
-- `StyleProfile` : Préférences de style
-- `Notification` : Système de notifications
-
-### Module 2 : Le Dressing Virtuel (`wardrobe`)
-**Responsable : Étudiant 2**
-
-Gestion complète de l'inventaire des vêtements.
-
-**Fonctionnalités CRUD :**
-- ✅ Ajout d'articles via formulaire (photo, catégorie, couleur, saison, matière, marque)
-- ✅ Affichage en galerie avec tri et filtres
-- ✅ Modification des détails
-- ✅ Suppression d'articles
-
-**Fonctionnalités Avancées :**
-- Filtres de recherche avancés
-- Catégories personnalisées
-- Statuts (au lavage, pressing, prêté)
-- Tracking d'utilisation
-
-**Models :**
-- `ClothingCategory` : Catégories de vêtements
-- `ClothingItem` : Articles individuels
-
-### Module 3 : Le Créateur de Tenues (`outfits`)
-**Responsable : Étudiant 3**
-
-Création et gestion d'ensembles vestimentaires complets.
-
-**Fonctionnalités CRUD :**
-- ✅ Création manuelle de tenues
-- ✅ Galerie de tenues sauvegardées
-- ✅ Modification des tenues existantes
-- ✅ Suppression de tenues
-
-**Fonctionnalités Avancées :**
-- Interface Mix & Match (canvas visuel)
-- Association par occasion
-- Partage social
-
-**Models :**
-- `Outfit` : Tenues complètes
-- `OutfitItem` : Relation vêtements-tenues (avec position)
-
-### Module 4 : Le Planificateur et Calendrier de Style (`planner`)
-**Responsable : Étudiant 4**
-
-Planification des tenues avec intégration météo.
-
-**Fonctionnalités CRUD :**
-- ✅ Attribution de tenues à des dates
-- ✅ Visualisation du calendrier
-- ✅ Modification des planifications
-- ✅ Suppression de tenues planifiées
-
-**Fonctionnalités Avancées :**
-- Intégration API Météo
-- Assistant de valise pour voyages
-- Historique des tenues portées
-
-**Models :**
-- `OutfitPlanning` : Planification quotidienne
-- `TravelPlan` : Plans de voyage
-- `WearHistory` : Historique de port
-
-### Module 5 : Le Hub Social & Inspiration (`social`)
-**Responsable : Étudiant 5**
-
-Communauté et partage de style.
-
-**Fonctionnalités CRUD :**
-- ✅ Publication de tenues (Lookbook)
-- ✅ Fil d'actualité personnalisé
-- ✅ Modification de publications
-- ✅ Suppression de publications et abonnements
-
-**Fonctionnalités Avancées :**
-- Défis de style hebdomadaires
-- Recherche par article similaire
-- Système d'interactions (likes, commentaires)
-
-**Models :**
-- `LookbookPost` : Publications
-- `PostLike`, `PostComment`, `PostSave` : Interactions
-- `StyleChallenge` : Défis communautaires
-- `UserFollow` : Abonnements
-
-### Module 6 : Moteur de Recommandation IA (`recommendations`)
-**Cœur de l'Application**
-
-Intelligence artificielle pour suggestions de tenues.
-
-**Fonctionnalités :**
-- 3-5 suggestions quotidiennes personnalisées
-- Prise en compte du profil de style
-- Intégration météo
-- Apprentissage par renforcement
-- Respect des règles de la mode
-
-**Models :**
-- `DailyRecommendation` : Recommandations quotidiennes
-- `UserPreferenceSignal` : Signaux d'apprentissage
-- `ColorCompatibility` : Théorie des couleurs
-- `StyleRule` : Règles de mode
-
-## 🚀 Installation
-
-### Prérequis
-- Python 3.10+
-- pip
-- virtualenv (recommandé)
-
-### Étapes d'installation
-
-1. **Cloner le projet**
-```bash
-cd d:\app\Tailora
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    WEB APPLICATION                          │
+│                   (Django Templates)                        │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       │ REST API (JSON)
+                       │ JWT Authentication
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   DJANGO REST FRAMEWORK                      │
+│                  (API Layer - Port 8000)                     │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+        ┌──────────────┴──────────────┐
+        │                             │
+        ▼                             ▼
+┌──────────────┐              ┌──────────────┐
+│  DJANGO ORM  │              │   EXTERNAL   │
+│  (Business   │              │     APIs     │
+│    Logic)    │              │              │
+└──────┬───────┘              └──────┬───────┘
+       │                             │
+       │                             │
+       ▼                             ▼
+┌──────────────┐              ┌──────────────┐
+│   DATABASE   │              │ OpenWeather  │
+│   (SQLite)   │              │     API      │
+└──────────────┘              └──────────────┘
 ```
 
-2. **L'environnement virtuel est déjà créé (.venv)**
+## 🎯 Core Features
+
+### 🤖 AI-Powered Image Recognition
+- **YOLOv8 Integration**: Automatic clothing detection and categorization
+- **Color Analysis**: Primary and secondary color extraction with hex codes
+- **Material Inference**: Smart material detection based on visual cues
+- **Pattern Recognition**: Solid, striped, patterned classification
+- **Style Classification**: Casual, formal, business attire recognition
+- **Condition Assessment**: Basic wear condition estimation
+- **Privacy-Focused**: All processing done locally, no external API calls
+
+### 🎨 Intelligent Recommendations
+- **Personalized Suggestions**: Daily outfit recommendations based on user preferences
+- **Color Harmony**: Fashion color theory integration
+- **Style Learning**: Machine learning from user feedback and behavior
+- **Weather Integration**: Season and weather-appropriate suggestions
+- **Multi-Factor Scoring**: Comprehensive outfit evaluation algorithm
+
+### 👥 Social Features
+- **Lookbook Sharing**: Community-driven outfit sharing
+- **Style Challenges**: Weekly fashion challenges
+- **Social Interactions**: Likes, comments, and follows
+- **Inspiration Feed**: Personalized content discovery
+
+## 📦 Modules Breakdown
+
+### Module 1: User Management (`users`)
+**Status: ✅ Fully Implemented**
+
+Handles user authentication, profiles, and style preferences.
+
+**Key Features:**
+- JWT-based authentication system
+- User registration and login
+- Style profile creation (colors, brands, body type, preferences)
+- Password reset functionality
+- Email verification
+- Notification system
+
+**Models:**
+- `User`: Extended Django user model
+- `StyleProfile`: User's fashion preferences
+- `Notification`: System notifications
+
+**API Endpoints:**
+- `POST /api/auth/register/` - User registration
+- `POST /api/auth/login/` - User login
+- `GET /api/users/profile/` - Get user profile
+- `PUT /api/users/profile/` - Update profile
+- `GET /api/users/style-profile/` - Get style preferences
+- `PUT /api/users/style-profile/` - Update style preferences
+
+### Module 2: Wardrobe Management (`wardrobe`)
+**Status: ✅ Models & Admin Complete, API In Progress**
+
+Digital wardrobe inventory management with AI assistance.
+
+**Key Features:**
+- Photo upload with AI-powered auto-analysis
+- Comprehensive item categorization (24 predefined categories)
+- Advanced filtering and search
+- Item status tracking (clean, laundry, lent out)
+- Usage statistics and analytics
+- Bulk operations support
+
+**Models:**
+- `ClothingCategory`: Hierarchical clothing categories
+- `ClothingItem`: Individual wardrobe items with metadata
+
+**AI Integration:**
+- Automatic category suggestion
+- Color and pattern detection
+- Material and style inference
+- Confidence scoring for suggestions
+
+**API Endpoints (Planned):**
+- `GET /api/wardrobe/items/` - List wardrobe items
+- `POST /api/wardrobe/items/` - Add new item
+- `GET /api/wardrobe/items/{id}/` - Item details
+- `PUT /api/wardrobe/items/{id}/` - Update item
+- `DELETE /api/wardrobe/items/{id}/` - Delete item
+- `POST /api/wardrobe/analyze/` - AI image analysis
+
+### Module 3: Outfit Creation (`outfits`)
+**Status: ✅ Models & Admin Complete, API In Progress**
+
+Visual outfit creation and management system.
+
+**Key Features:**
+- Drag-and-drop outfit builder
+- Mix & match interface
+- Outfit categorization by occasion
+- Save and organize outfits
+- Outfit statistics and analytics
+- Social sharing capabilities
+
+**Models:**
+- `Outfit`: Complete outfit combinations
+- `OutfitItem`: Individual items within outfits (with positioning)
+
+**API Endpoints (Planned):**
+- `GET /api/outfits/` - List saved outfits
+- `POST /api/outfits/` - Create new outfit
+- `GET /api/outfits/{id}/` - Outfit details
+- `PUT /api/outfits/{id}/` - Update outfit
+- `DELETE /api/outfits/{id}/` - Delete outfit
+
+### Module 4: Style Planner (`planner`)
+**Status: ✅ Models & Admin Complete, API In Progress**
+
+Calendar-based outfit planning with weather integration.
+
+**Key Features:**
+- Calendar view for outfit scheduling
+- Weather API integration (OpenWeatherMap)
+- Travel planning assistant
+- Wear history tracking
+- Outfit rotation suggestions
+- Seasonal planning
+
+**Models:**
+- `OutfitPlanning`: Daily outfit assignments
+- `TravelPlan`: Trip planning with outfit suggestions
+- `WearHistory`: Tracking of worn outfits
+
+**API Endpoints (Planned):**
+- `GET /api/planner/calendar/` - Get calendar view
+- `POST /api/planner/schedule/` - Schedule outfit
+- `GET /api/planner/weather/` - Weather data
+- `GET /api/planner/history/` - Wear history
+- `POST /api/planner/travel/` - Create travel plan
+
+### Module 5: Social Community (`social`)
+**Status: ✅ Models & Admin Complete, API In Progress**
+
+Social fashion community and inspiration platform.
+
+**Key Features:**
+- Lookbook post sharing
+- Personalized feed algorithm
+- Style challenges and contests
+- Social interactions (likes, comments, saves)
+- User following system
+- Content discovery
+
+**Models:**
+- `LookbookPost`: User-generated outfit posts
+- `PostLike`, `PostComment`, `PostSave`: Social interactions
+- `StyleChallenge`: Community challenges
+- `UserFollow`: Social connections
+
+**API Endpoints (Planned):**
+- `GET /api/social/feed/` - Personalized feed
+- `POST /api/social/posts/` - Create post
+- `POST /api/social/posts/{id}/like/` - Like post
+- `POST /api/social/posts/{id}/comment/` - Comment on post
+- `GET /api/social/challenges/` - Active challenges
+
+### Module 6: AI Recommendations Engine (`recommendations`)
+**Status: ✅ Fully Implemented**
+
+Machine learning-powered outfit recommendation system.
+
+**Key Features:**
+- Daily personalized recommendations (3-5 outfits)
+- Multi-factor scoring algorithm:
+  - Color harmony (30% weight)
+  - Personal preferences (40% weight)
+  - Style consistency (20% weight)
+  - Seasonal appropriateness (10% weight)
+- Learning from user feedback
+- Weather-aware suggestions
+- Fashion rule integration
+
+**Models:**
+- `DailyRecommendation`: Generated recommendations with scores
+- `UserPreferenceSignal`: ML training data from user behavior
+- `ColorCompatibility`: Color theory database
+- `StyleRule`: Fashion combination rules
+
+**API Endpoints:**
+- `GET /api/recommendations/daily/` - Today's recommendations
+- `POST /api/recommendations/{id}/accept/` - Accept recommendation
+- `POST /api/recommendations/{id}/reject/` - Reject recommendation
+- `POST /api/recommendations/{id}/rate/` - Rate recommendation (1-5 stars)
+- `GET /api/recommendations/history/` - Recommendation history
+- `POST /api/recommendations/generate/` - Generate new recommendations
+
+## 🚀 Installation & Setup
+
+### Prerequisites
+- Python 3.10+
+- pip package manager
+- Virtual environment (recommended)
+
+### Installation Steps
+
+1. **Clone the repository**
 ```bash
-# Activer l'environnement (Windows PowerShell)
+git clone <repository-url>
+cd Tailora
+```
+
+2. **Create virtual environment**
+```bash
+python -m venv .venv
+```
+
+3. **Activate virtual environment**
+```bash
+# Windows PowerShell
 .\.venv\Scripts\Activate.ps1
 
-# Ou avec CMD
+# Windows CMD
 .venv\Scripts\activate.bat
+
+# Linux/Mac
+source .venv/bin/activate
 ```
 
-3. **Installer les dépendances**
+4. **Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Configuration de l'environnement**
+5. **Environment configuration**
 ```bash
-# Copier le fichier d'exemple
+# Copy environment template
 copy .env.example .env
 
-# Éditer .env avec vos paramètres
+# Edit .env with your settings (API keys, database, etc.)
 ```
 
-5. **Effectuer les migrations**
+6. **Database setup**
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-6. **Créer un superutilisateur**
+7. **Create superuser**
 ```bash
 python manage.py createsuperuser
 ```
 
-7. **Lancer le serveur de développement**
+8. **Run development server**
 ```bash
 python manage.py runserver
 ```
 
-L'application sera accessible sur `http://localhost:8000`
+Access the application at `http://localhost:8000`
 
-## 📁 Structure du Projet
+## 📁 Project Structure
 
 ```
 Tailora/
-├── .venv/                          # Environnement virtuel Python
-├── manage.py                       # Commande Django
-├── requirements.txt                # Dépendances
-├── .env.example                    # Template configuration
-├── tailora_project/                # Configuration Django
-│   ├── settings.py                 # Paramètres principaux
-│   ├── urls.py                     # Routes principales
-│   └── wsgi.py                     # Configuration WSGI
-├── users/                          # Module 1: Utilisateurs
+├── manage.py                       # Django management script
+├── requirements.txt                # Python dependencies
+├── .env.example                    # Environment configuration template
+├── db.sqlite3                      # SQLite database
+├── media/                          # User uploaded files
+├── staticfiles/                    # Static assets
+├── tailora_project/                # Main Django project
+│   ├── settings.py                 # Django settings
+│   ├── urls.py                     # Main URL configuration
+│   ├── wsgi.py                     # WSGI configuration
+│   └── asgi.py                     # ASGI configuration
+├── users/                          # User management module
 │   ├── models.py                   # User, StyleProfile, Notification
-│   ├── views.py
-│   ├── serializers.py
-│   └── urls.py
-├── wardrobe/                       # Module 2: Garde-robe
+│   ├── views.py                    # API views
+│   ├── serializers.py              # DRF serializers
+│   ├── urls.py                     # URL patterns
+│   ├── admin.py                    # Django admin
+│   └── tests.py                    # Unit tests
+├── wardrobe/                       # Wardrobe management
 │   ├── models.py                   # ClothingCategory, ClothingItem
 │   ├── views.py
 │   ├── serializers.py
-│   └── urls.py
-├── outfits/                        # Module 3: Tenues
+│   ├── urls.py
+│   ├── admin.py
+│   └── ai_detection.py             # AI image analysis
+├── outfits/                        # Outfit creation
 │   ├── models.py                   # Outfit, OutfitItem
 │   ├── views.py
 │   ├── serializers.py
-│   └── urls.py
-├── planner/                        # Module 4: Planificateur
+│   ├── urls.py
+│   └── admin.py
+├── planner/                        # Style planning
 │   ├── models.py                   # OutfitPlanning, TravelPlan, WearHistory
 │   ├── views.py
 │   ├── serializers.py
-│   └── urls.py
-├── social/                         # Module 5: Hub Social
-│   ├── models.py                   # LookbookPost, PostLike, StyleChallenge
+│   ├── urls.py
+│   └── admin.py
+├── social/                         # Social features
+│   ├── models.py                   # LookbookPost, interactions, challenges
 │   ├── views.py
 │   ├── serializers.py
-│   └── urls.py
-└── recommendations/                # Module 6: IA
-    ├── models.py                   # DailyRecommendation, UserPreferenceSignal
-    ├── views.py
-    ├── serializers.py
-    ├── recommendation_engine.py    # Logique IA
-    └── urls.py
+│   ├── urls.py
+│   └── admin.py
+├── recommendations/                # AI recommendations
+│   ├── models.py                   # Recommendation models
+│   ├── views.py
+│   ├── serializers.py
+│   ├── urls.py
+│   ├── ai_engine.py                # ML recommendation engine
+│   └── admin.py
+└── templates/                      # HTML templates
+    ├── base.html                   # Base template
+    ├── dashboard.html              # User dashboard
+    ├── wardrobe_*.html             # Wardrobe templates
+    ├── outfit_*.html               # Outfit templates
+    └── ...
 ```
 
-## 🔧 Technologies Utilisées
+## 🔧 Technology Stack
 
-- **Backend Framework:** Django 5.0
-- **API:** Django REST Framework 3.14
-- **Authentication:** JWT (djangorestframework-simplejwt)
-- **Image Processing:** Pillow
-- **Database:** SQLite (dev) / PostgreSQL (production recommandé)
-- **AI/ML:** scikit-learn, numpy
-- **Weather API:** OpenWeatherMap
-- **Async Tasks:** Celery + Redis (optionnel)
+### Backend
+- **Framework**: Django 5.0
+- **API**: Django REST Framework 3.14
+- **Authentication**: JWT (djangorestframework-simplejwt)
+- **Database**: SQLite (development) / PostgreSQL (production)
+- **Image Processing**: Pillow, OpenCV
+- **AI/ML**: YOLOv8 (Ultralytics), scikit-learn, NumPy
+- **Weather API**: OpenWeatherMap
+- **Task Queue**: Celery + Redis (optional)
 
-## 📊 Diagrammes UML
+### Frontend
+- **Templates**: Django Templates with Bootstrap
+- **Styling**: CSS3 with responsive design
+- **JavaScript**: Vanilla JS with jQuery
+- **Icons**: Font Awesome
 
-Le projet comprend plusieurs diagrammes UML fournis :
-1. **Diagramme de Classes** : Relations entre les modèles
-2. **Diagrammes de Cas d'Usage** : Flux utilisateurs pour chaque module
-3. **Diagrammes de Séquence** : Interactions système
+### Development Tools
+- **Version Control**: Git
+- **Environment**: python-decouple
+- **Testing**: Django Test Framework
+- **Documentation**: Markdown files
+- **Code Quality**: Black, Flake8
 
-## 🔐 Sécurité
+## 🔐 Security Features
 
-- Authentification JWT
-- Validation des données entrantes
-- Protection CSRF
-- Gestion sécurisée des mots de passe
-- Variables d'environnement pour données sensibles
+- JWT token-based authentication
+- Password hashing with Django's auth system
+- CSRF protection
+- Input validation and sanitization
+- Secure file upload handling
+- Environment variable management for secrets
+- CORS configuration for API access
 
-## 🌐 API Endpoints (À développer)
+## 📊 Data Models Overview
 
-### Authentification
-- `POST /api/auth/register/` - Inscription
-- `POST /api/auth/login/` - Connexion
-- `POST /api/auth/refresh/` - Renouveler le token
-- `POST /api/auth/logout/` - Déconnexion
+### Core Relationships
+```
+User (1) ──── (1) StyleProfile
+   │
+   ├── (N) ClothingItem
+   │      │
+   │      └── (1) ClothingCategory
+   │
+   ├── (N) Outfit
+   │      │
+   │      └── (N) OutfitItem ──── (1) ClothingItem
+   │
+   ├── (N) OutfitPlanning
+   │
+   ├── (N) LookbookPost
+   │      │
+   │      ├── (N) PostLike
+   │      ├── (N) PostComment
+   │      └── (N) PostSave
+   │
+   └── (N) DailyRecommendation
+          │
+          └── (N) UserPreferenceSignal
+```
 
-### Utilisateurs
-- `GET /api/users/profile/` - Profil utilisateur
-- `PUT /api/users/profile/` - Modifier profil
-- `GET /api/users/style-profile/` - Profil de style
-- `PUT /api/users/style-profile/` - Modifier style
+## 🎯 Development Roadmap
 
-### Garde-robe
-- `GET /api/wardrobe/items/` - Liste des vêtements
-- `POST /api/wardrobe/items/` - Ajouter un vêtement
-- `GET /api/wardrobe/items/{id}/` - Détails d'un vêtement
-- `PUT /api/wardrobe/items/{id}/` - Modifier un vêtement
-- `DELETE /api/wardrobe/items/{id}/` - Supprimer un vêtement
+### Phase 1: Core Implementation ✅
+- [x] User authentication and profiles
+- [x] Wardrobe management with AI analysis
+- [x] AI recommendation engine
+- [x] Basic outfit creation
+- [x] Database models and relationships
+- [x] Django admin interfaces
 
-### Tenues
-- `GET /api/outfits/` - Liste des tenues
-- `POST /api/outfits/` - Créer une tenue
-- `GET /api/outfits/{id}/` - Détails d'une tenue
-- `PUT /api/outfits/{id}/` - Modifier une tenue
-- `DELETE /api/outfits/{id}/` - Supprimer une tenue
+### Phase 2: API Development 🔄
+- [ ] Complete REST API for all modules
+- [ ] API documentation with Swagger/OpenAPI
+- [ ] Comprehensive test coverage
+- [ ] Performance optimization
 
-### Planificateur
-- `GET /api/planner/calendar/` - Calendrier des tenues
-- `POST /api/planner/schedule/` - Planifier une tenue
-- `GET /api/planner/travel/` - Plans de voyage
-- `GET /api/planner/history/` - Historique
+### Phase 3: Advanced Features 📋
+- [ ] Weather API integration
+- [ ] Social features implementation
+- [ ] Mobile app development
+- [ ] Advanced AI features (style evolution, trend analysis)
+- [ ] Push notifications
 
-### Social
-- `GET /api/social/feed/` - Fil d'actualité
-- `POST /api/social/posts/` - Publier une tenue
-- `POST /api/social/posts/{id}/like/` - Liker
-- `POST /api/social/posts/{id}/comment/` - Commenter
-- `GET /api/social/challenges/` - Défis actifs
+### Phase 4: Production Deployment 🚀
+- [ ] PostgreSQL migration
+- [ ] Docker containerization
+- [ ] CI/CD pipeline
+- [ ] Monitoring and logging
+- [ ] Security audit
 
-### Recommandations
-- `GET /api/recommendations/daily/` - Recommandations du jour
-- `POST /api/recommendations/{id}/feedback/` - Feedback sur une recommandation
-- `GET /api/recommendations/weather/` - Suggestions selon météo
+## � Contributing
 
-## 📝 Prochaines Étapes
+### Development Team
+- **Users Module**: Authentication, profiles, notifications
+- **Wardrobe Module**: AI image analysis, inventory management
+- **Outfits Module**: Visual outfit builder, mix & match
+- **Planner Module**: Calendar integration, weather API
+- **Social Module**: Community features, interactions
+- **Recommendations Module**: ML algorithms, personalization
 
-1. **Créer les Serializers** pour chaque module
-2. **Développer les Views et ViewSets** REST
-3. **Configurer les URLs** pour l'API
-4. **Implémenter le moteur de recommandation IA**
-5. **Intégrer l'API Météo**
-6. **Créer les tests unitaires**
-7. **Développer l'interface admin Django**
-8. **Documentation API avec Swagger**
+### Code Standards
+- Follow Django best practices
+- Write comprehensive unit tests
+- Use meaningful commit messages
+- Document complex algorithms
+- Maintain API consistency
 
-## 👥 Répartition des Responsabilités
+## 📖 Documentation
 
-- **Étudiant 1** : Module Users + Auth
-- **Étudiant 2** : Module Wardrobe
-- **Étudiant 3** : Module Outfits
-- **Étudiant 4** : Module Planner + API Météo
-- **Étudiant 5** : Module Social
-- **Tous** : Moteur de Recommandation IA (collaboration)
+- [Setup Guide](SETUP_GUIDE.md) - Detailed installation instructions
+- [API Examples](API_EXAMPLES.md) - API usage examples
+- [Architecture](ARCHITECTURE.md) - System architecture details
+- [AI Features](AI_IMAGE_RECOGNITION_README.md) - AI capabilities documentation
+- [Testing Guide](TESTING_GUIDE.md) - Testing procedures
+- [Project Summary](PROJECT_SUMMARY.md) - Current implementation status
 
-## 📖 Documentation Complémentaire
+## 📄 License
 
-- [Django Documentation](https://docs.djangoproject.com/)
-- [Django REST Framework](https://www.django-rest-framework.org/)
-- [OpenWeatherMap API](https://openweathermap.org/api)
-
-## 📄 Licence
-
-Ce projet est développé dans un cadre éducatif.
+This project is developed for educational purposes.
 
 ---
 
-**Tailora** - Votre garde-robe intelligente 🎨👗👔
+**Tailora** - Your intelligent wardrobe companion 🎨👗👔

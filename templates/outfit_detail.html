@@ -51,7 +51,7 @@
                                 <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}" style="width: 100%; height: 100%; object-fit: cover;">
                                 {% else %}
                                 <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f4e9cf;">
-                                    <span style="font-family: 'Inter', sans-serif; font-size: 18px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">👔 Outfit</span>
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 18px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;"> Outfit</span>
                                 </div>
                                 {% endif %}
                             {% endwith %}
@@ -60,6 +60,12 @@
 
                         <!-- Quick Actions -->
                         <div style="display: flex; gap: 12px; margin-top: 16px;">
+                            <form method="post" action="{% url 'outfits:outfit_wear' outfit.id %}" style="flex: 1;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                     Wear Today
+                                </button>
+                            </form>
                             <form method="post" action="{% url 'outfits:outfit_toggle_favorite' outfit.id %}" style="flex: 1;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn {% if outfit.favorite %}btn-primary{% else %}btn-secondary{% endif %}" style="width: 100%;">
@@ -97,11 +103,14 @@
                                     </p>
                                 </div>
 
-                                {% if outfit.wear_count > 0 %}
+                                {% if outfit.times_worn > 0 %}
                                 <div>
                                     <label class="input-label">Worn</label>
                                     <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; margin: 8px 0 0 0;">
-                                        {{ outfit.wear_count }} times
+                                        {{ outfit.times_worn }} time{{ outfit.times_worn|pluralize }}
+                                        {% if outfit.last_worn %}
+                                        (last on {{ outfit.last_worn|date:"d/m/Y" }})
+                                        {% endif %}
                                     </p>
                                 </div>
                                 {% endif %}

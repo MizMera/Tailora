@@ -34,3 +34,7 @@ redis==5.0.1
 # Testing
 pytest==7.4.3
 pytest-django==4.7.0
+
+# Optional: OpenAI-compatible client for Qwen VL integration
+openai>=1.51.0
+python-dotenv==1.0.1

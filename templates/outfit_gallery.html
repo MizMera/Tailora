@@ -18,11 +18,45 @@
                         <p class="page-subtitle">{{ total_outfits }} outfit{{ total_outfits|pluralize }} • {{ favorite_count }} favorite{{ favorite_count|pluralize }}</p>
                     </div>
                     <div style="display: flex; gap: 12px;">
+                        <a href="{% url 'outfits:challenges_list' %}" class="btn btn-secondary">Challenges</a>
                         <a href="{% url 'outfits:outfit_stats' %}" class="btn btn-secondary">Statistics</a>
+                        <a href="{% url 'outfits:outfit_advanced_search' %}" class="btn btn-secondary">Advanced Search</a>
                         <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">Create outfit</a>
                     </div>
                 </div>
             </div>
+
+            {% if daily_challenge %}
+            <div style="margin-bottom: 32px; background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 50%, #3a3a3a 100%); border-radius: 18px; padding: 32px 40px; box-shadow: 0 12px 32px rgba(0,0,0,0.25); position: relative; overflow: hidden;">
+                <!-- Decorative elements -->
+                <div style="position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; background: rgba(244,233,207,0.12); border-radius: 50%; filter: blur(25px);"></div>
+                <div style="position: absolute; bottom: -50px; left: -50px; width: 200px; height: 200px; background: rgba(244,233,207,0.09); border-radius: 50%; filter: blur(30px);"></div>
+                
+                <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 280px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="font-size: 26px;">🏆</span>
+                            <span style="font-family: 'Inter', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; color: #f4e9cf; font-weight: 700;">Today's Challenge</span>
+                        </div>
+                        <h3 style="margin: 0 0 12px 0; font-family: 'Istok Web', sans-serif; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.4px; line-height: 1.2;">{{ daily_challenge.name }}</h3>
+                        <p style="margin: 0; font-family: 'Inter', sans-serif; font-size: 15px; color: rgba(255,255,255,0.92); line-height: 1.7; max-width: 680px;">{{ daily_challenge.description }}</p>
+                        {% if daily_participation %}
+                        <div style="margin-top: 16px; display: inline-block; padding: 8px 16px; background: rgba(129, 199, 132, 0.25); border-radius: 24px; border: 1px solid rgba(129, 199, 132, 0.4); font-family: 'Inter', sans-serif; font-size: 13px; color: #81c784; font-weight: 700; letter-spacing: 0.3px;">
+                            ✓ Challenge Joined
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; gap: 14px; align-items: center;">
+                        {% if daily_participation %}
+                            <a href="{% url 'outfits:challenge_detail' daily_challenge.id %}" class="btn btn-secondary" style="background: rgba(255,255,255,0.12); color: #ffffff; border: 1px solid rgba(255,255,255,0.25); font-weight: 600; padding: 14px 32px; font-size: 15px; letter-spacing: 0.4px; border-radius: 8px;">View Challenge</a>
+                        {% else %}
+                            <a href="{% url 'outfits:join_challenge' daily_challenge.id %}" class="btn btn-primary" style="background: #f4e9cf; color: #2c2c2c; border: none; font-weight: 700; padding: 14px 32px; font-size: 15px; letter-spacing: 0.5px; border-radius: 8px; box-shadow: 0 4px 12px rgba(244,233,207,0.25);">Accept Challenge</a>
+                            <a href="{% url 'outfits:challenge_detail' daily_challenge.id %}" class="btn btn-secondary" style="background: rgba(255,255,255,0.12); color: #ffffff; border: 1px solid rgba(255,255,255,0.25); font-weight: 600; padding: 14px 32px; font-size: 15px; letter-spacing: 0.4px; border-radius: 8px;">Details</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Messages -->
             {% if messages %}
@@ -40,7 +74,7 @@
                 <form method="get" action="{% url 'outfits:outfit_gallery' %}">
                     <!-- Search Bar -->
                     <div style="display: flex; gap: 16px; margin-bottom: 20px;">
-                        <input type="text" name="search" value="{{ search_query }}" placeholder="Search by name, description, tags..." class="input-control" style="flex: 1;">
+                        <input type="text" name="search" value="{{ search_query }}" placeholder="Search by name or description..." class="input-control" style="flex: 1;">
                         <button type="submit" class="btn btn-primary">Search</button>
                     </div>
 
@@ -103,9 +137,20 @@
                                     <span style="color: #2c2c2c; font-size: 16px;">★</span>
                                     {% endif %}
                                 </div>
+                                {% if outfit.times_worn > 0 %}
+                                <div style="display: flex; align-items: center; margin-top: 4px;">
+                                    <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Worn {{ outfit.times_worn }} time{{ outfit.times_worn|pluralize }}
+                                    </span>
+                                </div>
+                                {% endif %}
                             </div>
                         </a>
                         <div class="item-actions">
+                            <form method="post" action="{% url 'outfits:outfit_wear' outfit.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-icon" title="Mark as worn today">👕</button>
+                            </form>
                             <form method="post" action="{% url 'outfits:outfit_toggle_favorite' outfit.id %}" style="display: inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-icon" title="{% if outfit.favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">

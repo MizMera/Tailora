@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2c2c2c" />
+      <stop offset="100%" stop-color="#1a1a1a" />
+    </linearGradient>
+  </defs>
+  <!-- Minimal Tailora monogram: a stylized T within a square frame -->
+  <rect x="8" y="8" width="112" height="112" rx="0" fill="none" stroke="#2c2c2c" stroke-width="4" />
+  <path d="M28 36h72v10H72v56H56V46H28z" fill="url(#g)"/>
+</svg>
