@@ -237,7 +237,7 @@
             <div class="wardrobe-grid stagger-children">
                 {% for item in outfit.items.all %}
                 <div class="wardrobe-item animate-fade-in-up">
-                    <a href="{% url 'wardrobe_detail' item.id %}" class="item-link"
+                    <a href="{% url 'wardrobe:wardrobe_detail' item.id %}" class="item-link"
                         style="text-decoration: none; color: inherit;">
                         <div class="item-image">
                             <img src="{{ item.image.url }}" alt="{{ item.name }}">

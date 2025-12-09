@@ -100,7 +100,7 @@
         background: #f0f0f0;
         border-color: #2c2c2c;
     }
-    
+
     .crop-apply-btn {
         padding: 12px 24px;
         background: #2c2c2c;
@@ -112,11 +112,11 @@
         cursor: pointer;
         transition: all 0.2s;
     }
-    
+
     .crop-apply-btn:hover {
         background: #444;
     }
-    
+
     .crop-close-btn {
         background: transparent;
         border: none;
@@ -127,7 +127,7 @@
         line-height: 1;
         opacity: 0.8;
     }
-    
+
     .crop-close-btn:hover {
         opacity: 1;
     }
@@ -142,7 +142,8 @@
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
             <h1 class="page-title">Add an item</h1>
-            <p style="font-family: 'Inter', sans-serif; font-size: 16px; color: #757575; margin-top: 8px;">{{ remaining_slots }} / {{ max_items }} slots available</p>
+            <p style="font-family: 'Inter', sans-serif; font-size: 16px; color: #757575; margin-top: 8px;">{{
+                remaining_slots }} / {{ max_items }} slots available</p>
         </div>
     </div>
 </div>
@@ -263,16 +264,19 @@
                 <div style="display: flex; gap: 12px; align-items: center;">
                     <input type="color" id="color_hex" class="color-picker" name="color_hex" value="#DAD3C2"
                         style="width: 60px; height: 44px; border: 1px solid #d9d9d9; cursor: pointer;">
-                    <input type="text" id="color_hex_display" class="color-hex-display"
-                        placeholder="#RRGGBB" class="input-control" style="flex: 1; max-width: 120px;">
-                    <span id="color-preview" style="display: inline-block; width: 24px; height: 24px; border: 1px solid #d9d9d9; background: #DAD3C2;"></span>
+                    <input type="text" id="color_hex_display" class="color-hex-display" placeholder="#RRGGBB"
+                        class="input-control" style="flex: 1; max-width: 120px;">
+                    <span id="color-preview"
+                        style="display: inline-block; width: 24px; height: 24px; border: 1px solid #d9d9d9; background: #DAD3C2;"></span>
                 </div>
             </div>
 
             <div class="input-field">
                 <label for="color" class="input-label">Color Name <span style="color: #c62828;">*</span></label>
-                <input type="text" id="color" name="color" placeholder="Auto-detected from color picker" required class="input-control">
-                <small class="input-hint" style="color: #757575; font-size: 12px; margin-top: 4px;">Name auto-generated from hex, or enter custom name</small>
+                <input type="text" id="color" name="color" placeholder="Auto-detected from color picker" required
+                    class="input-control">
+                <small class="input-hint" style="color: #757575; font-size: 12px; margin-top: 4px;">Name auto-generated
+                    from hex, or enter custom name</small>
             </div>
         </div>
     </div>
@@ -423,482 +427,482 @@
 
     <!-- Form Actions -->
     <div class="form-actions">
-        <a href="{% url 'wardrobe_gallery' %}" class="btn btn-secondary">Cancel</a>
+        <a href="{% url 'wardrobe:wardrobe_gallery' %}" class="btn btn-secondary">Cancel</a>
         <button type="submit" class="btn btn-primary">Add to my wardrobe</button>
     </div>
 </form>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Image preview & Cropper Logic
-    const fileInput = document.getElementById('image-input');
-    const imagePreview = document.getElementById('image-preview');
-    const previewImg = document.getElementById('preview-img');
-    const uploadLabel = document.querySelector('.upload-label');
-    const btnRemoveImage = document.querySelector('.btn-remove-image');
-    const cropModal = document.getElementById('cropModal');
-    const cropImage = document.getElementById('cropImage');
+    document.addEventListener('DOMContentLoaded', function () {
+        // Image preview & Cropper Logic
+        const fileInput = document.getElementById('image-input');
+        const imagePreview = document.getElementById('image-preview');
+        const previewImg = document.getElementById('preview-img');
+        const uploadLabel = document.querySelector('.upload-label');
+        const btnRemoveImage = document.querySelector('.btn-remove-image');
+        const cropModal = document.getElementById('cropModal');
+        const cropImage = document.getElementById('cropImage');
 
-    let cropper = null;
-    let originalFile = null;
-    let scaleX = 1;
-    let scaleY = 1;
-    let isInternalChange = false; // Flag to prevent infinite loop
+        let cropper = null;
+        let originalFile = null;
+        let scaleX = 1;
+        let scaleY = 1;
+        let isInternalChange = false; // Flag to prevent infinite loop
 
-    // 1. File Selection Handler
-    fileInput.addEventListener('change', function (e) {
-        // If the change was triggered by our own code (cropping), ignore it
-        if (isInternalChange) {
-            isInternalChange = false;
-            return;
-        }
+        // 1. File Selection Handler
+        fileInput.addEventListener('change', function (e) {
+            // If the change was triggered by our own code (cropping), ignore it
+            if (isInternalChange) {
+                isInternalChange = false;
+                return;
+            }
 
-        if (this.files && this.files[0]) {
-            originalFile = this.files[0];
-            const reader = new FileReader();
+            if (this.files && this.files[0]) {
+                originalFile = this.files[0];
+                const reader = new FileReader();
 
-            reader.onload = (event) => {
-                // Show crop modal
-                cropImage.src = event.target.result;
-                cropModal.style.display = 'flex';
+                reader.onload = (event) => {
+                    // Show crop modal
+                    cropImage.src = event.target.result;
+                    cropModal.style.display = 'flex';
 
-                // Initialize cropper
-                if (cropper) {
-                    cropper.destroy();
-                }
+                    // Initialize cropper
+                    if (cropper) {
+                        cropper.destroy();
+                    }
 
-                cropper = new Cropper(cropImage, {
-                    aspectRatio: NaN, // Free aspect ratio
-                    viewMode: 1,
-                    autoCropArea: 0.8,
-                    responsive: true,
-                    guides: true,
-                    center: true,
-                    highlight: true,
-                    cropBoxMovable: true,
-                    cropBoxResizable: true,
-                    toggleDragModeOnDblclick: false,
-                });
-            };
+                    cropper = new Cropper(cropImage, {
+                        aspectRatio: NaN, // Free aspect ratio
+                        viewMode: 1,
+                        autoCropArea: 0.8,
+                        responsive: true,
+                        guides: true,
+                        center: true,
+                        highlight: true,
+                        cropBoxMovable: true,
+                        cropBoxResizable: true,
+                        toggleDragModeOnDblclick: false,
+                    });
+                };
 
-            reader.readAsDataURL(this.files[0]);
-        }
-    });
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
 
-    // 2. Remove Image
-    btnRemoveImage.addEventListener('click', function (e) {
-        e.preventDefault();
-        fileInput.value = '';
-        imagePreview.style.display = 'none';
-        uploadLabel.style.display = 'block'; // Changed to block/flex based on css
-    });
-
-    // 3. Drag and drop
-    uploadLabel.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadLabel.style.background = '#f5f5f5';
-    });
-
-    uploadLabel.addEventListener('dragleave', () => {
-        uploadLabel.style.background = '';
-    });
-
-    uploadLabel.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadLabel.style.background = '';
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            fileInput.files = e.dataTransfer.files;
-            // Manually trigger change event
-            fileInput.dispatchEvent(new Event('change'));
-        }
-    });
-
-    // 4. Cropper Controls
-    document.getElementById('zoomIn').addEventListener('click', () => cropper && cropper.zoom(0.1));
-    document.getElementById('zoomOut').addEventListener('click', () => cropper && cropper.zoom(-0.1));
-    document.getElementById('rotateLeft').addEventListener('click', () => cropper && cropper.rotate(-45));
-    document.getElementById('rotateRight').addEventListener('click', () => cropper && cropper.rotate(45));
-    document.getElementById('flipH').addEventListener('click', () => {
-        scaleX = scaleX === 1 ? -1 : 1;
-        if (cropper) cropper.scaleX(scaleX);
-    });
-    document.getElementById('resetCrop').addEventListener('click', () => {
-        if (cropper) {
-            cropper.reset();
-            scaleX = 1;
-            scaleY = 1;
-        }
-    });
-
-    // 5. Close Modal Handlers
-    function closeCropModal() {
-        cropModal.style.display = 'none';
-        if (cropper) {
-            cropper.destroy();
-            cropper = null;
-        }
-        // If cancelled and no image is set, clear input
-        if (imagePreview.style.display === 'none') {
+        // 2. Remove Image
+        btnRemoveImage.addEventListener('click', function (e) {
+            e.preventDefault();
             fileInput.value = '';
+            imagePreview.style.display = 'none';
+            uploadLabel.style.display = 'block'; // Changed to block/flex based on css
+        });
+
+        // 3. Drag and drop
+        uploadLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadLabel.style.background = '#f5f5f5';
+        });
+
+        uploadLabel.addEventListener('dragleave', () => {
+            uploadLabel.style.background = '';
+        });
+
+        uploadLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadLabel.style.background = '';
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                fileInput.files = e.dataTransfer.files;
+                // Manually trigger change event
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // 4. Cropper Controls
+        document.getElementById('zoomIn').addEventListener('click', () => cropper && cropper.zoom(0.1));
+        document.getElementById('zoomOut').addEventListener('click', () => cropper && cropper.zoom(-0.1));
+        document.getElementById('rotateLeft').addEventListener('click', () => cropper && cropper.rotate(-45));
+        document.getElementById('rotateRight').addEventListener('click', () => cropper && cropper.rotate(45));
+        document.getElementById('flipH').addEventListener('click', () => {
+            scaleX = scaleX === 1 ? -1 : 1;
+            if (cropper) cropper.scaleX(scaleX);
+        });
+        document.getElementById('resetCrop').addEventListener('click', () => {
+            if (cropper) {
+                cropper.reset();
+                scaleX = 1;
+                scaleY = 1;
+            }
+        });
+
+        // 5. Close Modal Handlers
+        function closeCropModal() {
+            cropModal.style.display = 'none';
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            // If cancelled and no image is set, clear input
+            if (imagePreview.style.display === 'none') {
+                fileInput.value = '';
+            }
         }
-    }
 
-    document.getElementById('closeCropModal').addEventListener('click', closeCropModal);
-    document.getElementById('cancelCrop').addEventListener('click', closeCropModal);
+        document.getElementById('closeCropModal').addEventListener('click', closeCropModal);
+        document.getElementById('cancelCrop').addEventListener('click', closeCropModal);
 
-    // 6. Apply Crop
-    document.getElementById('cropConfirm').addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        if (!cropper) {
-            console.error('No cropper instance');
-            closeCropModal();
-            return;
-        }
+        // 6. Apply Crop
+        document.getElementById('cropConfirm').addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-        try {
-            const canvas = cropper.getCroppedCanvas({
-                maxWidth: 2048,
-                maxHeight: 2048,
-                imageSmoothingEnabled: true,
-                imageSmoothingQuality: 'high',
-            });
-
-            if (!canvas) {
-                console.error('Failed to get cropped canvas');
+            if (!cropper) {
+                console.error('No cropper instance');
                 closeCropModal();
                 return;
             }
 
-            canvas.toBlob(function(blob) {
-                if (!blob) {
-                    console.error('Failed to create blob');
+            try {
+                const canvas = cropper.getCroppedCanvas({
+                    maxWidth: 2048,
+                    maxHeight: 2048,
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high',
+                });
+
+                if (!canvas) {
+                    console.error('Failed to get cropped canvas');
                     closeCropModal();
                     return;
                 }
-                
-                // Create new file object
-                const fileName = originalFile ? originalFile.name : 'cropped-image.jpg';
-                const fileType = originalFile ? originalFile.type : 'image/jpeg';
-                
-                const croppedFile = new File([blob], fileName, {
-                    type: fileType,
-                    lastModified: Date.now(),
-                });
 
-                // Update file input with cropped image
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(croppedFile);
+                canvas.toBlob(function (blob) {
+                    if (!blob) {
+                        console.error('Failed to create blob');
+                        closeCropModal();
+                        return;
+                    }
 
-                // Set flag to prevent infinite loop
-                isInternalChange = true;
-                fileInput.files = dataTransfer.files;
+                    // Create new file object
+                    const fileName = originalFile ? originalFile.name : 'cropped-image.jpg';
+                    const fileType = originalFile ? originalFile.type : 'image/jpeg';
 
-                // Show preview directly from canvas
-                previewImg.src = canvas.toDataURL(fileType);
-                imagePreview.style.display = 'flex';
-                uploadLabel.style.display = 'none';
+                    const croppedFile = new File([blob], fileName, {
+                        type: fileType,
+                        lastModified: Date.now(),
+                    });
 
-                // Close modal and cleanup
-                cropModal.style.display = 'none';
-                if (cropper) {
-                    cropper.destroy();
-                    cropper = null;
-                }
-            }, originalFile ? originalFile.type : 'image/jpeg');
-        } catch (error) {
-            console.error('Error during crop:', error);
-            alert('Error cropping image. Please try again.');
-            closeCropModal();
-        }
-    });
+                    // Update file input with cropped image
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(croppedFile);
 
-    window.addEventListener('click', function(e) {
-        if (e.target === cropModal) closeCropModal();
-    });
+                    // Set flag to prevent infinite loop
+                    isInternalChange = true;
+                    fileInput.files = dataTransfer.files;
 
-    // Color picker sync with auto color naming
-    const colorPicker = document.querySelector('.color-picker');
-    const colorHexDisplay = document.querySelector('.color-hex-display');
-    const colorNameInput = document.getElementById('color');
-    const colorPreview = document.getElementById('color-preview');
-    
-    // Hex to Color Name mapping
-    function hexToColorName(hex) {
-        hex = hex.toUpperCase().replace('#', '');
-        
-        // Extended color name database
-        const colorNames = {
-            // Reds
-            'FF0000': 'Red', 'DC143C': 'Crimson', 'B22222': 'Firebrick', 'CD5C5C': 'Indian Red',
-            'F08080': 'Light Coral', 'FA8072': 'Salmon', 'E9967A': 'Dark Salmon', 'FF6347': 'Tomato',
-            'FF7F50': 'Coral', 'FF4500': 'Orange Red', '8B0000': 'Dark Red', 'A52A2A': 'Brown',
-            'C71585': 'Medium Violet Red',
-            
-            // Pinks
-            'FFC0CB': 'Pink', 'FFB6C1': 'Light Pink', 'FF69B4': 'Hot Pink', 'FF1493': 'Deep Pink',
-            'DB7093': 'Pale Violet Red', 'FFF0F5': 'Lavender Blush',
-            
-            // Oranges
-            'FFA500': 'Orange', 'FF8C00': 'Dark Orange', 'FFD700': 'Gold', 'FF6600': 'Bright Orange',
-            'FFDAB9': 'Peach Puff', 'FFE4B5': 'Moccasin',
-            
-            // Yellows
-            'FFFF00': 'Yellow', 'FFFFE0': 'Light Yellow', 'FFFACD': 'Lemon Chiffon',
-            'FAFAD2': 'Light Goldenrod', 'FFEFD5': 'Papaya Whip', 'FFE4C4': 'Bisque',
-            'F5DEB3': 'Wheat', 'BDB76B': 'Dark Khaki', 'F0E68C': 'Khaki',
-            
-            // Greens
-            '00FF00': 'Lime', '008000': 'Green', '006400': 'Dark Green', '90EE90': 'Light Green',
-            '98FB98': 'Pale Green', '00FA9A': 'Medium Spring Green', '00FF7F': 'Spring Green',
-            '2E8B57': 'Sea Green', '3CB371': 'Medium Sea Green', '228B22': 'Forest Green',
-            '32CD32': 'Lime Green', '9ACD32': 'Yellow Green', '6B8E23': 'Olive Drab',
-            '808000': 'Olive', '556B2F': 'Dark Olive Green', '20B2AA': 'Light Sea Green',
-            '008B8B': 'Dark Cyan', '66CDAA': 'Medium Aquamarine',
-            
-            // Blues
-            '0000FF': 'Blue', '00008B': 'Dark Blue', '000080': 'Navy', '191970': 'Midnight Blue',
-            '4169E1': 'Royal Blue', '4682B4': 'Steel Blue', '1E90FF': 'Dodger Blue',
-            '00BFFF': 'Deep Sky Blue', '87CEEB': 'Sky Blue', '87CEFA': 'Light Sky Blue',
-            'ADD8E6': 'Light Blue', 'B0E0E6': 'Powder Blue', '00CED1': 'Dark Turquoise',
-            '40E0D0': 'Turquoise', '48D1CC': 'Medium Turquoise', 'AFEEEE': 'Pale Turquoise',
-            '7FFFD4': 'Aquamarine', '00FFFF': 'Cyan', 'E0FFFF': 'Light Cyan',
-            '5F9EA0': 'Cadet Blue', '6495ED': 'Cornflower Blue', '7B68EE': 'Medium Slate Blue',
-            '6A5ACD': 'Slate Blue', '483D8B': 'Dark Slate Blue',
-            
-            // Purples
-            '800080': 'Purple', '8B008B': 'Dark Magenta', '9932CC': 'Dark Orchid',
-            'BA55D3': 'Medium Orchid', 'DA70D6': 'Orchid', 'EE82EE': 'Violet',
-            'DDA0DD': 'Plum', 'FF00FF': 'Magenta', 'D8BFD8': 'Thistle',
-            'E6E6FA': 'Lavender', '8A2BE2': 'Blue Violet', '9400D3': 'Dark Violet',
-            '4B0082': 'Indigo',
-            
-            // Browns
-            'A0522D': 'Sienna', 'D2691E': 'Chocolate', 'CD853F': 'Peru', 'DEB887': 'Burlywood',
-            'D2B48C': 'Tan', 'BC8F8F': 'Rosy Brown', 'F4A460': 'Sandy Brown',
-            'DAA520': 'Goldenrod', 'B8860B': 'Dark Goldenrod', '8B4513': 'Saddle Brown',
-            '800000': 'Maroon',
-            
-            // Whites/Creams
-            'FFFFFF': 'White', 'FFFAFA': 'Snow', 'F0FFF0': 'Honeydew', 'F5FFFA': 'Mint Cream',
-            'F0FFFF': 'Azure', 'F0F8FF': 'Alice Blue', 'F8F8FF': 'Ghost White',
-            'FFFFF0': 'Ivory', 'FAEBD7': 'Antique White', 'FAF0E6': 'Linen',
-            'FFF5EE': 'Seashell', 'FDF5E6': 'Old Lace', 'FFFAF0': 'Floral White',
-            'FFF8DC': 'Cornsilk', 'FFFACD': 'Lemon Chiffon', 'FFEFD5': 'Papaya Whip',
-            'FFE4E1': 'Misty Rose',
-            
-            // Grays/Blacks
-            '000000': 'Black', '696969': 'Dim Gray', '808080': 'Gray', 'A9A9A9': 'Dark Gray',
-            'C0C0C0': 'Silver', 'D3D3D3': 'Light Gray', 'DCDCDC': 'Gainsboro',
-            'F5F5F5': 'White Smoke', '2F4F4F': 'Dark Slate Gray', '708090': 'Slate Gray',
-            '778899': 'Light Slate Gray',
-            
-            // Beige/Cream tones
-            'F5F5DC': 'Beige', 'DAD3C2': 'Sand', 'E8DCC4': 'Cream', 'D4C5A9': 'Taupe Light',
-            'C9B896': 'Khaki Tan', 'E6D5B8': 'Champagne', 'F5E6D3': 'Ivory Cream'
-        };
-        
-        // Direct match
-        if (colorNames[hex]) {
-            return colorNames[hex];
-        }
-        
-        // Find closest color
-        const r1 = parseInt(hex.substr(0, 2), 16);
-        const g1 = parseInt(hex.substr(2, 2), 16);
-        const b1 = parseInt(hex.substr(4, 2), 16);
-        
-        let closestName = 'Custom Color';
-        let minDistance = Infinity;
-        
-        for (const [hexCode, name] of Object.entries(colorNames)) {
-            const r2 = parseInt(hexCode.substr(0, 2), 16);
-            const g2 = parseInt(hexCode.substr(2, 2), 16);
-            const b2 = parseInt(hexCode.substr(4, 2), 16);
-            
-            // Euclidean distance in RGB space
-            const distance = Math.sqrt(
-                Math.pow(r1 - r2, 2) + 
-                Math.pow(g1 - g2, 2) + 
-                Math.pow(b1 - b2, 2)
-            );
-            
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestName = name;
+                    // Show preview directly from canvas
+                    previewImg.src = canvas.toDataURL(fileType);
+                    imagePreview.style.display = 'flex';
+                    uploadLabel.style.display = 'none';
+
+                    // Close modal and cleanup
+                    cropModal.style.display = 'none';
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+                }, originalFile ? originalFile.type : 'image/jpeg');
+            } catch (error) {
+                console.error('Error during crop:', error);
+                alert('Error cropping image. Please try again.');
+                closeCropModal();
             }
+        });
+
+        window.addEventListener('click', function (e) {
+            if (e.target === cropModal) closeCropModal();
+        });
+
+        // Color picker sync with auto color naming
+        const colorPicker = document.querySelector('.color-picker');
+        const colorHexDisplay = document.querySelector('.color-hex-display');
+        const colorNameInput = document.getElementById('color');
+        const colorPreview = document.getElementById('color-preview');
+
+        // Hex to Color Name mapping
+        function hexToColorName(hex) {
+            hex = hex.toUpperCase().replace('#', '');
+
+            // Extended color name database
+            const colorNames = {
+                // Reds
+                'FF0000': 'Red', 'DC143C': 'Crimson', 'B22222': 'Firebrick', 'CD5C5C': 'Indian Red',
+                'F08080': 'Light Coral', 'FA8072': 'Salmon', 'E9967A': 'Dark Salmon', 'FF6347': 'Tomato',
+                'FF7F50': 'Coral', 'FF4500': 'Orange Red', '8B0000': 'Dark Red', 'A52A2A': 'Brown',
+                'C71585': 'Medium Violet Red',
+
+                // Pinks
+                'FFC0CB': 'Pink', 'FFB6C1': 'Light Pink', 'FF69B4': 'Hot Pink', 'FF1493': 'Deep Pink',
+                'DB7093': 'Pale Violet Red', 'FFF0F5': 'Lavender Blush',
+
+                // Oranges
+                'FFA500': 'Orange', 'FF8C00': 'Dark Orange', 'FFD700': 'Gold', 'FF6600': 'Bright Orange',
+                'FFDAB9': 'Peach Puff', 'FFE4B5': 'Moccasin',
+
+                // Yellows
+                'FFFF00': 'Yellow', 'FFFFE0': 'Light Yellow', 'FFFACD': 'Lemon Chiffon',
+                'FAFAD2': 'Light Goldenrod', 'FFEFD5': 'Papaya Whip', 'FFE4C4': 'Bisque',
+                'F5DEB3': 'Wheat', 'BDB76B': 'Dark Khaki', 'F0E68C': 'Khaki',
+
+                // Greens
+                '00FF00': 'Lime', '008000': 'Green', '006400': 'Dark Green', '90EE90': 'Light Green',
+                '98FB98': 'Pale Green', '00FA9A': 'Medium Spring Green', '00FF7F': 'Spring Green',
+                '2E8B57': 'Sea Green', '3CB371': 'Medium Sea Green', '228B22': 'Forest Green',
+                '32CD32': 'Lime Green', '9ACD32': 'Yellow Green', '6B8E23': 'Olive Drab',
+                '808000': 'Olive', '556B2F': 'Dark Olive Green', '20B2AA': 'Light Sea Green',
+                '008B8B': 'Dark Cyan', '66CDAA': 'Medium Aquamarine',
+
+                // Blues
+                '0000FF': 'Blue', '00008B': 'Dark Blue', '000080': 'Navy', '191970': 'Midnight Blue',
+                '4169E1': 'Royal Blue', '4682B4': 'Steel Blue', '1E90FF': 'Dodger Blue',
+                '00BFFF': 'Deep Sky Blue', '87CEEB': 'Sky Blue', '87CEFA': 'Light Sky Blue',
+                'ADD8E6': 'Light Blue', 'B0E0E6': 'Powder Blue', '00CED1': 'Dark Turquoise',
+                '40E0D0': 'Turquoise', '48D1CC': 'Medium Turquoise', 'AFEEEE': 'Pale Turquoise',
+                '7FFFD4': 'Aquamarine', '00FFFF': 'Cyan', 'E0FFFF': 'Light Cyan',
+                '5F9EA0': 'Cadet Blue', '6495ED': 'Cornflower Blue', '7B68EE': 'Medium Slate Blue',
+                '6A5ACD': 'Slate Blue', '483D8B': 'Dark Slate Blue',
+
+                // Purples
+                '800080': 'Purple', '8B008B': 'Dark Magenta', '9932CC': 'Dark Orchid',
+                'BA55D3': 'Medium Orchid', 'DA70D6': 'Orchid', 'EE82EE': 'Violet',
+                'DDA0DD': 'Plum', 'FF00FF': 'Magenta', 'D8BFD8': 'Thistle',
+                'E6E6FA': 'Lavender', '8A2BE2': 'Blue Violet', '9400D3': 'Dark Violet',
+                '4B0082': 'Indigo',
+
+                // Browns
+                'A0522D': 'Sienna', 'D2691E': 'Chocolate', 'CD853F': 'Peru', 'DEB887': 'Burlywood',
+                'D2B48C': 'Tan', 'BC8F8F': 'Rosy Brown', 'F4A460': 'Sandy Brown',
+                'DAA520': 'Goldenrod', 'B8860B': 'Dark Goldenrod', '8B4513': 'Saddle Brown',
+                '800000': 'Maroon',
+
+                // Whites/Creams
+                'FFFFFF': 'White', 'FFFAFA': 'Snow', 'F0FFF0': 'Honeydew', 'F5FFFA': 'Mint Cream',
+                'F0FFFF': 'Azure', 'F0F8FF': 'Alice Blue', 'F8F8FF': 'Ghost White',
+                'FFFFF0': 'Ivory', 'FAEBD7': 'Antique White', 'FAF0E6': 'Linen',
+                'FFF5EE': 'Seashell', 'FDF5E6': 'Old Lace', 'FFFAF0': 'Floral White',
+                'FFF8DC': 'Cornsilk', 'FFFACD': 'Lemon Chiffon', 'FFEFD5': 'Papaya Whip',
+                'FFE4E1': 'Misty Rose',
+
+                // Grays/Blacks
+                '000000': 'Black', '696969': 'Dim Gray', '808080': 'Gray', 'A9A9A9': 'Dark Gray',
+                'C0C0C0': 'Silver', 'D3D3D3': 'Light Gray', 'DCDCDC': 'Gainsboro',
+                'F5F5F5': 'White Smoke', '2F4F4F': 'Dark Slate Gray', '708090': 'Slate Gray',
+                '778899': 'Light Slate Gray',
+
+                // Beige/Cream tones
+                'F5F5DC': 'Beige', 'DAD3C2': 'Sand', 'E8DCC4': 'Cream', 'D4C5A9': 'Taupe Light',
+                'C9B896': 'Khaki Tan', 'E6D5B8': 'Champagne', 'F5E6D3': 'Ivory Cream'
+            };
+
+            // Direct match
+            if (colorNames[hex]) {
+                return colorNames[hex];
+            }
+
+            // Find closest color
+            const r1 = parseInt(hex.substr(0, 2), 16);
+            const g1 = parseInt(hex.substr(2, 2), 16);
+            const b1 = parseInt(hex.substr(4, 2), 16);
+
+            let closestName = 'Custom Color';
+            let minDistance = Infinity;
+
+            for (const [hexCode, name] of Object.entries(colorNames)) {
+                const r2 = parseInt(hexCode.substr(0, 2), 16);
+                const g2 = parseInt(hexCode.substr(2, 2), 16);
+                const b2 = parseInt(hexCode.substr(4, 2), 16);
+
+                // Euclidean distance in RGB space
+                const distance = Math.sqrt(
+                    Math.pow(r1 - r2, 2) +
+                    Math.pow(g1 - g2, 2) +
+                    Math.pow(b1 - b2, 2)
+                );
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestName = name;
+                }
+            }
+
+            return closestName;
         }
-        
-        return closestName;
-    }
-    
-    function updateColorFromPicker() {
-        const hexValue = colorPicker.value.toUpperCase();
-        colorHexDisplay.value = hexValue;
-        colorPreview.style.background = hexValue;
-        
-        // Auto-generate color name if field is empty or was auto-generated
-        const currentName = colorNameInput.value.trim();
-        const newName = hexToColorName(hexValue);
-        
-        if (!currentName || colorNameInput.dataset.autoGenerated === 'true') {
-            colorNameInput.value = newName;
-            colorNameInput.dataset.autoGenerated = 'true';
-        }
-    }
-    
-    colorPicker.addEventListener('input', updateColorFromPicker);
-    colorPicker.addEventListener('change', updateColorFromPicker);
-    
-    // Update when hex display is manually changed
-    colorHexDisplay.addEventListener('change', (e) => {
-        let value = e.target.value.trim();
-        if (!value.startsWith('#')) value = '#' + value;
-        
-        if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
-            colorPicker.value = value;
-            colorPreview.style.background = value;
-            
+
+        function updateColorFromPicker() {
+            const hexValue = colorPicker.value.toUpperCase();
+            colorHexDisplay.value = hexValue;
+            colorPreview.style.background = hexValue;
+
+            // Auto-generate color name if field is empty or was auto-generated
             const currentName = colorNameInput.value.trim();
-            const newName = hexToColorName(value);
-            
+            const newName = hexToColorName(hexValue);
+
             if (!currentName || colorNameInput.dataset.autoGenerated === 'true') {
                 colorNameInput.value = newName;
                 colorNameInput.dataset.autoGenerated = 'true';
             }
         }
-    });
-    
-    // Mark as manually entered if user types in color name field
-    colorNameInput.addEventListener('input', function() {
-        this.dataset.autoGenerated = 'false';
-    });
-    
-    // Initialize on page load
-    updateColorFromPicker();
 
-    // AI Image Analysis
-    const analyzeBtn = document.getElementById('analyze-image-btn');
-    const aiSection = document.getElementById('ai-analysis-section');
-    const aiLoading = document.getElementById('ai-loading');
-    const aiResults = document.getElementById('ai-results');
-    const aiApplyAll = document.getElementById('ai-apply-all');
-    const aiApplyBasic = document.getElementById('ai-apply-basic');
-    const aiApplyColor = document.getElementById('ai-apply-color');
+        colorPicker.addEventListener('input', updateColorFromPicker);
+        colorPicker.addEventListener('change', updateColorFromPicker);
 
-    let currentAnalysis = null;
+        // Update when hex display is manually changed
+        colorHexDisplay.addEventListener('change', (e) => {
+            let value = e.target.value.trim();
+            if (!value.startsWith('#')) value = '#' + value;
 
-    analyzeBtn.addEventListener('click', async function () {
-        if (!fileInput.files || !fileInput.files[0]) {
-            alert('Please select an image first');
-            return;
-        }
+            if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+                colorPicker.value = value;
+                colorPreview.style.background = value;
 
-        const file = fileInput.files[0];
+                const currentName = colorNameInput.value.trim();
+                const newName = hexToColorName(value);
 
-        // Show loading state
-        aiSection.style.display = 'block';
-        aiLoading.style.display = 'block';
-        aiResults.style.display = 'none';
-        analyzeBtn.disabled = true;
-        analyzeBtn.innerHTML = 'Analyzing...';
-
-        try {
-            const formData = new FormData();
-            formData.append('image', file);
-
-            const response = await fetch('/wardrobe/api/analyze-image/', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                if (!currentName || colorNameInput.dataset.autoGenerated === 'true') {
+                    colorNameInput.value = newName;
+                    colorNameInput.dataset.autoGenerated = 'true';
                 }
-            });
+            }
+        });
 
-            const data = await response.json();
+        // Mark as manually entered if user types in color name field
+        colorNameInput.addEventListener('input', function () {
+            this.dataset.autoGenerated = 'false';
+        });
 
-            if (data.success) {
-                currentAnalysis = data.analysis;
-                displayAnalysisResults(data.analysis);
-            } else {
-                throw new Error(data.error || 'Analysis failed');
+        // Initialize on page load
+        updateColorFromPicker();
+
+        // AI Image Analysis
+        const analyzeBtn = document.getElementById('analyze-image-btn');
+        const aiSection = document.getElementById('ai-analysis-section');
+        const aiLoading = document.getElementById('ai-loading');
+        const aiResults = document.getElementById('ai-results');
+        const aiApplyAll = document.getElementById('ai-apply-all');
+        const aiApplyBasic = document.getElementById('ai-apply-basic');
+        const aiApplyColor = document.getElementById('ai-apply-color');
+
+        let currentAnalysis = null;
+
+        analyzeBtn.addEventListener('click', async function () {
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert('Please select an image first');
+                return;
             }
 
-        } catch (error) {
-            console.error('AI Analysis error:', error);
-            alert('Failed to analyze image: ' + error.message);
-            aiSection.style.display = 'none';
-        } finally {
-            analyzeBtn.disabled = false;
-            analyzeBtn.innerHTML = 'Analyze with AI';
-        }
-    });
+            const file = fileInput.files[0];
 
-    function displayAnalysisResults(analysis) {
-        aiLoading.style.display = 'none';
-        aiResults.style.display = 'block';
+            // Show loading state
+            aiSection.style.display = 'block';
+            aiLoading.style.display = 'block';
+            aiResults.style.display = 'none';
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = 'Analyzing...';
 
-        document.getElementById('ai-item-type').textContent = analysis.item_type || 'Unknown';
-        document.getElementById('ai-confidence').textContent = Math.round((analysis.confidence || 0) * 100);
-        document.getElementById('ai-style').textContent = analysis.style || 'Unknown';
-        document.getElementById('ai-material').textContent = analysis.material || 'Unknown';
-        document.getElementById('ai-description').textContent = analysis.description || 'No description available';
-    }
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
 
-    aiApplyAll.addEventListener('click', () => applyAISuggestions('all'));
-    aiApplyBasic.addEventListener('click', () => applyAISuggestions('basic'));
-    aiApplyColor.addEventListener('click', () => applyAISuggestions('color'));
-
-    function applyAISuggestions(type) {
-        if (!currentAnalysis) return;
-
-        if (type === 'all' || type === 'basic') {
-            if (currentAnalysis.item_type && currentAnalysis.color) {
-                document.getElementById('name').value = `${currentAnalysis.color} ${currentAnalysis.item_type}`;
-            }
-            if (currentAnalysis.description) document.getElementById('description').value = currentAnalysis.description;
-            if (currentAnalysis.material) document.getElementById('material').value = currentAnalysis.material;
-            if (currentAnalysis.brand_guess) document.getElementById('brand').value = currentAnalysis.brand_guess;
-            if (currentAnalysis.pattern) document.getElementById('pattern').value = currentAnalysis.pattern;
-
-            if (currentAnalysis.occasions && currentAnalysis.occasions.length > 0) {
-                document.querySelectorAll('input[name="occasions"]').forEach(cb => {
-                    cb.checked = currentAnalysis.occasions.includes(cb.value);
+                const response = await fetch('/wardrobe/api/analyze-image/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
                 });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentAnalysis = data.analysis;
+                    displayAnalysisResults(data.analysis);
+                } else {
+                    throw new Error(data.error || 'Analysis failed');
+                }
+
+            } catch (error) {
+                console.error('AI Analysis error:', error);
+                alert('Failed to analyze image: ' + error.message);
+                aiSection.style.display = 'none';
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = 'Analyze with AI';
             }
-            if (currentAnalysis.seasons && currentAnalysis.seasons.length > 0) {
-                document.querySelectorAll('input[name="seasons"]').forEach(cb => {
-                    cb.checked = currentAnalysis.seasons.includes(cb.value);
-                });
-            }
-            if (currentAnalysis.tags && currentAnalysis.tags.length > 0) {
-                document.getElementById('tags').value = currentAnalysis.tags.join(', ');
-            }
+        });
+
+        function displayAnalysisResults(analysis) {
+            aiLoading.style.display = 'none';
+            aiResults.style.display = 'block';
+
+            document.getElementById('ai-item-type').textContent = analysis.item_type || 'Unknown';
+            document.getElementById('ai-confidence').textContent = Math.round((analysis.confidence || 0) * 100);
+            document.getElementById('ai-style').textContent = analysis.style || 'Unknown';
+            document.getElementById('ai-material').textContent = analysis.material || 'Unknown';
+            document.getElementById('ai-description').textContent = analysis.description || 'No description available';
         }
 
-        if (type === 'all' || type === 'color') {
-            if (currentAnalysis.color) document.getElementById('color').value = currentAnalysis.color;
-            if (currentAnalysis.color_hex) {
-                document.getElementById('color_hex').value = currentAnalysis.color_hex;
-                document.getElementById('color_hex_display').value = currentAnalysis.color_hex.toUpperCase();
+        aiApplyAll.addEventListener('click', () => applyAISuggestions('all'));
+        aiApplyBasic.addEventListener('click', () => applyAISuggestions('basic'));
+        aiApplyColor.addEventListener('click', () => applyAISuggestions('color'));
+
+        function applyAISuggestions(type) {
+            if (!currentAnalysis) return;
+
+            if (type === 'all' || type === 'basic') {
+                if (currentAnalysis.item_type && currentAnalysis.color) {
+                    document.getElementById('name').value = `${currentAnalysis.color} ${currentAnalysis.item_type}`;
+                }
+                if (currentAnalysis.description) document.getElementById('description').value = currentAnalysis.description;
+                if (currentAnalysis.material) document.getElementById('material').value = currentAnalysis.material;
+                if (currentAnalysis.brand_guess) document.getElementById('brand').value = currentAnalysis.brand_guess;
+                if (currentAnalysis.pattern) document.getElementById('pattern').value = currentAnalysis.pattern;
+
+                if (currentAnalysis.occasions && currentAnalysis.occasions.length > 0) {
+                    document.querySelectorAll('input[name="occasions"]').forEach(cb => {
+                        cb.checked = currentAnalysis.occasions.includes(cb.value);
+                    });
+                }
+                if (currentAnalysis.seasons && currentAnalysis.seasons.length > 0) {
+                    document.querySelectorAll('input[name="seasons"]').forEach(cb => {
+                        cb.checked = currentAnalysis.seasons.includes(cb.value);
+                    });
+                }
+                if (currentAnalysis.tags && currentAnalysis.tags.length > 0) {
+                    document.getElementById('tags').value = currentAnalysis.tags.join(', ');
+                }
             }
+
+            if (type === 'all' || type === 'color') {
+                if (currentAnalysis.color) document.getElementById('color').value = currentAnalysis.color;
+                if (currentAnalysis.color_hex) {
+                    document.getElementById('color_hex').value = currentAnalysis.color_hex;
+                    document.getElementById('color_hex_display').value = currentAnalysis.color_hex.toUpperCase();
+                }
+            }
+
+            const message = type === 'all' ? 'All AI suggestions applied!' :
+                type === 'basic' ? 'Basic information applied!' : 'Color information applied!';
+
+            // Show temporary success message
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = `position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000;`;
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
         }
 
-        const message = type === 'all' ? 'All AI suggestions applied!' :
-            type === 'basic' ? 'Basic information applied!' : 'Color information applied!';
-        
-        // Show temporary success message
-        const successDiv = document.createElement('div');
-        successDiv.style.cssText = `position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000;`;
-        successDiv.textContent = message;
-        document.body.appendChild(successDiv);
-        setTimeout(() => successDiv.remove(), 3000);
-    }
-
-    document.body.style.opacity = '1';
-}); // End DOMContentLoaded
+        document.body.style.opacity = '1';
+    }); // End DOMContentLoaded
 </script>
 
 <!-- Image Cropper Modal -->
@@ -909,7 +913,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <button type="button" id="closeCropModal" class="crop-close-btn">&times;</button>
         </div>
         <div class="crop-body">
-            <p style="text-align: center; color: #757575; margin-bottom: 16px; font-family: 'Inter', sans-serif; font-size: 14px;">
+            <p
+                style="text-align: center; color: #757575; margin-bottom: 16px; font-family: 'Inter', sans-serif; font-size: 14px;">
                 Adjust the crop area to focus on your clothing item
             </p>
             <div class="crop-container">

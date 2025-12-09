@@ -44,6 +44,7 @@ class ClothingItem(models.Model):
         ('dry_cleaning', 'Au Pressing'),
         ('loaned', 'Prêté'),
         ('repair', 'En Réparation'),
+        ('drying', 'En Séchage'),  # New: drying after wash
     ]
     
     CONDITION_CHOICES = [
@@ -52,6 +53,13 @@ class ClothingItem(models.Model):
         ('good', 'Bon'),
         ('fair', 'Correct'),
         ('worn', 'Usé'),
+    ]
+    
+    CARE_TYPE_CHOICES = [
+        ('machine_wash', 'Machine Washable'),
+        ('hand_wash', 'Hand Wash'),
+        ('dry_clean', 'Dry Clean Only'),
+        ('spot_clean', 'Spot Clean'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -91,6 +99,13 @@ class ClothingItem(models.Model):
     last_worn = models.DateField(null=True, blank=True)
     favorite = models.BooleanField(default=False)
     
+    # ==================== LAUNDRY TRACKING ====================
+    wears_since_wash = models.IntegerField(default=0)  # Resets to 0 when washed
+    last_washed = models.DateField(null=True, blank=True)
+    max_wears_before_wash = models.IntegerField(default=3)  # User customizable
+    care_type = models.CharField(max_length=20, choices=CARE_TYPE_CHOICES, default='machine_wash')
+    drying_time_hours = models.IntegerField(default=24)  # Hours needed to dry after wash
+    
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -115,3 +130,110 @@ class ClothingItem(models.Model):
     def is_available(self):
         """Check if item is available to wear"""
         return self.status == 'available'
+    
+    def needs_washing(self):
+        """Check if item needs to be washed"""
+        return self.wears_since_wash >= self.max_wears_before_wash
+    
+    def urgency_level(self):
+        """
+        Get laundry urgency level:
+        0 = Clean, 1 = Approaching, 2 = Needs wash, 3 = Overdue
+        """
+        if self.wears_since_wash == 0:
+            return 0
+        ratio = self.wears_since_wash / max(self.max_wears_before_wash, 1)
+        if ratio >= 1.5:
+            return 3  # Overdue
+        elif ratio >= 1.0:
+            return 2  # Needs wash
+        elif ratio >= 0.7:
+            return 1  # Approaching
+        return 0  # Clean
+    
+    def mark_worn(self):
+        """Increment wear counter and update last worn date"""
+        from django.utils import timezone
+        self.times_worn += 1
+        self.wears_since_wash += 1
+        self.last_worn = timezone.now().date()
+        self.save()
+    
+    def mark_washed(self):
+        """Reset laundry counters after washing"""
+        from django.utils import timezone
+        self.wears_since_wash = 0
+        self.last_washed = timezone.now().date()
+        if self.status in ['washing', 'drying']:
+            self.status = 'available'
+        self.save()
+
+
+class LaundryAlert(models.Model):
+    """
+    Proactive laundry notifications
+    Created when items in planned outfits need washing
+    """
+    ALERT_TYPE_CHOICES = [
+        ('needs_washing', 'Needs Washing'),
+        ('drying_time', 'Needs Time to Dry'),
+        ('at_cleaners', 'Still at Dry Cleaners'),
+        ('approaching', 'Approaching Wash Limit'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='laundry_alerts')
+    clothing_item = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, related_name='laundry_alerts')
+    
+    # Planning context
+    planned_date = models.DateField()  # When item is planned to be worn
+    daily_slot = models.ForeignKey(
+        'planner.DailyPlanSlot', 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        related_name='laundry_alerts'
+    )
+    
+    # Alert details
+    alert_type = models.CharField(max_length=20, choices=ALERT_TYPE_CHOICES)
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
+    message = models.TextField()
+    
+    # Timing
+    deadline = models.DateTimeField()  # By when laundry must be done
+    
+    # Status
+    is_resolved = models.BooleanField(default=False)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'laundry_alerts'
+        ordering = ['deadline', '-priority']
+        verbose_name = 'Laundry Alert'
+        verbose_name_plural = 'Laundry Alerts'
+        indexes = [
+            models.Index(fields=['user', 'is_resolved']),
+            models.Index(fields=['user', 'planned_date']),
+        ]
+    
+    def __str__(self):
+        return f"Laundry alert for {self.clothing_item.name} - {self.planned_date}"
+    
+    def resolve(self):
+        """Mark alert as resolved"""
+        from django.utils import timezone
+        self.is_resolved = True
+        self.resolved_at = timezone.now()
+        self.save()
+

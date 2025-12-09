@@ -63,7 +63,6 @@
         grid-template-columns: repeat(7, 1fr);
         gap: 1px;
         background: #f0f0f0;
-        /* Grid lines color */
         border: 1px solid #f0f0f0;
     }
 
@@ -93,7 +92,6 @@
 
     .calendar-day.today {
         background: #fffdf5;
-        /* Subtle yellow tint for today */
     }
 
     .calendar-day.today::after {
@@ -141,7 +139,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
         border-radius: 2px;
-        /* Slight rounded only */
         transition: transform 0.1s, box-shadow 0.1s;
     }
 
@@ -199,7 +196,7 @@
         gap: 24px;
     }
 
-    /* Weather Widget (Premium) */
+    /* Weather Widget */
     .weather-widget-enhanced {
         background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
         color: #fff;
@@ -270,7 +267,6 @@
 
     .clothing-suggestion {
         background: rgba(255, 255, 255, 0.08);
-        /* Glassy */
         padding: 16px;
         border-left: 2px solid #f5a623;
         font-size: 13px;
@@ -396,6 +392,22 @@
             </div>
         </div>
 
+        <!-- Quick Actions Bar -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+            <a href="{% url 'planner:weekly_planner' %}"
+                style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #f3e8ff; border: 1px solid #c4b5fd; color: #6b21a8; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
+                🗓️ AI Weekly Planner
+            </a>
+            <a href="{% url 'wardrobe:laundry_dashboard' %}"
+                style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #f0fdf4; border: 1px solid #86efac; color: #166534; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
+                🧺 Laundry Dashboard
+            </a>
+            <a href="{% url 'profile_settings' %}"
+                style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #f0f9ff; border: 1px solid #7dd3fc; color: #0369a1; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
+                📊 Style Insights
+            </a>
+        </div>
+
         <div class="calendar-grid stagger-children">
             <!-- Weekday headers -->
             {% for day in weekday_names %}
@@ -412,12 +424,13 @@
                 class="calendar-day animate-fade-in-up {% if day == today.day and month == today.month and year == today.year %}today{% endif %}">
                 <span class="day-number">{{ day }}</span>
 
-                {% if day in events_by_date %}
+                <!-- Fixed Logic: Using with/get_item instead of 'if in' -->
+                {% with events_for_day=events_by_date|get_item:day %}
+                {% if events_for_day %}
                 <div class="calendar-day-events">
-                    {% with events_for_day=events_by_date|get_item:day %}
                     {% for event in events_for_day %}
                     {% if forloop.counter <= 3 %} <a href="{% url 'planner:event_detail' event.id %}"
-                        class="calendar-event-chip {{ event.occasion_type }}" title="{{ event.title }}">
+                        class="calendar-event-chip {{ event.occasion_type|slugify }}" title="{{ event.title }}">
                         {{ event.title }}
                         </a>
                         {% endif %}
@@ -426,9 +439,9 @@
                         {% if events_for_day|length > 3 %}
                         <span class="more-events">+{{ events_for_day|length|add:"-3" }} more</span>
                         {% endif %}
-                        {% endwith %}
                 </div>
                 {% endif %}
+                {% endwith %}
             </div>
             {% endif %}
             {% endfor %}
@@ -512,7 +525,8 @@
         <div class="content-section" style="padding: 0; overflow: hidden; border: 1px solid #e0e0e0;">
             <div style="padding: 16px; border-bottom: 1px solid #f0f0f0; background: #fafafa;">
                 <h3 style="margin: 0; font-size: 14px; font-weight: 700; text-transform: uppercase; color: #2c2c2c;">
-                    Upcoming Events</h3>
+                    Upcoming Events
+                </h3>
             </div>
 
             {% if upcoming_events %}

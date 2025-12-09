@@ -247,6 +247,27 @@ class StyleProfile(models.Model):
     coach_mode = models.CharField(max_length=20, choices=COACH_MODE_CHOICES, default='gentle')
     learning_focus = models.JSONField(default=list, blank=True)  # e.g. ["Color Theory", "Proportions"]
     
+    # Notification preferences
+    notification_preferences = models.JSONField(default=dict, blank=True)
+    # Structure:
+    # {
+    #   "outfit_reminder": True,
+    #   "reminder_time": "evening",  # "morning" | "evening" | "both"
+    #   "email_notifications": True,
+    #   "weekly_digest": False
+    # }
+    
+    def get_notification_prefs(self):
+        """Get notification preferences with defaults"""
+        defaults = {
+            'outfit_reminder': True,
+            'reminder_time': 'evening',
+            'email_notifications': True,
+            'weekly_digest': False,
+        }
+        prefs = self.notification_preferences or {}
+        return {**defaults, **prefs}
+    
     class Meta:
         db_table = 'style_profiles'
         verbose_name = 'Style Profile'

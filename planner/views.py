@@ -789,3 +789,352 @@ class WeatherViewSet(viewsets.ViewSet):
             'forecast': forecast
         })
 
+
+# ==================== Weekly Planner Views ====================
+
+from .models import WeeklyPlan, DailyPlanSlot
+from .weekly_planner_ai import WeeklyPlannerAI
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import json
+
+
+@login_required
+def weekly_planner_view(request):
+    """
+    Display the AI Weekly Outfit Planner
+    Shows a 7-day view with AI-recommended outfits
+    """
+    today = timezone.now().date()
+    
+    # Get week start (Monday) from query params or use current week
+    week_param = request.GET.get('week')
+    if week_param:
+        try:
+            week_start = datetime.strptime(week_param, '%Y-%m-%d').date()
+            week_start = week_start - timedelta(days=week_start.weekday())
+        except ValueError:
+            week_start = today - timedelta(days=today.weekday())
+    else:
+        week_start = today - timedelta(days=today.weekday())
+    
+    # Navigation
+    prev_week = week_start - timedelta(days=7)
+    next_week = week_start + timedelta(days=7)
+    current_week = today - timedelta(days=today.weekday())
+    
+    # Get location from session or default
+    location = request.session.get('weather_location', 'Tunis')
+    
+    # Try to find existing plan for this week
+    weekly_plan = WeeklyPlan.objects.filter(
+        user=request.user,
+        week_start=week_start
+    ).prefetch_related(
+        'daily_slots__primary_outfit__items',
+        'daily_slots__alternatives',
+        'daily_slots__events'
+    ).first()
+    
+    # Check for laundry conflicts
+    laundry_conflicts = {}
+    if weekly_plan:
+        try:
+            from wardrobe.laundry_scheduler import LaundrySchedulerAI
+            scheduler = LaundrySchedulerAI(request.user)
+            
+            for slot in weekly_plan.daily_slots.all():
+                if slot.primary_outfit:
+                    status = scheduler.check_outfit_laundry_status(slot.primary_outfit)
+                    if not status['is_clear']:
+                        laundry_conflicts[str(slot.id)] = {
+                            'needs_wash': [item.name for item in status['needs_wash']],
+                            'approaching': [item.name for item in status['approaching']],
+                            'unavailable': [item.name for item in status['unavailable']],
+                            'count': len(status['needs_wash']) + len(status['unavailable']),
+                        }
+        except Exception as e:
+            print(f"Laundry check error: {e}")
+    
+    # Get wardrobe and outfit stats
+    outfit_count = Outfit.objects.filter(user=request.user).count()
+    wardrobe_count = request.user.wardrobe_items.filter(status='available').count()
+    
+    # Get weather data
+    weather_service = WeatherService()
+    current_weather = weather_service.get_current_weather(location)
+    
+    context = {
+        'weekly_plan': weekly_plan,
+        'week_start': week_start,
+        'week_end': week_start + timedelta(days=6),
+        'prev_week': prev_week,
+        'next_week': next_week,
+        'current_week': current_week,
+        'today': today,
+        'location': location,
+        'outfit_count': outfit_count,
+        'wardrobe_count': wardrobe_count,
+        'current_weather': current_weather,
+        'laundry_conflicts': laundry_conflicts,
+        'day_names': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    }
+    
+    return render(request, 'planner/weekly_planner.html', context)
+
+
+@login_required
+@require_POST
+def generate_weekly_plan(request):
+    """
+    Generate a new AI weekly outfit plan
+    Returns JSON response for AJAX handling
+    """
+    try:
+        data = json.loads(request.body) if request.body else {}
+    except json.JSONDecodeError:
+        data = {}
+    
+    week_param = data.get('week_start') or request.POST.get('week_start')
+    location = data.get('location') or request.session.get('weather_location', 'Tunis')
+    
+    # Parse week start date
+    if week_param:
+        try:
+            week_start = datetime.strptime(week_param, '%Y-%m-%d').date()
+        except ValueError:
+            week_start = None
+    else:
+        week_start = None
+    
+    # Check if user has outfits
+    outfit_count = Outfit.objects.filter(user=request.user).count()
+    if outfit_count < 3:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'error': 'You need at least 3 outfits to generate a weekly plan. Create more outfits first!'
+            }, status=400)
+        messages.error(request, 'You need at least 3 outfits to generate a weekly plan.')
+        return redirect('planner:weekly_planner')
+    
+    # Generate the plan using AI
+    planner_ai = WeeklyPlannerAI(request.user)
+    weekly_plan = planner_ai.generate_weekly_plan(week_start=week_start, location=location)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Return JSON for AJAX
+        slots_data = []
+        for slot in weekly_plan.daily_slots.all().order_by('date'):
+            outfit_data = None
+            if slot.primary_outfit:
+                outfit_items = list(slot.primary_outfit.items.all()[:4])
+                outfit_data = {
+                    'id': str(slot.primary_outfit.id),
+                    'name': slot.primary_outfit.name,
+                    'items': [{
+                        'name': item.name,
+                        'image_url': item.image.url if item.image else None,
+                    } for item in outfit_items]
+                }
+            
+            slots_data.append({
+                'id': str(slot.id),
+                'date': slot.date.isoformat(),
+                'day_name': slot.day_name,
+                'weather_condition': slot.weather_condition,
+                'temperature': slot.temperature,
+                'outfit': outfit_data,
+                'selection_reason': slot.selection_reason,
+                'confidence': round(slot.confidence * 100),
+                'status': slot.status,
+                'has_events': slot.has_events,
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'plan_id': str(weekly_plan.id),
+            'week_start': weekly_plan.week_start.isoformat(),
+            'reasoning': weekly_plan.generation_reasoning,
+            'slots': slots_data,
+        })
+    
+    messages.success(request, 'Weekly plan generated successfully!')
+    return redirect('planner:weekly_planner')
+
+
+@login_required
+@require_POST
+def accept_daily_outfit(request, slot_id):
+    """Accept an outfit for a specific day"""
+    slot = get_object_or_404(DailyPlanSlot, id=slot_id, weekly_plan__user=request.user)
+    
+    planner_ai = WeeklyPlannerAI(request.user)
+    slot = planner_ai.accept_outfit(slot)
+    
+    # Record ML signal for learning
+    try:
+        from recommendations.ml_pattern_engine import MLPatternEngine
+        ml_engine = MLPatternEngine(request.user)
+        ml_engine.record_outfit_accepted(
+            slot.primary_outfit, 
+            slot,
+            {'temperature': slot.temperature, 'weather_condition': slot.weather_condition}
+        )
+    except Exception as e:
+        print(f"ML signal error: {e}")
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'status': slot.status,
+            'message': 'Outfit accepted!'
+        })
+    
+    messages.success(request, 'Outfit accepted!')
+    return redirect('planner:weekly_planner')
+
+
+@login_required
+@require_POST
+def swap_daily_outfit(request, slot_id):
+    """Swap the primary outfit with an alternative"""
+    slot = get_object_or_404(DailyPlanSlot, id=slot_id, weekly_plan__user=request.user)
+    
+    # Get the alternative outfit ID
+    try:
+        data = json.loads(request.body) if request.body else {}
+    except json.JSONDecodeError:
+        data = {}
+    
+    alternative_id = data.get('outfit_id') or request.POST.get('outfit_id')
+    
+    if not alternative_id:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'error': 'No outfit ID provided'
+            }, status=400)
+        messages.error(request, 'No outfit selected.')
+        return redirect('planner:weekly_planner')
+    
+    alternative_outfit = get_object_or_404(Outfit, id=alternative_id, user=request.user)
+    
+    # Record rejection signal for ML learning
+    try:
+        from recommendations.ml_pattern_engine import MLPatternEngine
+        ml_engine = MLPatternEngine(request.user)
+        if slot.primary_outfit:
+            ml_engine.record_outfit_rejected(
+                slot.primary_outfit,
+                slot,
+                {'reason': 'swapped', 'new_outfit_id': str(alternative_id)}
+            )
+    except Exception as e:
+        print(f"ML signal error: {e}")
+    
+    planner_ai = WeeklyPlannerAI(request.user)
+    slot = planner_ai.swap_to_alternative(slot, alternative_outfit)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        outfit_items = list(slot.primary_outfit.items.all()[:4])
+        return JsonResponse({
+            'success': True,
+            'status': slot.status,
+            'new_outfit': {
+                'id': str(slot.primary_outfit.id),
+                'name': slot.primary_outfit.name,
+                'items': [{
+                    'name': item.name,
+                    'image_url': item.image.url if item.image else None,
+                } for item in outfit_items]
+            },
+            'message': 'Outfit swapped!'
+        })
+    
+    messages.success(request, 'Outfit swapped!')
+    return redirect('planner:weekly_planner')
+
+
+@login_required
+@require_POST
+def mark_outfit_worn(request, slot_id):
+    """Mark an outfit as worn for that day"""
+    slot = get_object_or_404(DailyPlanSlot, id=slot_id, weekly_plan__user=request.user)
+    
+    if not slot.primary_outfit:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'error': 'No outfit assigned to mark as worn'
+            }, status=400)
+        messages.error(request, 'No outfit to mark as worn.')
+        return redirect('planner:weekly_planner')
+    
+    planner_ai = WeeklyPlannerAI(request.user)
+    slot = planner_ai.mark_as_worn(slot)
+    
+    # Record strong positive signal for ML learning
+    try:
+        from recommendations.ml_pattern_engine import MLPatternEngine
+        ml_engine = MLPatternEngine(request.user)
+        ml_engine.record_outfit_worn(
+            slot.primary_outfit,
+            {'temperature': slot.temperature, 'weather_condition': slot.weather_condition}
+        )
+    except Exception as e:
+        print(f"ML signal error: {e}")
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'status': slot.status,
+            'message': f'Marked "{slot.primary_outfit.name}" as worn!'
+        })
+    
+    messages.success(request, f'Marked "{slot.primary_outfit.name}" as worn!')
+    return redirect('planner:weekly_planner')
+
+
+@login_required
+@require_POST  
+def regenerate_daily_slot(request, slot_id):
+    """Regenerate outfit suggestion for a specific day"""
+    slot = get_object_or_404(DailyPlanSlot, id=slot_id, weekly_plan__user=request.user)
+    
+    # Record regeneration as mild rejection signal
+    try:
+        from recommendations.ml_pattern_engine import MLPatternEngine
+        ml_engine = MLPatternEngine(request.user)
+        ml_engine.record_regeneration(slot, {'reason': 'user_requested'})
+    except Exception as e:
+        print(f"ML signal error: {e}")
+    
+    planner_ai = WeeklyPlannerAI(request.user)
+    slot = planner_ai.regenerate_day(slot)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        outfit_data = None
+        if slot.primary_outfit:
+            outfit_items = list(slot.primary_outfit.items.all()[:4])
+            outfit_data = {
+                'id': str(slot.primary_outfit.id),
+                'name': slot.primary_outfit.name,
+                'items': [{
+                    'name': item.name,
+                    'image_url': item.image.url if item.image else None,
+                } for item in outfit_items]
+            }
+        
+        return JsonResponse({
+            'success': True,
+            'outfit': outfit_data,
+            'selection_reason': slot.selection_reason,
+            'confidence': round(slot.confidence * 100),
+            'status': slot.status,
+            'message': 'New outfit suggested!'
+        })
+    
+    messages.success(request, 'New outfit suggested!')
+    return redirect('planner:weekly_planner')
+

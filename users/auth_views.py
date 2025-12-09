@@ -493,11 +493,25 @@ def profile_settings_view(request):
         ('#800080', 'Purple'),
     ]
     
+    # Get notification preferences
+    notification_prefs = style_profile.get_notification_prefs()
+    
+    # Get ML insights if available
+    ml_insights = {'has_data': False}
+    try:
+        from recommendations.ml_pattern_engine import MLPatternEngine
+        ml_engine = MLPatternEngine(user)
+        ml_insights = ml_engine.get_user_profile_insights()
+    except Exception as e:
+        print(f"ML insights error: {e}")
+    
     context = {
         'user': user,
         'style_profile': style_profile,
         'preferred_style_choices': preferred_style_choices,
         'color_choices': color_choices,
+        'notification_prefs': notification_prefs,
+        'ml_insights': ml_insights,
     }
     return render(request, 'profile_settings.html', context)
 
@@ -745,6 +759,35 @@ def cancel_subscription_view(request):
         return redirect('profile_settings')
     
     # Redirect if accessed via GET
+    return redirect('profile_settings')
+
+
+@login_required
+def update_notification_prefs_view(request):
+    """
+    Update user notification preferences for outfit reminders.
+    """
+    if request.method == 'POST':
+        user = request.user
+        
+        try:
+            style_profile = user.style_profile
+        except StyleProfile.DoesNotExist:
+            style_profile = StyleProfile.objects.create(user=user)
+        
+        # Get current preferences and update
+        prefs = style_profile.notification_preferences or {}
+        
+        prefs['outfit_reminder'] = 'outfit_reminder' in request.POST
+        prefs['reminder_time'] = request.POST.get('reminder_time', 'evening')
+        prefs['email_notifications'] = 'email_notifications' in request.POST
+        
+        style_profile.notification_preferences = prefs
+        style_profile.save()
+        
+        messages.success(request, 'Notification preferences updated!')
+        return redirect('profile_settings')
+    
     return redirect('profile_settings')
 
 

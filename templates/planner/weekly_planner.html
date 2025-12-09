@@ -1,0 +1,1055 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load planner_extras %}
+
+{% block title %}Weekly Planner - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/planner.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+    /* =========================================
+       AI WEEKLY PLANNER STYLES
+       ========================================= */
+
+    /* Page Header */
+    .weekly-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .weekly-title-section h1 {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c2c2c;
+        margin: 0 0 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .weekly-dates {
+        font-size: 16px;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .weekly-nav {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    /* Week Navigation */
+    .week-nav-group {
+        display: flex;
+        gap: 4px;
+    }
+
+    .btn-week-nav {
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid #ddd;
+        background: #fff;
+        color: #2c2c2c;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-week-nav:hover {
+        background: #f5f5f5;
+        border-color: #2c2c2c;
+    }
+
+    .btn-week-nav.active {
+        background: #2c2c2c;
+        color: #fff;
+        border-color: #2c2c2c;
+    }
+
+    /* Weekly Grid */
+    .weekly-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 12px;
+        margin-bottom: 32px;
+    }
+
+    /* Day Card */
+    .day-card {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        display: flex;
+        flex-direction: column;
+        min-height: 380px;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .day-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .day-card.is-today {
+        border-color: #2c2c2c;
+        box-shadow: 0 0 0 2px rgba(44, 44, 44, 0.1);
+    }
+
+    .day-card.is-past {
+        opacity: 0.7;
+    }
+
+    /* Day Header */
+    .day-header {
+        padding: 16px;
+        background: #fafafa;
+        border-bottom: 1px solid #e8e8e8;
+    }
+
+    .day-card.is-today .day-header {
+        background: #2c2c2c;
+        color: #fff;
+    }
+
+    .day-name {
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .day-date {
+        font-size: 24px;
+        font-weight: 300;
+        color: inherit;
+    }
+
+    .day-card.is-today .day-date {
+        color: #f4e9cf;
+    }
+
+    /* Weather Badge */
+    .weather-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .day-card.is-today .weather-badge {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .weather-temp {
+        font-weight: 700;
+        font-size: 15px;
+    }
+
+    /* Day Content */
+    .day-content {
+        flex: 1;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Events Preview */
+    .day-events-preview {
+        margin-bottom: 12px;
+    }
+
+    .event-chip {
+        display: inline-block;
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #fff;
+        margin-right: 4px;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+
+    .event-chip.work {
+        background: #555;
+    }
+
+    .event-chip.casual {
+        background: #88c;
+    }
+
+    .event-chip.formal {
+        background: #2c2c2c;
+    }
+
+    .event-chip.party {
+        background: #dda855;
+    }
+
+    .event-chip.date {
+        background: #c55;
+    }
+
+    .event-chip.sports {
+        background: #6b9;
+    }
+
+    .event-chip.travel {
+        background: #96c;
+    }
+
+    /* Outfit Preview */
+    .outfit-preview-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .outfit-name {
+        font-weight: 700;
+        font-size: 15px;
+        color: #2c2c2c;
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+
+    .outfit-items-stack {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .outfit-item-thumb {
+        aspect-ratio: 1;
+        background: #f5f5f5;
+        overflow: hidden;
+        border: 1px solid #e8e8e8;
+    }
+
+    .outfit-item-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+
+    .outfit-item-thumb:hover img {
+        transform: scale(1.1);
+    }
+
+    /* AI Reasoning */
+    .ai-reasoning {
+        font-size: 12px;
+        color: #888;
+        line-height: 1.5;
+        margin-top: auto;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .ai-confidence {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #2c2c2c;
+        margin-top: 8px;
+    }
+
+    .confidence-bar {
+        width: 50px;
+        height: 4px;
+        background: #e8e8e8;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .confidence-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #f5a623, #4cd964);
+        transition: width 0.3s;
+    }
+
+    /* Day Actions */
+    .day-actions {
+        padding: 12px 16px;
+        background: #fafafa;
+        border-top: 1px solid #e8e8e8;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-day-action {
+        flex: 1;
+        min-width: 70px;
+        padding: 8px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        border: 1px solid #ddd;
+        background: #fff;
+        color: #2c2c2c;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+    .btn-day-action:hover {
+        background: #2c2c2c;
+        color: #fff;
+        border-color: #2c2c2c;
+    }
+
+    .btn-day-action.accepted {
+        background: #4cd964;
+        color: #fff;
+        border-color: #4cd964;
+    }
+
+    .btn-day-action.worn {
+        background: #f5a623;
+        color: #fff;
+        border-color: #f5a623;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        padding: 4px 10px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.suggested {
+        background: #e8e8e8;
+        color: #666;
+    }
+
+    .status-badge.accepted {
+        background: #4cd964;
+        color: #fff;
+    }
+
+    .status-badge.worn {
+        background: #f5a623;
+        color: #fff;
+    }
+
+    /* Empty State for Day */
+    .day-empty-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+        color: #999;
+    }
+
+    .day-empty-state svg {
+        width: 48px;
+        height: 48px;
+        opacity: 0.3;
+        margin-bottom: 12px;
+    }
+
+    /* No Plan State */
+    .no-plan-state {
+        text-align: center;
+        padding: 80px 40px;
+        background: #fff;
+        border: 2px dashed #ddd;
+    }
+
+    .no-plan-icon {
+        font-size: 64px;
+        margin-bottom: 24px;
+        opacity: 0.4;
+    }
+
+    .no-plan-state h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2c2c2c;
+        margin-bottom: 12px;
+    }
+
+    .no-plan-state p {
+        color: #666;
+        font-size: 16px;
+        margin-bottom: 24px;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Generate Button */
+    .btn-generate {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 32px;
+        font-size: 16px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-generate:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-generate svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* AI Reasoning Panel */
+    .ai-panel {
+        background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+        color: #fff;
+        padding: 24px;
+        margin-bottom: 32px;
+    }
+
+    .ai-panel-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .ai-panel-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ai-panel-title {
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .ai-panel-reasoning {
+        font-size: 15px;
+        line-height: 1.6;
+        opacity: 0.9;
+    }
+
+    /* Sidebar Stats */
+    .sidebar-stats {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .stat-row:last-child {
+        border-bottom: none;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #666;
+    }
+
+    .stat-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2c2c2c;
+    }
+
+    /* Loading State */
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .loading-overlay.active {
+        display: flex;
+    }
+
+    .loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 3px solid #e8e8e8;
+        border-top-color: #2c2c2c;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .loading-text {
+        margin-top: 16px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c2c2c;
+    }
+
+    /* Alternatives Modal */
+    .alternatives-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .alternatives-modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: #fff;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+        padding: 24px;
+        border-bottom: 1px solid #e8e8e8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2c2c2c;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .alternative-option {
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+        border: 1px solid #e8e8e8;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .alternative-option:hover {
+        border-color: #2c2c2c;
+        background: #fafafa;
+    }
+
+    .alternative-items {
+        display: flex;
+        gap: 6px;
+    }
+
+    .alternative-items img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border: 1px solid #e8e8e8;
+    }
+
+    .alternative-info {
+        flex: 1;
+    }
+
+    .alternative-name {
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 4px;
+    }
+
+    .alternative-occasion {
+        font-size: 12px;
+        color: #888;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .weekly-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    @media (max-width: 900px) {
+        .weekly-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .weekly-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .weekly-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .weekly-nav {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+
+    /* Laundry Warning Badges */
+    .laundry-warning {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 10;
+    }
+
+    .laundry-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        font-size: 10px;
+        font-weight: 700;
+        border-radius: 4px;
+        cursor: help;
+    }
+
+    .laundry-badge.needs-wash {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #f59e0b;
+    }
+
+    .laundry-badge.urgent {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #ef4444;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+    }
+
+    .laundry-badge .icon {
+        font-size: 12px;
+    }
+
+    .laundry-tooltip {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 4px;
+        background: #1f2937;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 400;
+        white-space: nowrap;
+        z-index: 100;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .laundry-warning:hover .laundry-tooltip {
+        display: block;
+    }
+
+    .laundry-tooltip::before {
+        content: '';
+        position: absolute;
+        top: -4px;
+        left: 10px;
+        width: 8px;
+        height: 8px;
+        background: #1f2937;
+        transform: rotate(45deg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="weekly-header">
+    <div class="weekly-title-section">
+        <h1>🗓️ AI Weekly Planner</h1>
+        <div class="weekly-dates">
+            {{ week_start|date:"M j" }} - {{ week_end|date:"M j, Y" }}
+        </div>
+    </div>
+
+    <div class="weekly-nav">
+        <div class="week-nav-group">
+            <a href="?week={{ prev_week|date:'Y-m-d' }}" class="btn-week-nav">← Prev</a>
+            <a href="?week={{ current_week|date:'Y-m-d' }}"
+                class="btn-week-nav {% if week_start == current_week %}active{% endif %}">Today</a>
+            <a href="?week={{ next_week|date:'Y-m-d' }}" class="btn-week-nav">Next →</a>
+        </div>
+
+        {% if weekly_plan %}
+        <form method="post" action="{% url 'planner:generate_weekly_plan' %}" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="week_start" value="{{ week_start|date:'Y-m-d' }}">
+            <button type="submit" class="btn-generate" style="padding: 10px 20px; font-size: 13px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 4v6h6M23 20v-6h-6"></path>
+                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                </svg>
+                Regenerate
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Actions Bar -->
+<div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+    <a href="{% url 'wardrobe:laundry_dashboard' %}"
+        style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #f0fdf4; border: 1px solid #86efac; color: #166534; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
+        🧺 Laundry Dashboard
+    </a>
+    <a href="{% url 'profile_settings' %}"
+        style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #f0f9ff; border: 1px solid #7dd3fc; color: #0369a1; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
+        📊 Style Insights & Notifications
+    </a>
+    <a href="{% url 'planner:calendar' %}"
+        style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #fefce8; border: 1px solid #fde047; color: #854d0e; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
+        📅 Calendar & Events
+    </a>
+</div>
+
+{% if weekly_plan %}
+<!-- AI Reasoning Panel -->
+<div class="ai-panel">
+    <div class="ai-panel-header">
+        <div class="ai-panel-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+        </div>
+        <span class="ai-panel-title">AI Style Assistant</span>
+    </div>
+    <div class="ai-panel-reasoning">
+        {{ weekly_plan.generation_reasoning }}
+    </div>
+</div>
+
+<!-- Weekly Grid -->
+<div class="weekly-grid stagger-children">
+    {% for slot in weekly_plan.daily_slots.all %}
+    <div class="day-card animate-fade-in-up {% if slot.is_today %}is-today{% endif %} {% if slot.is_past %}is-past{% endif %}"
+        data-slot-id="{{ slot.id }}">
+
+        <!-- Status Badge -->
+        {% if slot.status != 'suggested' %}
+        <span class="status-badge {{ slot.status }}">{{ slot.status }}</span>
+        {% endif %}
+
+        <!-- Laundry Warning Badge -->
+        {% with slot_id=slot.id|stringformat:"s" %}
+        {% if slot_id in laundry_conflicts %}
+        <div class="laundry-warning">
+            {% with conflict=laundry_conflicts|get_item:slot_id %}
+            {% if conflict.count > 0 %}
+            <span class="laundry-badge urgent">
+                <span class="icon">🧺</span>
+                {{ conflict.count }} need{% if conflict.count > 1 %}s{% endif %} wash
+            </span>
+            <div class="laundry-tooltip">
+                {% for name in conflict.needs_wash %}{{ name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </div>
+            {% elif conflict.approaching %}
+            <span class="laundry-badge needs-wash">
+                <span class="icon">⚠️</span>
+                Approaching
+            </span>
+            <div class="laundry-tooltip">
+                {% for name in conflict.approaching %}{{ name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Day Header -->
+        <div class="day-header">
+            <div class="day-name">{{ slot.day_name }}</div>
+            <div class="day-date">{{ slot.date|date:"j" }}</div>
+
+            {% if slot.temperature %}
+            <div class="weather-badge">
+                <span class="weather-temp">{{ slot.temperature }}°C</span>
+                <span>{{ slot.weather_condition }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Day Content -->
+        <div class="day-content">
+            <!-- Events -->
+            {% if slot.has_events %}
+            <div class="day-events-preview">
+                {% for event in slot.events.all %}
+                <span class="event-chip {{ event.occasion_type }}">{{ event.title|truncatechars:15 }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Outfit Preview -->
+            {% if slot.primary_outfit %}
+            <div class="outfit-preview-card">
+                <div class="outfit-name">{{ slot.primary_outfit.name }}</div>
+
+                <div class="outfit-items-stack">
+                    {% for item in slot.primary_outfit.items.all|slice:":4" %}
+                    <div class="outfit-item-thumb">
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="ai-reasoning">
+                    {{ slot.selection_reason }}
+                    <div class="ai-confidence">
+                        <span>{{ slot.confidence|floatformat:0 }}% match</span>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: {{ slot.confidence }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="day-empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <p>No outfit suggested</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Actions -->
+        {% if slot.primary_outfit and not slot.is_past %}
+        <div class="day-actions">
+            {% if slot.status == 'suggested' %}
+            <form method="post" action="{% url 'planner:accept_daily_outfit' slot.id %}" style="flex:1;">
+                {% csrf_token %}
+                <button type="submit" class="btn-day-action" style="width:100%;">Accept</button>
+            </form>
+            {% elif slot.status == 'accepted' %}
+            <form method="post" action="{% url 'planner:mark_outfit_worn' slot.id %}" style="flex:1;">
+                {% csrf_token %}
+                <button type="submit" class="btn-day-action accepted" style="width:100%;">Mark Worn</button>
+            </form>
+            {% elif slot.status == 'worn' %}
+            <span class="btn-day-action worn" style="flex:1;">✓ Worn</span>
+            {% endif %}
+
+            {% if slot.alternatives.count > 0 and slot.status != 'worn' %}
+            <button class="btn-day-action" onclick="openAlternatives('{{ slot.id }}')">Swap</button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- No Plan State -->
+<div class="no-plan-state animate-fade-in-up">
+    <div class="no-plan-icon">🎨</div>
+    <h2>No Weekly Plan Yet</h2>
+    <p>Let our AI create personalized outfit suggestions for your entire week based on your calendar, weather, and style
+        preferences.</p>
+
+    {% if outfit_count >= 3 %}
+    <form method="post" action="{% url 'planner:generate_weekly_plan' %}">
+        {% csrf_token %}
+        <input type="hidden" name="week_start" value="{{ week_start|date:'Y-m-d' }}">
+        <button type="submit" class="btn-generate" id="generate-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            Generate Weekly Plan
+        </button>
+    </form>
+    {% else %}
+    <div style="margin-top: 20px;">
+        <p style="color: #c55; font-weight: 600;">You need at least 3 outfits to generate a weekly plan.</p>
+        <a href="{% url 'outfits:create' %}" class="btn btn-primary" style="margin-top: 16px;">Create Outfits</a>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Sidebar Stats -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 32px;">
+    <div class="sidebar-stats">
+        <div class="stat-row">
+            <span class="stat-label">Your Outfits</span>
+            <span class="stat-value">{{ outfit_count }}</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Wardrobe Items</span>
+            <span class="stat-value">{{ wardrobe_count }}</span>
+        </div>
+    </div>
+
+    {% if current_weather %}
+    <div class="sidebar-stats">
+        <div class="stat-row">
+            <span class="stat-label">Current Weather ({{ location }})</span>
+            <span class="stat-value">{{ current_weather.temperature }}°C</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Condition</span>
+            <span class="stat-value">{{ current_weather.condition }}</span>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">AI is planning your week...</div>
+</div>
+
+<!-- Alternatives Modal -->
+<div class="alternatives-modal" id="alternatives-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Choose Alternative Outfit</h3>
+            <button class="modal-close" onclick="closeAlternatives()">&times;</button>
+        </div>
+        <div class="modal-body" id="alternatives-list">
+            <!-- Populated by JavaScript -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Show loading overlay when generating
+    document.querySelectorAll('form[action*="generate"]').forEach(form => {
+        form.addEventListener('submit', () => {
+            document.getElementById('loading-overlay').classList.add('active');
+        });
+    });
+
+    // Alternatives modal
+    window.currentSlotId = null;
+
+    function openAlternatives(slotId) {
+        window.currentSlotId = slotId;
+        // Find the slot and populate alternatives
+        const modal = document.getElementById('alternatives-modal');
+        const list = document.getElementById('alternatives-list');
+
+        // For now, show a simple message - in production, fetch alternatives via AJAX
+        list.innerHTML = '<p style="text-align:center; color:#666;">Loading alternatives...</p>';
+        modal.classList.add('active');
+
+        // You would typically fetch alternatives here
+        // fetch(`/planner/weekly/slot/${slotId}/alternatives/`)
+    }
+
+    function closeAlternatives() {
+        document.getElementById('alternatives-modal').classList.remove('active');
+        window.currentSlotId = null;
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('alternatives-modal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            closeAlternatives();
+        }
+    });
+</script>
+{% endblock %}
