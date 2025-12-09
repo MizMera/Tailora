@@ -238,6 +238,15 @@ class StyleProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # Coaching preferences
+    COACH_MODE_CHOICES = [
+        ('gentle', 'Gentle Guide'),
+        ('strict', 'Strict Stylist'),
+        ('educational', 'Professor of Style'),
+    ]
+    coach_mode = models.CharField(max_length=20, choices=COACH_MODE_CHOICES, default='gentle')
+    learning_focus = models.JSONField(default=list, blank=True)  # e.g. ["Color Theory", "Proportions"]
+    
     class Meta:
         db_table = 'style_profiles'
         verbose_name = 'Style Profile'
@@ -245,6 +254,89 @@ class StyleProfile(models.Model):
     
     def __str__(self):
         return f"Style Profile - {self.user.email}"
+
+
+
+class FashionIQ(models.Model):
+    """
+    Tracks the user's fashion competence and learning progress.
+    Gamifies the style improvement process.
+    """
+    LEVEL_CHOICES = [
+        ('novice', 'Fashion Novice'),
+        ('intermediate', 'Style Enthusiast'),
+        ('advanced', 'Taste Maker'),
+        ('expert', 'Style Icon'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='fashion_iq')
+    
+    current_level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='novice')
+    total_xp = models.IntegerField(default=0)
+    
+    # Skill Scores (0-100)
+    color_score = models.IntegerField(default=10, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    pattern_score = models.IntegerField(default=10, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    silhouette_score = models.IntegerField(default=10, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    versatility_score = models.IntegerField(default=10, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    
+    # Learning Stats
+    lessons_completed = models.IntegerField(default=0)
+    strengths = models.JSONField(default=list, blank=True)
+    areas_for_improvement = models.JSONField(default=list, blank=True)
+    
+    # Streak Tracking
+    current_streak = models.IntegerField(default=0)
+    longest_streak = models.IntegerField(default=0)
+    last_good_outfit_date = models.DateField(null=True, blank=True)
+    
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'fashion_iq'
+        verbose_name = 'Fashion IQ'
+        verbose_name_plural = 'Fashion IQs'
+
+    def __str__(self):
+        return f"{self.user.email} - {self.get_current_level_display()}"
+
+
+class StyleCritiqueSession(models.Model):
+    """
+    A feedback session where the AI critiques an outfit or choice.
+    Acts as a 'Lesson' for the user.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='critique_sessions')
+    
+    # The subject of critique
+    outfit_image = models.ImageField(upload_to='critiques/', blank=True, null=True)
+    # We use string reference to avoid circular imports if outfits app imports User
+    related_outfit = models.ForeignKey('outfits.Outfit', on_delete=models.SET_NULL, null=True, blank=True, related_name='critiques')
+    
+    # AI Feedback
+    critique_text = models.TextField()  # "The red clashes with the pink..."
+    suggestion_text = models.TextField()  # "Try a white shirt instead."
+    
+    # Educational Context
+    concept_taught = models.CharField(max_length=100, blank=True)  # e.g. "Color Theory: Analogous Colors"
+    xp_gained = models.IntegerField(default=0)
+    
+    # User Reaction
+    is_accepted = models.BooleanField(default=False)  # Did they take the advice?
+    is_helpful = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'style_critiques'
+        ordering = ['-created_at']
+        verbose_name = 'Style Critique'
+        verbose_name_plural = 'Style Critiques'
+    
+    def __str__(self):
+        return f"Critique for {self.user.email} - {self.concept_taught}"
 
 
 class Notification(models.Model):
@@ -279,5 +371,30 @@ class Notification(models.Model):
         verbose_name = 'Notification'
         verbose_name_plural = 'Notifications'
     
+
     def __str__(self):
         return f"{self.user.email} - {self.title}"
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_user_related_models(sender, instance, created, **kwargs):
+    """
+    Ensure related models are created when a User is created.
+    """
+    if created:
+        FashionIQ.objects.get_or_create(user=instance)
+        StyleProfile.objects.get_or_create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_related_models(sender, instance, **kwargs):
+    """
+    Ensure related models are saved when User is saved.
+    """
+    if hasattr(instance, 'fashion_iq'):
+        instance.fashion_iq.save()
+    if hasattr(instance, 'style_profile'):
+        instance.style_profile.save()
+

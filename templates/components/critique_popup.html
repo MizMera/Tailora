@@ -1,0 +1,127 @@
+<div id="critique-popup" class="critique-popup animate-fade-in-up" style="display: none;">
+    <div class="critique-content">
+        <div class="critique-header">
+            <h3>AI Style Coach</h3>
+            <span class="close-btn" onclick="closeCritique()">&times;</span>
+        </div>
+
+        <div class="critique-body">
+            {% if critique.concept_taught != 'Good Style' %}
+            <div class="critique-alert warning">
+                <span class="icon">⚠️</span>
+                <strong>Wait!</strong> {{ critique.critique_text }}
+            </div>
+            {% else %}
+            <div class="critique-alert success">
+                <span class="icon">✨</span>
+                <strong>Perfect!</strong> {{ critique.critique_text }}
+            </div>
+            {% endif %}
+
+            <p class="critique-suggestion">{{ critique.suggestion_text }}</p>
+
+            <div class="xp-badge">
+                <span>+{{ critique.xp_gained|default:"10" }} XP</span>
+                <small>{{ critique.concept_taught }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .critique-popup {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 350px;
+        background: white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border-radius: 16px;
+        z-index: 1000;
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .critique-header {
+        background: #AB886D;
+        color: white;
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .critique-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .close-btn {
+        cursor: pointer;
+        font-size: 20px;
+    }
+
+    .critique-body {
+        padding: 20px;
+    }
+
+    .critique-alert {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        display: flex;
+        gap: 8px;
+        align-items: start;
+    }
+
+    .critique-alert.warning {
+        background: #FFF4E5;
+        color: #663C00;
+        border: 1px solid #FFD699;
+    }
+
+    .critique-alert.success {
+        background: #E8F5E9;
+        color: #1B5E20;
+        border: 1px solid #A5D6A7;
+    }
+
+    .critique-suggestion {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 16px;
+        line-height: 1.5;
+    }
+
+    .xp-badge {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #333;
+    }
+</style>
+
+<script>
+    function closeCritique() {
+        document.getElementById('critique-popup').style.display = 'none';
+        // Ideally, send an AJAX request to mark as read/accepted
+    }
+
+    // Auto-show if critique exists
+    document.addEventListener('DOMContentLoaded', function () {
+        const popup = document.getElementById('critique-popup');
+        if (popup) {
+            // Simple animation delay
+            setTimeout(() => {
+                popup.style.display = 'block';
+            }, 500);
+        }
+    });
+</script>

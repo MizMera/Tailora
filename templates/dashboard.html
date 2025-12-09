@@ -53,6 +53,11 @@
     <!-- Statistics Section -->
     <div class="stats-section stagger-children">
         <div class="stat-card animate-fade-in-up">
+            <div class="stat-label">Fashion IQ</div>
+            <div class="stat-value" style="color: #AB886D;">{{ user.fashion_iq.total_xp|default:'0' }}</div>
+            <div class="stat-description">{{ user.fashion_iq.get_current_level_display|default:'Novice' }}</div>
+        </div>
+        <div class="stat-card animate-fade-in-up">
             <div class="stat-label">Items</div>
             <div class="stat-value" data-counter="{{ user.wardrobe_items_count|default:'0' }}">0</div>
             <div class="stat-description">Total wardrobe items</div>
@@ -66,6 +71,11 @@
             <div class="stat-label">Followers</div>
             <div class="stat-value" data-counter="{{ user.followers_count|default:'0' }}">0</div>
             <div class="stat-description">Total followers</div>
+        </div>
+        <div class="stat-card animate-fade-in-up">
+            <div class="stat-label">🔥 Streak</div>
+            <div class="stat-value" style="color: #FF6B35;">{{ user.fashion_iq.current_streak|default:'0' }}</div>
+            <div class="stat-description">Days of great style</div>
         </div>
     </div>
 
