@@ -25,6 +25,7 @@ from .models import (
     ColorCompatibility,
     StyleRule
 )
+from users.models import FashionIQ, StyleCritiqueSession
 
 
 class OutfitRecommendationEngine:
@@ -725,3 +726,219 @@ class OutfitRecommendationEngine:
                 'reason': recommendation.reason,
             }
         )
+
+
+class StyleCoach:
+    """
+    AI Style Coach Logic
+    Audits outfits for style rules and updates Fashion IQ.
+    """
+    
+    def __init__(self, user):
+        self.user = user
+        
+    def audit_outfit(self, outfit) -> StyleCritiqueSession:
+        """
+        Analyze an outfit and define if it's a 'Lesson' or a 'Win'.
+        Updates Fashion IQ.
+        """
+        # 1. Analyze Logic
+        items = list(outfit.items.all())
+        colors = [item.color.lower() for item in items if item.color]
+        
+        # Check Color Harmony
+        harmony_score, harmony_reason = self._check_color_harmony(colors)
+        
+        # Check Pattern Mixing (Simple rule: > 2 patterned items is risky)
+        pattern_issues = self._check_patterns(items)
+        
+        # 2. Determine Feedback
+        critique = ""
+        suggestion = ""
+        concept = ""
+        is_positive = True
+        xp_gain = 10  # Base XP for creating an outfit
+        
+        if harmony_score < 0.4:
+            critique = f"Contrast Warning: {harmony_reason}" if harmony_reason else "These colors have problematic contrast."
+            suggestion = "Try replacing one item with a solid neutral (White or Black)."
+            concept = "Color Theory: Rule of Harmony"
+            is_positive = False
+            xp_gain += 5  # Learning opportunity
+        elif pattern_issues:
+            critique = f"You are mixing {len(pattern_issues)} patterns."
+            suggestion = "Stick to 1 mixed pattern per outfit for a cohesive look."
+            concept = "Pattern Mixing 101"
+            is_positive = False
+            xp_gain += 5
+        else:
+            critique = "Great coordination!"
+            suggestion = "This looks balanced."
+            concept = "Good Style"
+            xp_gain += 15  # Bonus for good style
+            
+        # 3. Create Session Record
+        session = StyleCritiqueSession.objects.create(
+            user=self.user,
+            related_outfit=outfit,
+            critique_text=critique,
+            suggestion_text=suggestion,
+            concept_taught=concept,
+            xp_gained=xp_gain,
+            is_helpful=True
+        )
+        
+        # 4. Update Fashion IQ
+        self._update_fashion_iq(xp_gain, harmony_score)
+        
+        return session
+
+    def _check_color_harmony(self, colors: List[str]) -> Tuple[float, str]:
+        """
+        Check color harmony using color theory rules.
+        Returns: (score, reason)
+        """
+        if len(colors) < 2:
+            return 1.0, ""  # Monochromatic/Single item is safe
+            
+        # Normalize to base colors
+        colors = [self._get_base_color(c) for c in colors]
+        unique_colors = set(colors)
+        
+        # Define color relationships
+        NEUTRALS = {'black', 'white', 'grey', 'beige', 'navy'}
+        
+        # Good combinations (Analogous, Classic, Safe)
+        GOOD_COMBOS = [
+            {'navy', 'white'},        # Classic
+            {'black', 'white'},       # Timeless
+            {'navy', 'beige'},        # Nautical
+            {'grey', 'pink'},         # Soft contrast
+            {'blue', 'white'},        # Fresh
+            {'brown', 'beige'},       # Earth tones
+            {'green', 'brown'},       # Natural
+            {'blue', 'grey'},         # Cool tones
+        ]
+        
+        # Risky combinations (Complementary/Clashing)
+        CLASH_COMBOS = [
+            ({'black', 'brown'}, "Mixing Black and Brown is difficult to pull off."),
+            ({'black', 'navy'}, "Black and Navy can look mismatched."),
+            ({'red', 'pink'}, "Red and Pink are risky together."),
+            ({'red', 'green'}, "Red and Green can look too festive."),
+            ({'purple', 'orange'}, "Purple and Orange clash."),
+            ({'red', 'orange'}, "Red and Orange compete for attention."),
+            ({'blue', 'green'}, "Blue and Green require careful balance."),
+        ]
+        
+        # 1. Check for GOOD combinations first
+        non_neutrals = unique_colors - NEUTRALS
+        if len(non_neutrals) <= 1:
+            # Neutral + 1 accent = Usually good
+            return 0.9, ""
+            
+        for good_combo in GOOD_COMBOS:
+            if good_combo.issubset(unique_colors):
+                return 0.95, ""  # Known good combo
+        
+        # 2. Check for "Busy" (Too many colors)
+        if len(unique_colors) > 3:
+            return 0.35, "This outfit looks busy. Try reducing the number of colors."
+            
+        # 3. Check for CLASHES
+        for clash_set, warning in CLASH_COMBOS:
+            if clash_set.issubset(unique_colors):
+                return 0.3, warning
+                
+        # 4. Check for "Neutral Chaos" (Black + Brown + Grey)
+        dark_neutrals = unique_colors & {'black', 'brown', 'grey', 'navy'}
+        if len(dark_neutrals) >= 3:
+            return 0.35, "Too many dark neutrals competing."
+
+        # Default: Acceptable but not exceptional
+        return 0.7, ""
+
+    def _get_base_color(self, color_name: str) -> str:
+        """
+        Extract base color from description (e.g., 'Dark Gray' -> 'gray')
+        """
+        color = color_name.lower().strip()
+        
+        # Specific mappings
+        if 'navy' in color: return 'navy'
+        if 'brown' in color or 'beige' in color or 'tan' in color or 'camel' in color: return 'brown'
+        if 'gray' in color or 'grey' in color or 'silver' in color or 'charcoal' in color: return 'grey'
+        if 'white' in color or 'cream' in color or 'ivory' in color: return 'white'
+        if 'black' in color: return 'black'
+        if 'red' in color or 'burgundy' in color or 'maroon' in color: return 'red'
+        if 'pink' in color or 'rose' in color: return 'pink'
+        if 'green' in color or 'olive' in color: return 'green'
+        if 'blue' in color: return 'blue'
+        if 'orange' in color: return 'orange'
+        if 'yellow' in color or 'gold' in color: return 'yellow'
+        if 'purple' in color or 'violet' in color or 'lavender' in color: return 'purple'
+        
+        return color
+
+    def _check_patterns(self, items) -> List[str]:
+        """
+        Detect patterns and return list of patterned items.
+        """
+        PATTERN_KEYWORDS = [
+            'stripe', 'striped', 'pinstripe', 'breton',
+            'floral', 'flower', 'botanical',
+            'plaid', 'tartan', 'check', 'checked', 'gingham',
+            'polka', 'dot', 'spotted', 'dotted',
+            'leopard', 'zebra', 'snake', 'animal', 'tiger',
+            'geometric', 'abstract', 'graphic',
+            'paisley', 'print', 'pattern',
+        ]
+        
+        patterned_items = []
+        for item in items:
+            text = (item.name + " " + " ".join(item.tags or [])).lower()
+            if any(kw in text for kw in PATTERN_KEYWORDS):
+                patterned_items.append(item.name)
+        
+        return patterned_items if len(patterned_items) > 2 else []
+
+    def _update_fashion_iq(self, xp, style_score):
+        """
+        Add XP, check for level up, and update streak
+        """
+        from datetime import date, timedelta
+        
+        iq, created = FashionIQ.objects.get_or_create(user=self.user)
+        iq.total_xp += xp
+        iq.lessons_completed += 1
+        
+        # Streak Logic: If good outfit (score >= 0.7), update streak
+        today = date.today()
+        if style_score >= 0.7:
+            if iq.last_good_outfit_date:
+                days_since = (today - iq.last_good_outfit_date).days
+                if days_since == 1:
+                    # Consecutive day - extend streak
+                    iq.current_streak += 1
+                elif days_since == 0:
+                    # Same day - don't change streak
+                    pass
+                else:
+                    # Streak broken - restart
+                    iq.current_streak = 1
+            else:
+                # First good outfit ever
+                iq.current_streak = 1
+            
+            iq.last_good_outfit_date = today
+            iq.longest_streak = max(iq.longest_streak, iq.current_streak)
+        
+        # Level Logic
+        if iq.total_xp > 5000:
+            iq.current_level = 'expert'
+        elif iq.total_xp > 2000:
+            iq.current_level = 'advanced'
+        elif iq.total_xp > 500:
+            iq.current_level = 'intermediate'
+        
+        iq.save()
