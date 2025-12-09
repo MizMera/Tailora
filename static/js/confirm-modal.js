@@ -31,7 +31,7 @@
     e.preventDefault();
 
     const formId = trigger.getAttribute('data-form-id');
-  const itemName = trigger.getAttribute('data-item-name') || 'this item';
+    const itemName = trigger.getAttribute('data-item-name') || 'this item';
     let form = null;
     if (formId) form = document.getElementById(formId);
     if (!form) form = trigger.closest('form');
