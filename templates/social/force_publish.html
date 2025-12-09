@@ -1,0 +1,57 @@
+<!-- templates/social/force_publish.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Force Publish Scheduled Posts</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .post { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Force Publish Scheduled Posts</h1>
+    
+    <p><strong>Server time:</strong> {{ now }}</p>
+    <p><strong>User:</strong> {{ request.user.email }}</p>
+    
+    <div class="info">
+        <p>Total scheduled drafts: {{ total_scheduled }}</p>
+        <p>Successfully published: {{ total_published }}</p>
+    </div>
+    
+    {% if published %}
+    <h2>Published Posts:</h2>
+    {% for item in published %}
+    <div class="post">
+        <p><strong>Draft:</strong> {{ item.draft.caption|truncatechars:50 }}</p>
+        <p><strong>Scheduled for:</strong> {{ item.draft.scheduled_for }}</p>
+        <p><strong>Published as:</strong> Post {{ item.post.id }}</p>
+        <p><strong>Status:</strong> 
+            <span class="{% if item.was_on_time %}success{% else %}error{% endif %}">
+                {% if item.was_on_time %}On time{% else %}LATE{% endif %}
+            </span>
+        </p>
+        <p><a href="{% url 'social:post_detail' item.post.id %}" target="_blank">View Post</a></p>
+    </div>
+    {% endfor %}
+    {% endif %}
+    
+    {% if errors %}
+    <h2 class="error">Errors:</h2>
+    <ul>
+    {% for error in errors %}
+        <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    
+    <hr>
+    <p>
+        <a href="{% url 'social:draft_list' %}">Back to Drafts</a> |
+        <a href="{% url 'social:feed' %}">Back to Feed</a>
+    </p>
+</body>
+</html>

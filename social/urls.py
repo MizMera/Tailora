@@ -46,4 +46,22 @@ urlpatterns = [
     
     # REST API routes
     path('', include(router.urls)),
+
+        # Drafts
+    path('drafts/', views.draft_list, name='draft_list'),
+    path('draft/<uuid:draft_id>/', views.draft_detail, name='draft_detail'),
+    path('draft/save/', views.toggle_draft_save, name='save_draft'),
+    path('draft/save/<uuid:post_id>/', views.toggle_draft_save, name='save_post_as_draft'),
+    
+    # AI Endpoints
+    path('ai/suggestions/', views.ai_get_suggestions, name='ai_get_suggestions'),
+    
+    # Post Insights
+    path('post/<uuid:post_id>/insights/', views.post_insights, name='post_insights'),
+    path('draft/<uuid:draft_id>/publish-quick/', views.quick_publish_draft, name='quick_publish_draft'),
+
+    path('check-scheduled/', views.manual_check_scheduled, name='manual_check_scheduled'),
+    path('check-scheduled-ajax/', views.check_scheduled_posts_ajax, name='check_scheduled_ajax'),    
+    
+    path('force-publish-scheduled/', views.force_publish_all_scheduled, name='force_publish_scheduled'),
 ]

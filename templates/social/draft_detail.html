@@ -1,0 +1,405 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Draft - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/social.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+    .draft-form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .draft-preview-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 32px;
+    }
+    .draft-status-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 16px;
+    }
+    .status-draft {
+        background: #fff3e0;
+        color: #e65100;
+    }
+    .status-scheduled {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    .ai-suggestions-panel {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+    .ai-suggestion-item {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .ai-suggestion-item:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    .time-slot {
+        display: inline-block;
+        padding: 8px 16px;
+        margin: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .time-slot:hover, .time-slot.active {
+        background: white;
+        color: #764ba2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Edit Draft</h1>
+        <p class="page-subtitle">Finalize and publish your post</p>
+    </div>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }}" style="max-width: 800px; margin: 0 auto 24px;">
+    {{ message }}
+</div>
+{% endfor %}
+{% endif %}
+
+<div class="draft-form-container">
+    
+    <!-- Draft Status -->
+    <div class="draft-preview-card">
+        <div class="draft-status-badge {% if draft.status == 'scheduled' %}status-scheduled{% else %}status-draft{% endif %}">
+            {% if draft.status == 'scheduled' %}
+            📅 Scheduled for {{ draft.scheduled_for|date:"F j, Y g:i A" }}
+            {% else %}
+            📝 Draft
+            {% endif %}
+        </div>
+        
+        <h3 style="font-size: 18px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">
+            {{ draft.outfit.name }}
+        </h3>
+        
+        {% if draft.caption %}
+        <div style="font-size: 14px; color: #666; margin-bottom: 16px; line-height: 1.5;">
+            {{ draft.caption }}
+        </div>
+        {% endif %}
+        
+        <div style="display: flex; gap: 16px; font-size: 13px; color: #757575;">
+            <span>Visibility: {{ draft.get_visibility_display }}</span>
+            <span>Created: {{ draft.created_at|date:"M d, Y" }}</span>
+            <span>Items: {{ draft.outfit.items.count }}</span>
+        </div>
+    </div>
+    
+    <!-- AI Suggestions -->
+    {% if ai_hashtags or ai_captions %}
+    <div class="ai-suggestions-panel">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            🤖 AI Engagement Optimizer
+        </h3>
+        
+        <!-- Hashtag Suggestions -->
+        {% if ai_hashtags %}
+        <div style="margin-bottom: 16px;">
+            <div style="font-size: 14px; margin-bottom: 8px; opacity: 0.9;">Recommended Hashtags</div>
+            <div id="hashtagSuggestions">
+                {% for hashtag in ai_hashtags|slice:":12" %}
+                <span class="ai-tag-suggestion" 
+                      style="display: inline-block; padding: 4px 12px; margin: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 16px; font-size: 12px; cursor: pointer;"
+                      data-tag="{{ hashtag }}">
+                    {{ hashtag }}
+                </span>
+                {% endfor %}
+            </div>
+            <button type="button" id="applyAllHashtags" class="btn btn-sm" 
+                    style="margin-top: 8px; background: rgba(255, 255, 255, 0.2); color: white; border: none;">
+                Apply All
+            </button>
+        </div>
+        {% endif %}
+        
+        <!-- Caption Suggestions -->
+        {% if ai_captions %}
+        <div style="margin-bottom: 16px;">
+            <div style="font-size: 14px; margin-bottom: 8px; opacity: 0.9;">Caption Ideas</div>
+            <div id="captionSuggestions">
+                {% for caption in ai_captions %}
+                <div class="ai-suggestion-item" data-caption="{{ caption }}">
+                    {{ caption }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Best Time Suggestions -->
+        <div>
+            <div style="font-size: 14px; margin-bottom: 8px; opacity: 0.9;">⏰ Best Time to Post</div>
+            <div id="timeSuggestions">
+                {% for time in suggested_times %}
+                <span class="time-slot" data-time="{{ time }}">
+                    {{ time|date:"g:i A" }}
+                </span>
+                {% endfor %}
+                <span class="time-slot active" data-time="{{ best_time|date:'c' }}">
+                    {{ best_time|date:"F j, g:i A" }}
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Edit Form -->
+    <form method="post" class="social-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update">
+        
+        <div class="form-section">
+            <h3 class="section-title">CAPTION</h3>
+            <div class="form-group">
+                <textarea name="caption" class="input-control" rows="4" 
+                          placeholder="Write your caption...">{{ draft.caption }}</textarea>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3 class="section-title">HASHTAGS</h3>
+            <div class="form-group">
+                <input type="text" name="hashtags" class="input-control" 
+                       placeholder="#ootd #style #fashion" 
+                       value="{% for tag in draft.hashtags %}{{ tag }} {% endfor %}">
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3 class="section-title">VISIBILITY</h3>
+            <div class="form-group">
+                <select name="visibility" class="input-control">
+                    {% for value, label in visibility_choices %}
+                    <option value="{{ value }}" {% if draft.visibility == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3 class="section-title">PUBLICATION OPTIONS</h3>
+            
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 16px;">
+                    <input type="checkbox" name="schedule_post" id="schedulePost" value="true" 
+                           {% if draft.status == 'scheduled' %}checked{% endif %}>
+                    <span style="font-size: 14px; font-weight: 500;">Schedule for later</span>
+                </label>
+                
+                <!-- Dans le formulaire -->
+                <div id="scheduleTimePicker" style="{% if draft.status != 'scheduled' %}display: none;{% endif %} margin-top: 12px;">
+                    <label class="form-label">Schedule Date & Time</label>
+                    <input type="datetime-local" name="scheduled_time" class="input-control" 
+                        id="scheduledTime" 
+                        value="{% if scheduled_time_formatted %}{{ scheduled_time_formatted }}{% endif %}"
+                        min="{{ now|date:'Y-m-d\TH:i' }}">
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-actions" style="display: flex; gap: 12px; margin-top: 32px;">
+            <button type="submit" name="publish" value="true" class="btn btn-primary">
+                Publish Now
+            </button>
+            <button type="submit" class="btn btn-secondary">
+                Save Changes
+            </button>
+            <button type="button" onclick="deleteDraft()" class="btn btn-error">
+                Delete Draft
+            </button>
+            <a href="{% url 'social:draft_list' %}" class="btn btn-outline">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% if draft.status == 'published' %}
+<script>
+    // Chercher le post correspondant au draft
+    fetch('{% url "social:find_post_by_draft" draft.id %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.post_id) {
+                window.location.href = '{% url "social:post_detail" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', data.post_id);
+            } else {
+                window.location.href = '{% url "social:feed" %}';
+            }
+        })
+        .catch(error => {
+            window.location.href = '{% url "social:feed" %}';
+        });
+</script>
+<div style="text-align: center; padding: 100px 20px;">
+    <h2>Post Published! Redirecting...</h2>
+    <p>Your scheduled post has been published.</p>
+</div>
+{% else %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const captionTextarea = document.querySelector('textarea[name="caption"]');
+    const hashtagsInput = document.querySelector('input[name="hashtags"]');
+    const scheduleCheckbox = document.getElementById('schedulePost');
+    const schedulePicker = document.getElementById('scheduleTimePicker');
+    const scheduledTime = document.getElementById('scheduledTime');
+    
+    // Apply hashtag suggestions
+    document.querySelectorAll('.ai-tag-suggestion').forEach(tag => {
+        tag.addEventListener('click', function() {
+            const currentHashtags = hashtagsInput.value.trim();
+            const newTag = this.dataset.tag;
+            
+            if (!currentHashtags.includes(newTag)) {
+                hashtagsInput.value = currentHashtags 
+                    ? `${currentHashtags} ${newTag}`
+                    : newTag;
+            }
+        });
+    });
+    
+    // Apply all hashtags
+    document.getElementById('applyAllHashtags').addEventListener('click', function() {
+        const allTags = Array.from(document.querySelectorAll('.ai-tag-suggestion'))
+            .map(tag => tag.dataset.tag)
+            .join(' ');
+        hashtagsInput.value = allTags;
+    });
+    
+    // Apply caption suggestions
+    document.querySelectorAll('.ai-suggestion-item').forEach(item => {
+        item.addEventListener('click', function() {
+            captionTextarea.value = this.dataset.caption;
+        });
+    });
+    
+    // Time slot selection avec timezone
+    document.querySelectorAll('.time-slot').forEach(slot => {
+        slot.addEventListener('click', function() {
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('active'));
+            this.classList.add('active');
+            
+            if (scheduleCheckbox.checked) {
+                const days = parseInt(this.dataset.time || '1');
+                const hour = parseInt(this.dataset.hour || '18');
+                
+                // Calculer la date avec le bon timezone
+                const date = new Date();
+                date.setDate(date.getDate() + days);
+                date.setHours(hour, 0, 0, 0);
+                
+                // Ajuster pour le timezone local
+                const timezoneOffset = date.getTimezoneOffset() * 60000;
+                const localTime = date.getTime() - timezoneOffset;
+                const localDate = new Date(localTime);
+                
+                // Formater pour l'input datetime-local
+                scheduledTime.value = localDate.toISOString().slice(0, 16);
+            }
+        });
+    });
+    
+    // Schedule toggle
+    // Schedule toggle avec timezone
+    scheduleCheckbox.addEventListener('change', function() {
+        schedulePicker.style.display = this.checked ? 'block' : 'none';
+        if (this.checked && !scheduledTime.value) {
+            // Set default to tomorrow at 6 PM avec timezone
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(18, 0, 0, 0);
+            
+            // Ajuster pour le timezone
+            const timezoneOffset = tomorrow.getTimezoneOffset() * 60000;
+            const localTime = tomorrow.getTime() - timezoneOffset;
+            const localDate = new Date(localTime);
+            
+            scheduledTime.value = localDate.toISOString().slice(0, 16);
+        }
+    });
+    
+    // Publish button
+    document.querySelector('button[name="publish"]').addEventListener('click', function(e) {
+        if (!confirm('Publish this post now?')) {
+            e.preventDefault();
+        }
+    });
+});
+
+function deleteDraft() {
+    if (confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = window.location.href;
+        
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        form.appendChild(csrf);
+        
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'delete';
+        form.appendChild(action);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+    // AJOUTEZ CE BLOC À LA FIN (avant la fermeture du script) :
+// Validation de la date programmée
+    scheduledTime.addEventListener('change', function() {
+        if (this.value) {
+            const selectedDate = new Date(this.value);
+            const now = new Date();
+            
+            if (selectedDate <= now) {
+                alert('⚠️ Scheduled time must be in the future. Please select a future date and time.');
+                this.value = '';
+                
+                // Réinitialiser à demain 18h
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(18, 0, 0, 0);
+                
+                const timezoneOffset = tomorrow.getTimezoneOffset() * 60000;
+                const localTime = tomorrow.getTime() - timezoneOffset;
+                const localDate = new Date(localTime);
+                
+                this.value = localDate.toISOString().slice(0, 16);
+            }
+        }
+    });
+}
+</script>
+{% endif %}
+{% endblock %}

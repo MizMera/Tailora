@@ -1,0 +1,11 @@
+<!-- templates/social/test_publish_now.html -->
+<h1>Test Publish Now</h1>
+<p><strong>Time:</strong> {{ now }}</p>
+<p><strong>Draft:</strong> {{ draft.id|default:"None" }}</p>
+<p><strong>Result:</strong> {{ result }}</p>
+{% if post_id %}
+<p><strong>Post ID:</strong> {{ post_id }}</p>
+<p><a href="{% url 'social:post_detail' post_id %}">View Published Post</a></p>
+{% endif %}
+<hr>
+<a href="{% url 'social:draft_list' %}">Back to Drafts</a>

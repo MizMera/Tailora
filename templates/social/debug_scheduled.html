@@ -1,0 +1,26 @@
+<!-- templates/social/debug_scheduled.html -->
+<h1>Debug Scheduled Posts</h1>
+<p>Server time: {{ now }}</p>
+
+<h2>Scheduled Drafts</h2>
+<ul>
+{% for draft in drafts %}
+    <li>
+        {{ draft.caption }} - {{ draft.scheduled_for }}
+        (ID: {{ draft.id }})
+    </li>
+{% empty %}
+    <li>No scheduled drafts</li>
+{% endfor %}
+</ul>
+
+<h2>Published Now</h2>
+<ul>
+{% for item in published %}
+    <li>
+        Draft {{ item.draft.id }} → Post {{ item.post.id }}
+    </li>
+{% empty %}
+    <li>No posts published</li>
+{% endfor %}
+</ul>

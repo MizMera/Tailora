@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Check Scheduled Posts - Tailora{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Check Scheduled Posts</h1>
+        <p class="page-subtitle">Time: {{ now }}</p>
+    </div>
+</div>
+
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="content-section">
+        <h3>Résultat</h3>
+        <p>Posts publiés: {{ count }}</p>
+        
+        {% if published %}
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="background: #f4e9cf;">
+                    <th style="padding: 10px; text-align: left;">Draft ID</th>
+                    <th style="padding: 10px; text-align: left;">Post ID</th>
+                    <th style="padding: 10px; text-align: left;">Outfit</th>
+                    <th style="padding: 10px; text-align: left;">Scheduled For</th>
+                    <th style="padding: 10px; text-align: left;">Published At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in published %}
+                <tr style="border-bottom: 1px solid #e0e0e0;">
+                    <td style="padding: 10px;">{{ item.draft_id }}</td>
+                    <td style="padding: 10px;">
+                        <a href="{% url 'social:post_detail' item.post_id %}">{{ item.post_id }}</a>
+                    </td>
+                    <td style="padding: 10px;">{{ item.outfit }}</td>
+                    <td style="padding: 10px;">{{ item.scheduled_for }}</td>
+                    <td style="padding: 10px;">{{ item.published_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Aucun post à publier.</p>
+        {% endif %}
+        
+        <div style="margin-top: 30px;">
+            <a href="{% url 'social:draft_list' %}" class="btn btn-secondary">Back to Drafts</a>
+            <a href="{% url 'social:feed' %}" class="btn btn-primary">Go to Feed</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
