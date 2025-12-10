@@ -4,12 +4,129 @@
 {% block title %}Create Event - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/planner.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-    .location-picker-container {
+    /* =========================================
+       EVENT CREATE - TAILORA DESIGN SYSTEM
+       ========================================= */
+    
+    /* Page Layout */
+    .event-create-wrapper {
+        background-color: #ffffff;
+        min-height: 100vh;
+    }
+
+    /* Page Header */
+    .event-create-header {
+        margin-bottom: 32px;
+    }
+
+    .event-create-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: #252320;
+        margin: 0 0 8px 0;
+    }
+
+    .event-create-subtitle {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #757575;
+        margin: 0;
+    }
+
+    /* Form Container */
+    .event-form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* Form Section */
+    .form-section {
+        background: #ffffff;
+        border: 1px solid #d9d9d9;
+        padding: 32px;
+        margin-bottom: 24px;
+    }
+
+    .form-section-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: #252320;
+        margin: 0 0 24px 0;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #2c2c2c;
+    }
+
+    /* Form Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: #252320;
+        letter-spacing: 0.3px;
+    }
+
+    .form-label .required {
+        color: #b85c5c;
+    }
+
+    .form-input {
+        padding: 14px 16px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #252320;
+        background: #fafafa;
+        border: 1px solid #d9d9d9;
+        transition: all 0.2s ease;
+    }
+
+    .form-input:hover {
+        background: #f5f5f5;
+    }
+
+    .form-input:focus {
+        outline: none;
+        background: #ffffff;
+        border-color: #2c2c2c;
+    }
+
+    .form-input::placeholder {
+        color: #757575;
+    }
+
+    .form-hint {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #757575;
+        margin-top: 4px;
+    }
+
+    /* Location Picker */
+    .location-picker {
         margin-top: 12px;
     }
 
@@ -25,21 +142,23 @@
 
     .location-map {
         height: 300px;
-        border: 1px solid #e0e0e0;
+        border: 1px solid #d9d9d9;
         background: #f5f5f5;
     }
 
-    .location-help {
+    .location-hint {
+        font-family: 'Inter', sans-serif;
         font-size: 12px;
-        color: #888;
+        color: #757575;
         margin-top: 8px;
     }
 
     .location-result {
-        margin-top: 8px;
-        padding: 10px;
-        background: #f8f9fa;
-        border: 1px solid #e0e0e0;
+        margin-top: 12px;
+        padding: 14px 16px;
+        background: #f4e9cf;
+        border: 1px solid #d9d9d9;
+        font-family: 'Inter', sans-serif;
         font-size: 13px;
         display: none;
     }
@@ -48,11 +167,15 @@
         display: block;
     }
 
+    .location-result strong {
+        color: #252320;
+    }
+
     .search-results-dropdown {
         position: absolute;
         z-index: 1000;
-        background: #fff;
-        border: 1px solid #e0e0e0;
+        background: #ffffff;
+        border: 1px solid #d9d9d9;
         max-height: 200px;
         overflow-y: auto;
         width: calc(100% - 100px);
@@ -65,121 +188,172 @@
     }
 
     .search-result-item {
-        padding: 10px 12px;
+        padding: 12px 16px;
         cursor: pointer;
         border-bottom: 1px solid #f0f0f0;
+        font-family: 'Inter', sans-serif;
         font-size: 13px;
+        color: #252320;
+        transition: background 0.2s ease;
     }
 
     .search-result-item:hover {
-        background: #f5f5f5;
+        background: #fafafa;
     }
 
     .search-result-item:last-child {
         border-bottom: none;
     }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: flex-start;
+        margin-top: 32px;
+    }
+
+    /* Messages */
+    .alert {
+        padding: 16px 24px;
+        margin-bottom: 24px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        border: 1px solid #d9d9d9;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: #ef4444;
+    }
+
+    .alert-success {
+        background: #f4e9cf;
+        color: #252320;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-section {
+            padding: 24px;
+        }
+
+        .location-search-row {
+            flex-direction: column;
+        }
+
+        .search-results-dropdown {
+            width: 100%;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Create New Event</h1>
-        <p class="page-subtitle">Plan an upcoming occasion</p>
+<div class="event-create-wrapper">
+    <!-- Page Header -->
+    <div class="event-create-header">
+        <h1 class="event-create-title">Create New Event</h1>
+        <p class="event-create-subtitle">Plan an upcoming occasion and assign an outfit</p>
     </div>
-</div>
 
-{% if messages %}
-{% for message in messages %}
-<div class="alert alert-{{ message.tags }}">{{ message }}</div>
-{% endfor %}
-{% endif %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
 
-<div class="content-section" style="max-width: 800px; margin: 0 auto;">
-    <form method="post" class="event-form">
-        {% csrf_token %}
+    <div class="event-form-container">
+        <form method="post" class="event-form">
+            {% csrf_token %}
 
-        <div class="form-section">
-            <h3 class="section-title">EVENT DETAILS</h3>
+            <div class="form-section">
+                <h3 class="form-section-title">Event Details</h3>
 
-            <div class="form-grid">
-                <div class="form-group full-width">
-                    <label for="title" class="form-label">Event Title *</label>
-                    <input type="text" id="title" name="title" class="input-control" required
-                        placeholder="e.g., Business Meeting, Friend's Wedding">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="title" class="form-label">Event Title <span class="required">*</span></label>
+                        <input type="text" id="title" name="title" class="form-input" required
+                            placeholder="e.g., Business Meeting, Friend's Wedding">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date" class="form-label">Date <span class="required">*</span></label>
+                        <input type="date" id="date" name="date" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="time" class="form-label">Time</label>
+                        <input type="time" id="time" name="time" class="form-input">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="occasion_type" class="form-label">Occasion Type <span class="required">*</span></label>
+                        <select id="occasion_type" name="occasion_type" class="form-input" required>
+                            {% for value, label in occasion_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width" style="position: relative;">
+                        <label for="location" class="form-label">Location</label>
+                        <div class="location-search-row">
+                            <input type="text" id="location-search" class="form-input"
+                                placeholder="Search for a place...">
+                            <button type="button" id="search-btn" class="btn btn-secondary">Search</button>
+                        </div>
+                        <div id="search-results" class="search-results-dropdown"></div>
+
+                        <!-- Hidden field for the actual location value -->
+                        <input type="hidden" id="location" name="location" value="">
+
+                        <!-- Map Container -->
+                        <div class="location-picker">
+                            <div id="location-map" class="location-map"></div>
+                            <p class="location-hint">Click on the map to select a location, or search above</p>
+                        </div>
+
+                        <!-- Selected Location Display -->
+                        <div id="selected-location" class="location-result">
+                            <strong>Selected:</strong> <span id="location-display"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea id="notes" name="notes" class="form-input" rows="3"
+                            placeholder="Any additional details about the event..."></textarea>
+                    </div>
                 </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="form-section-title">Outfit Planning</h3>
 
                 <div class="form-group">
-                    <label for="date" class="form-label">Date *</label>
-                    <input type="date" id="date" name="date" class="input-control" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="time" class="form-label">Time</label>
-                    <input type="time" id="time" name="time" class="input-control">
-                </div>
-
-                <div class="form-group full-width">
-                    <label for="occasion_type" class="form-label">Occasion Type *</label>
-                    <select id="occasion_type" name="occasion_type" class="input-control" required>
-                        {% for value, label in occasion_choices %}
-                        <option value="{{ value }}">{{ label }}</option>
+                    <label for="outfit" class="form-label">Assign Outfit (Optional)</label>
+                    <select id="outfit" name="outfit" class="form-input">
+                        <option value="">Select an outfit...</option>
+                        {% for outfit in outfits %}
+                        <option value="{{ outfit.id }}">{{ outfit.name }} ({{ outfit.get_occasion_display }})</option>
                         {% endfor %}
                     </select>
-                </div>
-
-                <div class="form-group full-width" style="position: relative;">
-                    <label for="location" class="form-label">Location</label>
-                    <div class="location-search-row">
-                        <input type="text" id="location-search" class="input-control"
-                            placeholder="Search for a place...">
-                        <button type="button" id="search-btn" class="btn btn-secondary">Search</button>
-                    </div>
-                    <div id="search-results" class="search-results-dropdown"></div>
-
-                    <!-- Hidden field for the actual location value -->
-                    <input type="hidden" id="location" name="location" value="">
-
-                    <!-- Map Container -->
-                    <div class="location-picker-container">
-                        <div id="location-map" class="location-map"></div>
-                        <p class="location-help">Click on the map to select a location, or search above</p>
-                    </div>
-
-                    <!-- Selected Location Display -->
-                    <div id="selected-location" class="location-result">
-                        <strong>Selected:</strong> <span id="location-display"></span>
-                    </div>
-                </div>
-
-                <div class="form-group full-width">
-                    <label for="notes" class="form-label">Notes</label>
-                    <textarea id="notes" name="notes" class="input-control" rows="3"
-                        placeholder="Any additional details about the event..."></textarea>
+                    <p class="form-hint">You can assign or change the outfit later</p>
                 </div>
             </div>
-        </div>
 
-        <div class="form-section">
-            <h3 class="section-title">OUTFIT PLANNING</h3>
-
-            <div class="form-group">
-                <label for="outfit" class="form-label">Assign Outfit (Optional)</label>
-                <select id="outfit" name="outfit" class="input-control">
-                    <option value="">Select an outfit...</option>
-                    {% for outfit in outfits %}
-                    <option value="{{ outfit.id }}">{{ outfit.name }} ({{ outfit.get_occasion_display }})</option>
-                    {% endfor %}
-                </select>
-                <p class="form-help">You can assign or change the outfit later</p>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Create Event</button>
+                <a href="{% url 'planner:calendar' %}" class="btn btn-secondary">Cancel</a>
             </div>
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Create Event</button>
-            <a href="{% url 'planner:calendar' %}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 <!-- Leaflet JS -->
@@ -303,15 +477,6 @@
                 searchResults.classList.remove('active');
             }
         });
-
-        // Try to get user's location
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                map.setView([position.coords.latitude, position.coords.longitude], 13);
-            }, function () {
-                // Geolocation failed, keep default (Tunis)
-            });
-        }
     });
 </script>
 {% endblock %}

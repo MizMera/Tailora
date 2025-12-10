@@ -4,110 +4,99 @@
 {% block title %}All Events - Tailora{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <style>
     /* =========================================
-       THEME VARIABLES
+       EVENT LIST - TAILORA DESIGN SYSTEM
        ========================================= */
-    :root {
-        --bg-color: #f8f8f8;
-        --card-bg: #ffffff;
-        --text-main: #1a1a1a;
-        --text-muted: #757575;
-        --border-color: #e0e0e0;
-        --accent-color: #2c2c2c;
-    }
-
-    /* =========================================
-       LAYOUT
-       ========================================= */
-    .planner-wrapper {
-        background-color: var(--bg-color);
+    
+    /* Page Layout */
+    .events-wrapper {
+        background-color: #ffffff;
         min-height: 100vh;
-        padding: 40px 24px;
     }
 
-    .planner-container {
-        max-width: 1100px;
-        margin: 0 auto;
-    }
-
-    /* Header */
-    .page-header {
+    /* Page Header */
+    .events-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
         margin-bottom: 32px;
         flex-wrap: wrap;
-        gap: 16px;
+        gap: 20px;
     }
 
-    .page-title {
+    .events-title {
         font-family: 'Istok Web', sans-serif;
         font-size: 32px;
         font-weight: 700;
-        color: var(--text-main);
-        margin: 0 0 4px 0;
-        line-height: 1.2;
+        color: #252320;
+        margin: 0 0 8px 0;
     }
 
-    .page-subtitle {
+    .events-subtitle {
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        color: var(--text-muted);
+        color: #757575;
         margin: 0;
     }
 
-    /* =========================================
-       STATS GRID
-       ========================================= */
-    .stats-grid {
+    .events-header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Stats Grid */
+    .events-stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
+        gap: 0;
+        background: #ffffff;
+        border: 1px solid #d9d9d9;
         margin-bottom: 32px;
     }
 
-    .stat-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        transition: transform 0.2s, box-shadow 0.2s;
+    .events-stat-card {
+        padding: 28px;
+        border-right: 1px solid #d9d9d9;
+        transition: background 0.2s ease;
     }
 
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0,0,0,0.05);
-        border-color: #ccc;
+    .events-stat-card:last-child {
+        border-right: none;
     }
 
-    .stat-value {
+    .events-stat-card:hover {
+        background: #fafafa;
+    }
+
+    .events-stat-card .stat-value {
         font-family: 'Istok Web', sans-serif;
         font-size: 36px;
         font-weight: 700;
-        color: var(--text-main);
+        color: #252320;
         line-height: 1;
         margin-bottom: 8px;
     }
 
-    .stat-label {
+    .events-stat-card .stat-label {
         font-family: 'Inter', sans-serif;
-        font-size: 12px;
+        font-size: 11px;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: var(--text-muted);
-        font-weight: 600;
+        color: #757575;
     }
 
-    /* =========================================
-       FILTERS
-       ========================================= */
+    .events-stat-card.needs-attention {
+        border-left: 4px solid #c9a55c;
+    }
+
+    /* Filters Section */
     .filter-section {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        padding: 20px;
+        background: #ffffff;
+        border: 1px solid #d9d9d9;
+        padding: 24px;
         margin-bottom: 32px;
     }
 
@@ -118,22 +107,25 @@
         align-items: center;
     }
 
-    .input-control {
+    .filter-input {
         width: 100%;
-        padding: 10px 12px;
+        padding: 14px 16px;
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        border: 1px solid #ddd;
-        border-radius: 0; /* Sharp look */
-        background: #fff;
-        color: var(--text-main);
-        outline: none;
-        height: 42px;
+        border: 1px solid #d9d9d9;
+        background: #ffffff;
+        color: #252320;
         box-sizing: border-box;
+        transition: border-color 0.2s ease;
     }
 
-    .input-control:focus {
-        border-color: var(--text-main);
+    .filter-input:focus {
+        outline: none;
+        border-color: #2c2c2c;
+    }
+
+    .filter-input::placeholder {
+        color: #757575;
     }
 
     .search-wrapper {
@@ -142,56 +134,64 @@
 
     .search-spinner {
         position: absolute;
-        right: 12px;
+        right: 14px;
         top: 50%;
         transform: translateY(-50%);
         display: none;
         animation: spin 1s linear infinite;
     }
 
-    /* =========================================
-       EVENTS LIST
-       ========================================= */
+    @keyframes spin {
+        to { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    /* Events List */
     .events-list {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 0;
     }
 
     .event-card {
         display: flex;
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        transition: all 0.2s;
+        background: #ffffff;
+        border: 1px solid #d9d9d9;
+        border-bottom: none;
+        transition: all 0.2s ease;
         text-decoration: none;
         color: inherit;
         position: relative;
     }
 
+    .event-card:last-child {
+        border-bottom: 1px solid #d9d9d9;
+    }
+
     .event-card:hover {
-        border-color: #bbb;
+        background: #fafafa;
         transform: translateX(4px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        z-index: 1;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
     /* Date Column */
     .event-date-col {
-        width: 90px;
-        background: #f4f4f4;
+        width: 100px;
+        background: #fafafa;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 16px;
+        padding: 20px;
         flex-shrink: 0;
-        border-right: 1px solid var(--border-color);
+        border-right: 1px solid #d9d9d9;
     }
 
     .date-day {
         font-family: 'Istok Web', sans-serif;
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 700;
-        color: var(--text-main);
+        color: #252320;
         line-height: 1;
     }
 
@@ -199,14 +199,15 @@
         font-family: 'Inter', sans-serif;
         font-size: 12px;
         text-transform: uppercase;
-        font-weight: 600;
-        color: var(--text-muted);
+        font-weight: 700;
+        color: #757575;
         margin-top: 4px;
+        letter-spacing: 0.5px;
     }
 
     /* Info Column */
     .event-info-col {
-        padding: 20px;
+        padding: 24px;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
@@ -224,8 +225,37 @@
         font-family: 'Inter', sans-serif;
         font-size: 18px;
         font-weight: 600;
-        color: var(--text-main);
+        color: #252320;
         margin: 0;
+    }
+
+    .event-title.completed {
+        text-decoration: line-through;
+        color: #757575;
+    }
+
+    .event-badges {
+        display: flex;
+        gap: 8px;
+    }
+
+    .event-badge {
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 5px 10px;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-occasion {
+        background: #f0f0f0;
+        color: #252320;
+    }
+
+    .badge-completed {
+        background: #f4e9cf;
+        color: #252320;
     }
 
     .event-meta {
@@ -233,232 +263,262 @@
         gap: 16px;
         font-family: 'Inter', sans-serif;
         font-size: 13px;
-        color: var(--text-muted);
+        color: #757575;
         align-items: center;
     }
 
-    /* Badges */
-    .badge {
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        padding: 4px 8px;
-        letter-spacing: 0.5px;
-        border-radius: 0;
-    }
-
-    .badge-occasion { background: #eee; color: #333; }
-    .badge-completed { background: #dcedc8; color: #33691e; }
-    
+    /* Outfit Status */
     .outfit-status {
-        font-size: 12px;
         display: flex;
         align-items: center;
         gap: 6px;
+        font-weight: 600;
     }
-    .status-ok { color: #2e7d32; font-weight: 500; }
-    .status-missing { color: #e65100; font-weight: 500; }
 
-    /* Buttons */
-    .btn {
-        display: inline-flex;
+    .status-ok {
+        color: #4caf50;
+    }
+
+    .status-missing {
+        color: #c9a55c;
+    }
+
+    /* Empty State */
+    .events-empty {
+        text-align: center;
+        padding: 80px 40px;
+        background: #ffffff;
+        border: 1px solid #d9d9d9;
+    }
+
+    .events-empty-icon {
+        width: 64px;
+        height: 64px;
+        background: #f4e9cf;
+        margin: 0 auto 24px;
+        display: flex;
         align-items: center;
         justify-content: center;
-        padding: 10px 20px;
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        text-decoration: none;
-        border: 1px solid transparent;
-        cursor: pointer;
-        transition: all 0.2s;
-        border-radius: 0;
     }
 
-    .btn-primary { background: var(--text-main); color: #fff; border-color: var(--text-main); }
-    .btn-primary:hover { background: #000; }
-    
-    .btn-secondary { background: #fff; color: var(--text-main); border-color: #ccc; }
-    .btn-secondary:hover { background: #f5f5f5; }
+    .events-empty-icon svg {
+        width: 32px;
+        height: 32px;
+        stroke: #252320;
+    }
 
-    /* Animations */
-    @keyframes spin { from { transform: translateY(-50%) rotate(0deg); } to { transform: translateY(-50%) rotate(360deg); } }
-    .stagger-children > * { animation: fadeInUp 0.4s ease both; }
-    .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
-    .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
-    .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
-    
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+    .events-empty h3 {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: #252320;
+        margin: 0 0 12px 0;
+    }
+
+    .events-empty p {
+        font-family: 'Inter', sans-serif;
+        color: #757575;
+        font-size: 15px;
+        margin: 0 0 28px 0;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+    }
+
+    /* Messages */
+    .success-message {
+        padding: 16px 24px;
+        margin-bottom: 24px;
+        background: #f4e9cf;
+        color: #252320;
+        border: 1px solid #d9d9d9;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
     }
 
     /* Responsive */
-    @media (max-width: 800px) {
-        .filter-form { grid-template-columns: 1fr; }
-        .event-card { flex-direction: column; }
-        .event-date-col { width: 100%; flex-direction: row; gap: 8px; padding: 10px; border-right: none; border-bottom: 1px solid #eee; }
+    @media (max-width: 900px) {
+        .filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .event-card {
+            flex-direction: column;
+        }
+
+        .event-date-col {
+            width: 100%;
+            flex-direction: row;
+            gap: 8px;
+            padding: 14px 20px;
+            border-right: none;
+            border-bottom: 1px solid #d9d9d9;
+        }
+
+        .events-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="planner-wrapper">
-    <div class="planner-container">
-        
-        <!-- Header -->
-        <header class="page-header">
-            <div>
-                <h1 class="page-title">All Events</h1>
-                <p class="page-subtitle">Manage your schedule and outfits</p>
-            </div>
-            <div style="display: flex; gap: 12px;">
-                <a href="{% url 'planner:calendar' %}" class="btn btn-secondary">Calendar View</a>
-                <a href="{% url 'planner:event_create' %}" class="btn btn-primary">+ New Event</a>
-            </div>
-        </header>
-
-        {% if messages %}
-            {% for message in messages %}
-            <div style="padding: 12px; margin-bottom: 24px; background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; font-size: 14px;">
-                {{ message }}
-            </div>
-            {% endfor %}
-        {% endif %}
-
-        <!-- Quick Stats -->
-        <div class="stats-grid stagger-children">
-            <div class="stat-card">
-                <span class="stat-value">{{ total_events }}</span>
-                <span class="stat-label">Total Events</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-value">{{ upcoming_count }}</span>
-                <span class="stat-label">Upcoming</span>
-            </div>
-            <div class="stat-card" style="border-left: 4px solid #f5a623;">
-                <span class="stat-value">{{ no_outfit_count }}</span>
-                <span class="stat-label">Needs Outfit</span>
-            </div>
+<div class="events-wrapper">
+    
+    <!-- Header -->
+    <header class="events-header">
+        <div>
+            <h1 class="events-title">All Events</h1>
+            <p class="events-subtitle">Manage your schedule and plan outfits</p>
         </div>
-
-        <!-- Filters -->
-        <div class="filter-section">
-            <form method="get" id="filter-form" class="filter-form">
-                
-                <!-- Search -->
-                <div class="search-wrapper">
-                    <input type="text" name="search" id="search-input" 
-                           placeholder="Search events..." value="{{ search_query|default:'' }}" 
-                           class="input-control" autocomplete="off">
-                    <svg class="search-spinner" id="search-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
-                        <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="32"></circle>
-                    </svg>
-                </div>
-
-                <!-- Occasion -->
-                <select name="occasion" class="input-control" onchange="this.form.submit()">
-                    <option value="">All Occasions</option>
-                    {% for value, label in occasion_choices %}
-                    <option value="{{ value }}" {% if selected_occasion == value %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-
-                <!-- Status -->
-                <select name="status" class="input-control" onchange="this.form.submit()">
-                    <option value="">All Status</option>
-                    <option value="upcoming" {% if selected_status == 'upcoming' %}selected{% endif %}>Upcoming</option>
-                    <option value="past" {% if selected_status == 'past' %}selected{% endif %}>Past</option>
-                    <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
-                    <option value="no_outfit" {% if selected_status == 'no_outfit' %}selected{% endif %}>Missing Outfit</option>
-                </select>
-
-                <!-- Reset -->
-                {% if search_query or selected_occasion or selected_status %}
-                    <a href="{% url 'planner:event_list' %}" class="btn btn-secondary" style="height: 42px; width: 100%;">Clear</a>
-                {% else %}
-                    <button type="button" class="btn btn-secondary" disabled style="opacity: 0.5; height: 42px; width: 100%;">Clear</button>
-                {% endif %}
-            </form>
+        <div class="events-header-actions">
+            <a href="{% url 'planner:calendar' %}" class="btn btn-secondary">Calendar View</a>
+            <a href="{% url 'planner:event_create' %}" class="btn btn-primary">+ New Event</a>
         </div>
+    </header>
 
-        <!-- Events List -->
-        <div class="content-section">
-            {% if events %}
-            <div class="events-list stagger-children">
-                {% for event in events %}
-                <a href="{% url 'planner:event_detail' event.id %}" class="event-card">
-                    <!-- Date Box -->
-                    <div class="event-date-col">
-                        <span class="date-day">{{ event.date.day }}</span>
-                        <span class="date-month">{{ event.date|date:"M" }}</span>
-                    </div>
+    {% if messages %}
+        {% for message in messages %}
+        <div class="success-message">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
 
-                    <!-- Info -->
-                    <div class="event-info-col">
-                        <div class="event-header">
-                            <h3 class="event-title" {% if event.is_completed %}style="text-decoration: line-through; color: #999;"{% endif %}>
-                                {{ event.title }}
-                            </h3>
-                            <div style="display: flex; gap: 8px;">
-                                {% if event.is_completed %}
-                                    <span class="badge badge-completed">Completed</span>
-                                {% endif %}
-                                <span class="badge badge-occasion">{{ event.get_occasion_type_display }}</span>
-                            </div>
-                        </div>
+    <!-- Quick Stats -->
+    <div class="events-stats-grid">
+        <div class="events-stat-card">
+            <span class="stat-value">{{ total_events }}</span>
+            <span class="stat-label">Total Events</span>
+        </div>
+        <div class="events-stat-card">
+            <span class="stat-value">{{ upcoming_count }}</span>
+            <span class="stat-label">Upcoming</span>
+        </div>
+        <div class="events-stat-card needs-attention">
+            <span class="stat-value">{{ no_outfit_count }}</span>
+            <span class="stat-label">Needs Outfit</span>
+        </div>
+    </div>
 
-                        <div class="event-meta">
-                            {% if event.time %}
-                                <span>{{ event.time|date:"g:i A" }}</span>
-                            {% endif %}
-                            
-                            <!-- Outfit Status Indicator -->
-                            {% if event.outfit %}
-                                <div class="outfit-status status-ok">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                    <span>{{ event.outfit.name }}</span>
-                                </div>
-                            {% else %}
-                                <div class="outfit-status status-missing">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                    </svg>
-                                    <span>No Outfit</span>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </a>
+    <!-- Filters -->
+    <div class="filter-section">
+        <form method="get" id="filter-form" class="filter-form">
+            
+            <!-- Search -->
+            <div class="search-wrapper">
+                <input type="text" name="search" id="search-input" 
+                       placeholder="Search events..." value="{{ search_query|default:'' }}" 
+                       class="filter-input" autocomplete="off">
+                <svg class="search-spinner" id="search-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#757575" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="32"></circle>
+                </svg>
+            </div>
+
+            <!-- Occasion -->
+            <select name="occasion" class="filter-input" onchange="this.form.submit()">
+                <option value="">All Occasions</option>
+                {% for value, label in occasion_choices %}
+                <option value="{{ value }}" {% if selected_occasion == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
-            </div>
+            </select>
+
+            <!-- Status -->
+            <select name="status" class="filter-input" onchange="this.form.submit()">
+                <option value="">All Status</option>
+                <option value="upcoming" {% if selected_status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                <option value="past" {% if selected_status == 'past' %}selected{% endif %}>Past</option>
+                <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="no_outfit" {% if selected_status == 'no_outfit' %}selected{% endif %}>Missing Outfit</option>
+            </select>
+
+            <!-- Reset -->
+            {% if search_query or selected_occasion or selected_status %}
+                <a href="{% url 'planner:event_list' %}" class="btn btn-secondary">Clear</a>
             {% else %}
-            <!-- Empty State -->
-            <div style="text-align: center; padding: 60px 20px; background: #fff; border: 2px dashed #ddd;">
-                <div style="width: 48px; height: 48px; background: #f0f0f0; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                </div>
-                <h3 style="font-family: 'Istok Web'; font-size: 20px; color: #333; margin-bottom: 8px;">No Events Found</h3>
-                <p style="color: #777; margin-bottom: 24px;">
-                    {% if search_query or selected_occasion or selected_status %}
-                        Try adjusting your filters to find what you're looking for.
-                    {% else %}
-                        Get started by adding your first event to the calendar.
-                    {% endif %}
-                </p>
-                <a href="{% url 'planner:event_create' %}" class="btn btn-primary">Create Event</a>
-            </div>
+                <button type="button" class="btn btn-secondary" disabled style="opacity: 0.5;">Clear</button>
             {% endif %}
+        </form>
+    </div>
+
+    <!-- Events List -->
+    <div class="content-section">
+        {% if events %}
+        <div class="events-list">
+            {% for event in events %}
+            <a href="{% url 'planner:event_detail' event.id %}" class="event-card">
+                <!-- Date Box -->
+                <div class="event-date-col">
+                    <span class="date-day">{{ event.date.day }}</span>
+                    <span class="date-month">{{ event.date|date:"M" }}</span>
+                </div>
+
+                <!-- Info -->
+                <div class="event-info-col">
+                    <div class="event-header">
+                        <h3 class="event-title {% if event.is_completed %}completed{% endif %}">
+                            {{ event.title }}
+                        </h3>
+                        <div class="event-badges">
+                            {% if event.is_completed %}
+                                <span class="event-badge badge-completed">Completed</span>
+                            {% endif %}
+                            <span class="event-badge badge-occasion">{{ event.get_occasion_type_display }}</span>
+                        </div>
+                    </div>
+
+                    <div class="event-meta">
+                        {% if event.time %}
+                            <span>{{ event.time|date:"g:i A" }}</span>
+                        {% endif %}
+                        
+                        <!-- Outfit Status Indicator -->
+                        {% if event.outfit %}
+                            <div class="outfit-status status-ok">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>{{ event.outfit.name }}</span>
+                            </div>
+                        {% else %}
+                            <div class="outfit-status status-missing">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                                <span>No Outfit</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
         </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="events-empty">
+            <div class="events-empty-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="4" width="18" height="18" rx="0" ry="0"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+            </div>
+            <h3>No Events Found</h3>
+            <p>
+                {% if search_query or selected_occasion or selected_status %}
+                    Try adjusting your filters to find what you're looking for.
+                {% else %}
+                    Get started by adding your first event to the calendar.
+                {% endif %}
+            </p>
+            <a href="{% url 'planner:event_create' %}" class="btn btn-primary">Create Event</a>
+        </div>
+        {% endif %}
     </div>
 </div>
 

@@ -4,383 +4,669 @@
 {% block title %}{{ event.title }} - Tailora{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
     /* =========================================
-       THEME VARIABLES (Matched to Event List)
+       EVENT DETAIL - TAILORA DESIGN SYSTEM
        ========================================= */
-    :root {
-        --bg-color: #f8f8f8;
-        --card-bg: #ffffff;
-        --text-main: #1a1a1a;
-        --text-muted: #757575;
-        --border-color: #e0e0e0;
-        --accent-color: #2c2c2c;
-    }
-
-    /* Layout */
-    .planner-wrapper {
-        background-color: var(--bg-color);
+    
+    /* Page Layout */
+    .event-detail-wrapper {
+        background-color: #ffffff;
         min-height: 100vh;
-        padding: 40px 24px;
     }
 
-    .planner-container {
-        max-width: 1100px;
-        margin: 0 auto;
+    /* Page Header */
+    .event-detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 32px;
+        gap: 24px;
+        flex-wrap: wrap;
     }
 
-    .detail-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 32px;
-        align-items: start;
+    .event-title-section {
+        flex: 1;
     }
 
-    /* Typography */
-    .hero-title {
+    .event-title {
         font-family: 'Istok Web', sans-serif;
-        font-size: 36px;
+        font-size: 32px;
         font-weight: 700;
-        color: var(--text-main);
-        line-height: 1.2;
+        color: #252320;
         margin: 0 0 8px 0;
     }
 
-    .hero-meta {
+    .event-meta {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .event-meta-item {
         font-family: 'Inter', sans-serif;
-        font-size: 16px;
-        color: var(--text-muted);
+        font-size: 14px;
+        color: #757575;
         display: flex;
         align-items: center;
+        gap: 6px;
+    }
+
+    .event-meta-item svg {
+        width: 16px;
+        height: 16px;
+        fill: #757575;
+    }
+
+    .header-actions {
+        display: flex;
         gap: 12px;
+        flex-shrink: 0;
     }
 
-    /* Cards */
+    /* Content Grid */
+    .event-content-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+    }
+
+    /* Card Styles */
     .detail-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
+        background: #ffffff;
+        border: 1px solid #d9d9d9;
         padding: 32px;
-        margin-bottom: 24px;
-        /* Sharp borders for consistency */
     }
 
-    .sidebar-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        padding: 24px;
-        margin-bottom: 24px;
-    }
-
-    /* Badges (Matched) */
-    .badge {
+    .detail-card-title {
         font-family: 'Inter', sans-serif;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
-        padding: 6px 10px;
-        letter-spacing: 0.5px;
-        border-radius: 0;
-        display: inline-block;
+        letter-spacing: 1.5px;
+        color: #252320;
+        margin: 0 0 24px 0;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #2c2c2c;
     }
 
-    .badge-occasion {
-        background: #eee;
-        color: #333;
+    /* Event Info Section */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 16px 0;
+        border-bottom: 1px solid #f0f0f0;
     }
 
-    .badge-completed {
-        background: #dcedc8;
-        color: #33691e;
+    .info-row:last-child {
+        border-bottom: none;
     }
 
-    .badge-upcoming {
-        background: #e3f2fd;
-        color: #1565c0;
-    }
-
-    /* Info Items */
     .info-label {
         font-family: 'Inter', sans-serif;
-        font-size: 11px;
-        font-weight: 700;
-        color: #999;
+        font-size: 13px;
+        font-weight: 600;
+        color: #757575;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 8px;
-        display: block;
+        letter-spacing: 0.5px;
     }
 
     .info-value {
         font-family: 'Inter', sans-serif;
-        font-size: 16px;
-        color: var(--text-main);
-        font-weight: 500;
+        font-size: 14px;
+        color: #252320;
+        text-align: right;
     }
 
-    /* Outfit Hero Card */
-    .outfit-card {
-        display: block;
-        border: 1px solid var(--border-color);
+    /* Occasion Badge */
+    .occasion-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: #f4e9cf;
+        color: #252320;
+        border: 1px solid #d9d9d9;
+    }
+
+    .occasion-badge.formal {
+        background: #2c2c2c;
+        color: #ffffff;
+        border-color: #2c2c2c;
+    }
+
+    .occasion-badge.casual {
+        background: #f4e9cf;
+        color: #252320;
+    }
+
+    .occasion-badge.business {
+        background: #3d5a80;
+        color: #ffffff;
+        border-color: #3d5a80;
+    }
+
+    .occasion-badge.evening {
+        background: #9c6644;
+        color: #ffffff;
+        border-color: #9c6644;
+    }
+
+    .occasion-badge.sport {
+        background: #588157;
+        color: #ffffff;
+        border-color: #588157;
+    }
+
+    /* Notes Section */
+    .event-notes {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        line-height: 1.7;
+        color: #252320;
+        white-space: pre-wrap;
+    }
+
+    .empty-notes {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #757575;
+        font-style: italic;
+    }
+
+    /* Location Map */
+    .location-map {
+        height: 200px;
+        border: 1px solid #d9d9d9;
+        margin-top: 16px;
+    }
+
+    .location-address {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #252320;
+        margin-bottom: 8px;
+    }
+
+    .no-location {
+        padding: 40px;
+        text-align: center;
         background: #fafafa;
-        text-decoration: none;
-        transition: all 0.2s;
+        border: 1px solid #d9d9d9;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #757575;
+    }
+
+    /* Weather Section */
+    .weather-display {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%);
+        border: 1px solid #d9d9d9;
+    }
+
+    .weather-icon {
+        font-size: 48px;
+    }
+
+    .weather-info h4 {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0 0 4px 0;
+    }
+
+    .weather-info p {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0;
+    }
+
+    .no-weather {
+        padding: 24px;
+        text-align: center;
+        background: #fafafa;
+        border: 1px solid #d9d9d9;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #757575;
+    }
+
+    /* Outfit Card */
+    .outfit-card {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        background: #fafafa;
+        border: 1px solid #d9d9d9;
+        transition: all 0.2s ease;
     }
 
     .outfit-card:hover {
-        border-color: #bbb;
-        background: #fff;
+        background: #f5f5f5;
+        transform: translateY(-2px);
     }
 
-    .outfit-image {
-        width: 100%;
-        height: 350px;
-        object-fit: cover;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .outfit-body {
-        padding: 20px;
-    }
-
-    /* Buttons (Matched) */
-    .btn {
-        display: inline-flex;
+    .outfit-preview {
+        width: 120px;
+        height: 120px;
+        background: #ffffff;
+        border: 1px solid #d9d9d9;
+        display: flex;
         align-items: center;
         justify-content: center;
-        padding: 10px 20px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .outfit-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+    .outfit-preview-placeholder {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #757575;
+        text-align: center;
+    }
+
+    .outfit-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .outfit-name {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: #252320;
+        margin: 0 0 8px 0;
+    }
+
+    .outfit-meta {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #757575;
+        margin-bottom: 12px;
+    }
+
+    .view-outfit-link {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: #2c2c2c;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.2s ease;
+    }
+
+    .view-outfit-link:hover {
+        color: #757575;
+    }
+
+    .no-outfit {
+        padding: 40px;
+        text-align: center;
+        background: #fafafa;
+        border: 1px solid #d9d9d9;
+    }
+
+    .no-outfit-icon {
+        margin-bottom: 12px;
+        opacity: 0.5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .no-outfit-icon svg {
+        width: 40px;
+        height: 40px;
+    }
+
+    .no-outfit p {
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        font-weight: 500;
-        text-decoration: none;
-        border: 1px solid transparent;
-        cursor: pointer;
-        transition: all 0.2s;
-        border-radius: 0;
+        color: #757575;
+        margin: 0 0 16px 0;
+    }
+
+    /* Messages */
+    .alert {
+        padding: 16px 24px;
+        margin-bottom: 24px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        border: 1px solid #d9d9d9;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: #ef4444;
+    }
+
+    .alert-success {
+        background: #f4e9cf;
+        color: #252320;
+    }
+
+    /* Delete Modal */
+    .delete-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
-        /* Default to block in sidebar */
-        box-sizing: border-box;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
     }
 
-    .btn-primary {
-        background: var(--text-main);
-        color: #fff;
-        border-color: var(--text-main);
+    .delete-modal.active {
+        display: flex;
     }
 
-    .btn-primary:hover {
-        background: #000;
+    .modal-content {
+        background: #ffffff;
+        padding: 40px;
+        max-width: 480px;
+        width: 90%;
+        border: 1px solid #d9d9d9;
     }
 
-    .btn-secondary {
-        background: #fff;
-        color: var(--text-main);
-        border-color: #ccc;
+    .modal-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: #252320;
+        margin: 0 0 16px 0;
     }
 
-    .btn-secondary:hover {
-        background: #f5f5f5;
+    .modal-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #757575;
+        line-height: 1.7;
+        margin-bottom: 32px;
     }
 
-    .btn-danger-outline {
-        color: #d32f2f;
-        background: transparent;
-        border: 1px solid #d32f2f;
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
     }
 
-    .btn-danger-outline:hover {
-        background: #ffebee;
+    .btn-danger {
+        background: #dc2626;
+        color: #ffffff;
+        border: 1px solid #dc2626;
+    }
+
+    .btn-danger:hover {
+        background: #b91c1c;
     }
 
     /* Responsive */
     @media (max-width: 900px) {
-        .detail-grid {
+        .event-content-grid {
             grid-template-columns: 1fr;
         }
+    }
 
-        .sidebar-card {
-            order: 2;
+    @media (max-width: 600px) {
+        .event-detail-header {
+            flex-direction: column;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-actions .btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        .outfit-card {
+            flex-direction: column;
+        }
+
+        .outfit-preview {
+            width: 100%;
+            height: 160px;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="planner-wrapper">
-    <div class="planner-container">
+<div class="event-detail-wrapper">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
 
-        <!-- Back Link -->
-        <div style="margin-bottom: 32px;">
-            <a href="{% url 'planner:calendar' %}"
-                style="color: var(--text-muted); text-decoration: none; font-family: 'Inter', sans-serif; font-size: 14px; display: flex; align-items: center; gap: 6px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
-                Back to Calendar
-            </a>
+    <!-- Page Header -->
+    <div class="event-detail-header">
+        <div class="event-title-section">
+            <h1 class="event-title">{{ event.title }}</h1>
+            <div class="event-meta">
+                <span class="event-meta-item">
+                    <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
+                    {{ event.date|date:"l, F j, Y" }}
+                </span>
+                {% if event.time %}
+                <span class="event-meta-item">
+                    <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                    {{ event.time|date:"g:i A" }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary">Edit</a>
+            <button id="delete-btn" class="btn btn-danger">Delete</button>
+            <a href="{% url 'planner:event_list' %}" class="btn btn-secondary">Back to Events</a>
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="event-content-grid">
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Event Info Card -->
+            <div class="detail-card">
+                <h3 class="detail-card-title">Event Information</h3>
+
+                <div class="info-row">
+                    <span class="info-label">Occasion</span>
+                    <span class="info-value">
+                        <span class="occasion-badge {{ event.occasion_type|lower }}">
+                            {{ event.get_occasion_type_display }}
+                        </span>
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Date</span>
+                    <span class="info-value">{{ event.date|date:"F j, Y" }}</span>
+                </div>
+
+                {% if event.time %}
+                <div class="info-row">
+                    <span class="info-label">Time</span>
+                    <span class="info-value">{{ event.time|date:"g:i A" }}</span>
+                </div>
+                {% endif %}
+
+                <div class="info-row">
+                    <span class="info-label">Created</span>
+                    <span class="info-value">{{ event.created_at|date:"M j, Y" }}</span>
+                </div>
+            </div>
+
+            <!-- Notes Card -->
+            <div class="detail-card" style="margin-top: 24px;">
+                <h3 class="detail-card-title">Notes</h3>
+                {% if event.notes %}
+                <p class="event-notes">{{ event.notes }}</p>
+                {% else %}
+                <p class="empty-notes">No notes for this event.</p>
+                {% endif %}
+            </div>
+
+            <!-- Location Card -->
+            <div class="detail-card" style="margin-top: 24px;">
+                <h3 class="detail-card-title">Location</h3>
+                {% if event.location %}
+                <p class="location-address">{{ event.location }}</p>
+                <div id="location-map" class="location-map"></div>
+                {% else %}
+                <div class="no-location">
+                    <p>No location specified for this event.</p>
+                </div>
+                {% endif %}
+            </div>
         </div>
 
-        <div class="detail-grid">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Weather Card -->
+            <div class="detail-card">
+                <h3 class="detail-card-title">Weather Forecast</h3>
+                {% if weather %}
+                <div class="weather-display">
+                    <span class="weather-icon">{{ weather.icon }}</span>
+                    <div class="weather-info">
+                        <h4>{{ weather.temp }}°C</h4>
+                        <p>{{ weather.description }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-weather">
+                    <p>Weather forecast not available</p>
+                </div>
+                {% endif %}
+            </div>
 
-            <!-- Main Content -->
-            <main>
-                <!-- Header Card -->
-                <div class="detail-card">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
-                        <div>
-                            <h1 class="hero-title">{{ event.title }}</h1>
-                            <div class="hero-meta">
-                                <span>{{ event.date|date:"l, F j, Y" }}</span>
-                                {% if event.time %}
-                                <span>•</span><span>{{ event.time|date:"g:i A" }}</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% if event.is_completed %}
-                        <span class="badge badge-completed">Completed</span>
+            <!-- Outfit Card -->
+            <div class="detail-card" style="margin-top: 24px;">
+                <h3 class="detail-card-title">Planned Outfit</h3>
+                {% if event.outfit %}
+                <a href="{% url 'outfits:outfit_detail' event.outfit.id %}" class="outfit-card" style="text-decoration: none;">
+                    <div class="outfit-preview">
+                        {% if event.outfit.preview_image %}
+                        <img src="{{ event.outfit.preview_image.url }}" alt="{{ event.outfit.name }}">
                         {% else %}
-                        <span class="badge badge-upcoming">Upcoming</span>
+                        <span class="outfit-preview-placeholder">No preview</span>
                         {% endif %}
                     </div>
-
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 24px;">
-                        <div>
-                            <span class="info-label">Occasion</span>
-                            <div class="info-value">{{ event.get_occasion_type_display }}</div>
-                        </div>
-                        {% if event.location %}
-                        <div>
-                            <span class="info-label">Location</span>
-                            <div class="info-value">{{ event.location }}</div>
-                        </div>
-                        {% endif %}
+                    <div class="outfit-details">
+                        <h4 class="outfit-name">{{ event.outfit.name }}</h4>
+                        <p class="outfit-meta">{{ event.outfit.get_occasion_display }} • {{ event.outfit.items.count }} items</p>
+                        <span class="view-outfit-link">
+                            View outfit →
+                        </span>
                     </div>
-
-                    {% if event.notes %}
-                    <div style="padding-top: 24px; border-top: 1px solid #eee;">
-                        <span class="info-label">Notes</span>
-                        <p
-                            style="font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.6; color: var(--text-main); margin: 0;">
-                            {{ event.notes }}
-                        </p>
-                    </div>
-                    {% endif %}
+                </a>
+                {% else %}
+                <div class="no-outfit">
+                    <div class="no-outfit-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#757575" stroke-width="1.5"><rect x="2" y="7" width="20" height="15" rx="0"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></div>
+                    <p>No outfit planned for this event</p>
+                    <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-primary btn-sm">Assign Outfit</a>
                 </div>
-
-                <!-- Outfit Section -->
-                <div class="detail-card">
-                    <span class="info-label" style="margin-bottom: 16px;">Planned Outfit</span>
-
-                    {% if event.outfit %}
-                    <a href="{% url 'outfits:outfit_detail' event.outfit.id %}" class="outfit-card">
-                        {% if event.outfit.outfit_image %}
-                        <img src="{{ event.outfit.outfit_image.url }}" alt="{{ event.outfit.name }}"
-                            class="outfit-image">
-                        {% elif event.outfit.items.first and event.outfit.items.first.image %}
-                        <img src="{{ event.outfit.items.first.image.url }}" alt="{{ event.outfit.name }}"
-                            class="outfit-image">
-                        {% else %}
-                        <div
-                            style="height: 250px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; color: #ccc;">
-                            <span>No Preview Available</span>
-                        </div>
-                        {% endif %}
-
-                        <div class="outfit-body">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div>
-                                    <h3
-                                        style="font-family: 'Istok Web', sans-serif; font-size: 20px; margin: 0 0 4px 0; color: var(--text-main);">
-                                        {{ event.outfit.name }}</h3>
-                                    <p
-                                        style="margin: 0; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-muted);">
-                                        {{ event.outfit.items.count }} items • {{ event.outfit.get_occasion_display }}
-                                    </p>
-                                </div>
-                                <span
-                                    style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-main);">View
-                                    Details →</span>
-                            </div>
-                        </div>
-                    </a>
-
-                    <div style="margin-top: 16px; text-align: right;">
-                        <form method="post" action="{% url 'planner:assign_outfit' event.id %}">
-                            {% csrf_token %}
-                            <button type="submit" name="outfit_id" value="" class="btn btn-secondary"
-                                style="width: auto; padding: 6px 16px; font-size: 12px;">Remove/Change Outfit</button>
-                        </form>
-                    </div>
-
-                    {% else %}
-                    <!-- Empty State -->
-                    <div style="border: 1px dashed #ccc; padding: 40px; text-align: center; background: #fafafa;">
-                        <div style="margin-bottom: 16px; color: #ccc;">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1">
-                                <path
-                                    d="M20.38 3.4a2 2 0 0 0-1.2-1.1 19.83 19.83 0 0 0-14.36 0 2 2 0 0 0-1.2 1.1L2 10l5 2V21a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V12l5-2-1.62-6.6z" />
-                            </svg>
-                        </div>
-                        <h3 style="font-family: 'Istok Web'; font-size: 18px; margin: 0 0 8px 0;">No Outfit Selected
-                        </h3>
-                        <p style="font-family: 'Inter'; font-size: 14px; color: #777; margin-bottom: 24px;">Choose a {{
-                            event.get_occasion_type_display|lower }} outfit for this event.</p>
-
-                        {% if suggested_outfits %}
-                        <div
-                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; text-align: left;">
-                            {% for outfit in suggested_outfits|slice:":3" %}
-                            <div style="border: 1px solid #eee; padding: 12px; background: #fff;">
-                                <h5 style="margin: 0 0 8px 0; font-family: 'Inter'; font-size: 13px;">{{ outfit.name }}
-                                </h5>
-                                <form method="post" action="{% url 'planner:assign_outfit' event.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" name="outfit_id" value="{{ outfit.id }}"
-                                        class="btn btn-secondary"
-                                        style="width: 100%; padding: 4px; font-size: 11px;">Select</button>
-                                </form>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-
-                        <a href="{% url 'outfits:outfit_gallery' %}?occasion={{ event.occasion_type }}"
-                            class="btn btn-primary">Browse Outfits</a>
-                    </div>
-                    {% endif %}
-                </div>
-            </main>
-
-            <!-- Sidebar -->
-            <aside>
-                <div class="sidebar-card">
-                    <span class="info-label">Actions</span>
-                    <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary"
-                        style="margin-bottom: 12px;">Edit Event</a>
-
-                    <form method="post" action="{% url 'planner:toggle_complete' event.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-secondary">
-                            {% if event.is_completed %}Mark as Upcoming{% else %}Mark as Completed{% endif %}
-                        </button>
-                    </form>
-                </div>
-
-                <div class="sidebar-card" style="border-color: #ffcdd2; background: #fffbfb;">
-                    <span class="info-label" style="color: #d32f2f;">Danger Zone</span>
-                    <p style="font-family: 'Inter'; font-size: 12px; color: #666; margin-bottom: 16px;">
-                        This action cannot be undone.
-                    </p>
-                    <form method="post" action="{% url 'planner:event_delete' event.id %}"
-                        onsubmit="return confirm('Are you sure you want to delete this event?');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger-outline">Delete Event</button>
-                    </form>
-                </div>
-            </aside>
-
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="delete-modal">
+    <div class="modal-content">
+        <h3 class="modal-title">Delete Event</h3>
+        <p class="modal-text">
+            Are you sure you want to delete "<strong>{{ event.title }}</strong>"? This action cannot be undone.
+        </p>
+        <div class="modal-actions">
+            <button id="cancel-delete" class="btn btn-secondary">Cancel</button>
+            <form method="post" action="{% url 'planner:event_delete' event.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Delete Event</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Delete modal functionality
+        const deleteBtn = document.getElementById('delete-btn');
+        const deleteModal = document.getElementById('delete-modal');
+        const cancelDelete = document.getElementById('cancel-delete');
+
+        deleteBtn.addEventListener('click', function () {
+            deleteModal.classList.add('active');
+        });
+
+        cancelDelete.addEventListener('click', function () {
+            deleteModal.classList.remove('active');
+        });
+
+        deleteModal.addEventListener('click', function (e) {
+            if (e.target === deleteModal) {
+                deleteModal.classList.remove('active');
+            }
+        });
+
+        // Location map (if location exists)
+        {% if event.location %}
+        const location = "{{ event.location|escapejs }}";
+
+        // Initialize map with default center
+        const map = L.map('location-map').setView([36.8065, 10.1815], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        // Geocode the location
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lng = parseFloat(data[0].lon);
+                    map.setView([lat, lng], 15);
+                    L.marker([lat, lng]).addTo(map);
+                }
+            })
+            .catch(err => console.error('Geocode error:', err));
+        {% endif %}
+    });
+</script>
 {% endblock %}
