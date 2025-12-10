@@ -11,23 +11,39 @@
        CALENDAR - TAILORA DESIGN SYSTEM
        ========================================= */
     
+    /* Theme Variables */
+    :root {
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
+    }
+
     /* Page Layout */
     .calendar-wrapper {
-        background-color: #ffffff;
+        background-color: var(--bg-color);
         min-height: 100vh;
+        padding: 40px 24px;
+    }
+
+    .calendar-container {
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
     .calendar-layout {
         display: grid;
-        grid-template-columns: 1fr 340px;
+        grid-template-columns: 2.5fr 1fr;
         gap: 32px;
         align-items: start;
     }
 
     /* Calendar Section */
     .calendar-section {
-        background: #ffffff;
-        border: 1px solid #d9d9d9;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         padding: 32px;
     }
 
@@ -35,24 +51,24 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 28px;
+        margin-bottom: 32px;
         flex-wrap: wrap;
         gap: 16px;
     }
 
     .calendar-title {
         font-family: 'Istok Web', sans-serif;
-        font-size: 28px;
+        font-size: 32px;
         font-weight: 700;
-        color: #252320;
-        margin: 0;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
     }
 
     .calendar-subtitle {
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        color: #757575;
-        margin: 4px 0 0 0;
+        color: var(--text-muted);
+        margin: 0;
     }
 
     .calendar-nav {
@@ -61,18 +77,16 @@
     }
 
     .btn-cal-nav {
-        padding: 12px 18px;
+        padding: 10px 20px;
         font-family: 'Inter', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        border: 1px solid #d9d9d9;
-        background: #ffffff;
-        color: #252320;
+        font-size: 14px;
+        font-weight: 500;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-main);
         cursor: pointer;
         transition: all 0.2s ease;
         text-decoration: none;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
 
     .btn-cal-nav:first-child {
@@ -84,38 +98,45 @@
     }
 
     .btn-cal-nav:hover {
-        background: #2c2c2c;
-        color: #ffffff;
-        border-color: #2c2c2c;
+        background: #f5f5f5;
+    }
+
+    .btn-cal-nav.active {
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
     }
 
     /* Quick Actions */
     .quick-actions-bar {
         display: flex;
-        gap: 12px;
+        gap: 0;
         margin-bottom: 24px;
-        flex-wrap: wrap;
+        border-bottom: 1px solid var(--border-color);
     }
 
     .quick-action-link {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 10px 18px;
+        padding: 12px 20px;
         font-family: 'Inter', sans-serif;
-        font-size: 12px;
-        font-weight: 600;
+        font-size: 13px;
+        font-weight: 500;
         text-decoration: none;
-        border: 1px solid #d9d9d9;
-        background: #ffffff;
-        color: #252320;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        color: var(--text-muted);
         transition: all 0.2s ease;
     }
 
     .quick-action-link:hover {
-        background: #2c2c2c;
-        color: #ffffff;
-        border-color: #2c2c2c;
+        color: var(--text-main);
+    }
+
+    .quick-action-link.active {
+        color: var(--text-main);
+        border-bottom-color: var(--text-main);
     }
 
     /* Calendar Grid */
@@ -123,13 +144,13 @@
         display: grid;
         grid-template-columns: repeat(7, 1fr);
         gap: 0;
-        border: 1px solid #d9d9d9;
-        background: #d9d9d9;
+        border: 1px solid var(--border-color);
+        background: var(--border-color);
     }
 
     .calendar-weekday {
         background: #fafafa;
-        color: #757575;
+        color: var(--text-muted);
         font-family: 'Inter', sans-serif;
         font-size: 11px;
         font-weight: 700;
@@ -137,16 +158,16 @@
         padding: 14px 12px;
         text-align: center;
         letter-spacing: 1px;
-        border-bottom: 1px solid #d9d9d9;
+        border-bottom: 1px solid var(--border-color);
     }
 
     .calendar-day {
-        background: #ffffff;
+        background: var(--card-bg);
         min-height: 120px;
         padding: 10px;
         position: relative;
         transition: background 0.2s ease;
-        border: 1px solid #d9d9d9;
+        border: 1px solid var(--border-color);
         border-top: none;
         border-left: none;
     }
@@ -177,7 +198,7 @@
         font-family: 'Inter', sans-serif;
         font-size: 14px;
         font-weight: 600;
-        color: #252320;
+        color: var(--text-main);
         display: block;
         margin-bottom: 8px;
     }
@@ -241,7 +262,7 @@
         flex-wrap: wrap;
         margin-top: 24px;
         padding-top: 24px;
-        border-top: 1px solid #d9d9d9;
+        border-top: 1px solid var(--border-color);
     }
 
     .legend-item {
@@ -271,6 +292,43 @@
         margin-top: 24px;
         flex-wrap: wrap;
         gap: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 0;
+    }
+
+    .btn-primary {
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
+    }
+
+    .btn-primary:hover {
+        background: #000;
+    }
+
+    .btn-secondary {
+        background: var(--card-bg);
+        color: var(--text-main);
+        border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: #f5f5f5;
     }
 
     /* Sidebar */
@@ -403,13 +461,13 @@
 
     /* Upcoming Events Widget */
     .upcoming-widget {
-        background: #ffffff;
-        border: 1px solid #d9d9d9;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
     }
 
     .upcoming-header {
         padding: 20px;
-        border-bottom: 1px solid #d9d9d9;
+        border-bottom: 1px solid var(--border-color);
         background: #fafafa;
     }
 
@@ -418,7 +476,7 @@
         font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
-        color: #252320;
+        color: var(--text-main);
         letter-spacing: 1px;
         margin: 0;
     }
@@ -448,9 +506,10 @@
         justify-content: center;
         width: 50px;
         height: 50px;
-        background: #f4e9cf;
-        color: #252320;
+        background: #fafafa;
+        color: var(--text-main);
         flex-shrink: 0;
+        border: 1px solid var(--border-color);
     }
 
     .date-box-day {
@@ -478,13 +537,13 @@
         font-weight: 600;
         font-size: 15px;
         margin-bottom: 4px;
-        color: #252320;
+        color: var(--text-main);
     }
 
     .upcoming-info-meta {
         font-family: 'Inter', sans-serif;
         font-size: 12px;
-        color: #757575;
+        color: var(--text-muted);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -506,20 +565,20 @@
         font-family: 'Inter', sans-serif;
         font-size: 12px;
         font-weight: 700;
-        color: #252320;
+        color: var(--text-main);
         text-decoration: none;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
     .upcoming-footer a:hover {
-        color: #000000;
+        color: #000;
     }
 
     .upcoming-empty {
         padding: 32px 20px;
         text-align: center;
-        color: #757575;
+        color: var(--text-muted);
         font-family: 'Inter', sans-serif;
         font-size: 13px;
     }
@@ -543,7 +602,7 @@
     }
 
     .location-modal-content {
-        background: #ffffff;
+        background: var(--card-bg);
         padding: 32px;
         width: 90%;
         max-width: 400px;
@@ -554,7 +613,7 @@
         font-size: 22px;
         font-weight: 700;
         margin: 0 0 24px 0;
-        color: #252320;
+        color: var(--text-main);
     }
 
     .location-form-group {
@@ -567,25 +626,26 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: #757575;
+        color: var(--text-muted);
         display: block;
         margin-bottom: 8px;
     }
 
     .location-form-input {
         width: 100%;
-        padding: 14px 16px;
+        padding: 10px 12px;
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        border: 1px solid #d9d9d9;
-        background: #ffffff;
-        color: #252320;
+        border: 1px solid #ddd;
+        border-radius: 0;
+        background: #fff;
+        color: var(--text-main);
         box-sizing: border-box;
     }
 
     .location-form-input:focus {
         outline: none;
-        border-color: #2c2c2c;
+        border-color: var(--text-main);
     }
 
     .location-modal-actions {
@@ -629,6 +689,7 @@
 
 {% block content %}
 <div class="calendar-wrapper">
+    <div class="calendar-container">
     <div class="calendar-layout">
 
         <!-- Main Calendar Area -->
@@ -807,6 +868,7 @@
             </div>
 
         </aside>
+    </div>
     </div>
 </div>
 

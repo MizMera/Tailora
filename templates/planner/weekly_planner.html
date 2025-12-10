@@ -9,28 +9,42 @@
     /* =========================================
        WEEKLY PLANNER - TAILORA DESIGN SYSTEM
        ========================================= */
+    
+    :root {
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
+    }
 
     .planner-wrapper {
-        background: #ffffff;
+        background: var(--bg-color);
         min-height: 100vh;
-        padding: 0;
+        padding: 40px 24px;
+    }
+
+    .planner-container {
+        max-width: 1400px;
+        margin: 0 auto;
     }
 
     /* Page Header */
     .planner-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 24px;
+        align-items: center;
+        margin-bottom: 32px;
         flex-wrap: wrap;
         gap: 16px;
     }
 
     .planner-title-section h1 {
         font-family: 'Istok Web', sans-serif;
-        font-size: 28px;
+        font-size: 32px;
         font-weight: 700;
-        color: #252320;
+        color: var(--text-main);
         margin: 0 0 4px 0;
         display: flex;
         align-items: center;
@@ -38,15 +52,15 @@
     }
 
     .planner-title-section h1 svg {
-        width: 24px;
-        height: 24px;
-        stroke: #252320;
+        width: 28px;
+        height: 28px;
+        stroke: var(--text-main);
     }
 
     .planner-date-range {
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        color: #757575;
+        color: var(--text-muted);
         margin: 0;
     }
 
@@ -58,34 +72,33 @@
     }
 
     .nav-btn {
-        padding: 10px 16px;
+        padding: 10px 20px;
         font-family: 'Inter', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        background: #ffffff;
-        color: #252320;
-        border: 1px solid #d9d9d9;
+        font-size: 14px;
+        font-weight: 500;
+        background: var(--card-bg);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
         cursor: pointer;
         transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         text-decoration: none;
     }
 
     .nav-btn:hover {
-        background: #fafafa;
-        border-color: #252320;
+        background: #f5f5f5;
     }
 
     .nav-btn.primary {
-        background: #2c2c2c;
-        color: #ffffff;
-        border-color: #2c2c2c;
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
     }
 
     .nav-btn.primary:hover {
-        background: #1a1a1a;
+        background: #000;
     }
 
     /* Quick Links */
@@ -93,30 +106,39 @@
         display: flex;
         gap: 0;
         margin-bottom: 24px;
-        border-bottom: 1px solid #e5e5e5;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-bottom: none;
     }
 
     .quick-link {
-        padding: 12px 20px;
+        padding: 14px 24px;
         font-family: 'Inter', sans-serif;
         font-size: 13px;
         font-weight: 500;
-        color: #757575;
+        color: var(--text-muted);
         text-decoration: none;
         border-bottom: 2px solid transparent;
+        border-right: 1px solid var(--border-color);
         transition: all 0.2s ease;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
+    .quick-link:last-child {
+        border-right: none;
+    }
+
     .quick-link:hover {
-        color: #252320;
+        color: var(--text-main);
+        background: #fafafa;
     }
 
     .quick-link.active {
-        color: #252320;
-        border-bottom-color: #252320;
+        color: var(--text-main);
+        border-bottom-color: var(--text-main);
+        background: #fafafa;
     }
 
     .quick-link svg {
@@ -126,12 +148,13 @@
 
     /* AI Assistant Panel */
     .ai-panel {
-        background: #2c2c2c;
-        padding: 20px 24px;
+        background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+        padding: 24px;
         margin-bottom: 24px;
         display: flex;
         align-items: flex-start;
         gap: 16px;
+        border: 1px solid var(--text-main);
     }
 
     .ai-panel-icon {
@@ -177,16 +200,17 @@
         display: grid;
         grid-template-columns: repeat(7, 1fr);
         gap: 0;
-        border: 1px solid #e5e5e5;
+        border: 1px solid var(--border-color);
         margin-bottom: 24px;
+        background: var(--card-bg);
     }
 
     .day-column {
-        border-right: 1px solid #e5e5e5;
-        min-height: 380px;
+        border-right: 1px solid var(--border-color);
+        min-height: 400px;
         display: flex;
         flex-direction: column;
-        background: #ffffff;
+        background: var(--card-bg);
     }
 
     .day-column:last-child {
@@ -203,13 +227,14 @@
 
     /* Day Header */
     .day-header {
-        padding: 12px;
-        border-bottom: 1px solid #e5e5e5;
-        background: #ffffff;
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--card-bg);
     }
 
     .day-column.today .day-header {
-        background: #f4e9cf;
+        background: #fef7ed;
+        border-top: 3px solid var(--text-main);
     }
 
     .day-badges {
@@ -255,7 +280,7 @@
         font-family: 'Istok Web', sans-serif;
         font-size: 24px;
         font-weight: 700;
-        color: #252320;
+        color: var(--text-main);
         line-height: 1.2;
     }
 
@@ -296,7 +321,7 @@
         font-family: 'Inter', sans-serif;
         font-size: 12px;
         font-weight: 600;
-        color: #252320;
+        color: var(--text-main);
         margin: 0 0 8px 0;
         line-height: 1.3;
     }
@@ -312,7 +337,7 @@
     .outfit-item-thumb {
         aspect-ratio: 1;
         background: #f5f5f5;
-        border: 1px solid #e5e5e5;
+        border: 1px solid var(--border-color);
         overflow: hidden;
         display: flex;
         align-items: center;
@@ -343,7 +368,7 @@
     .outfit-reason {
         font-family: 'Inter', sans-serif;
         font-size: 10px;
-        color: #757575;
+        color: var(--text-muted);
         line-height: 1.4;
         margin-bottom: 8px;
         display: -webkit-box;
@@ -363,19 +388,19 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.3px;
-        color: #757575;
+        color: var(--text-muted);
         margin-bottom: 3px;
     }
 
     .match-bar {
         height: 3px;
-        background: #e5e5e5;
+        background: var(--border-color);
         position: relative;
     }
 
     .match-bar-fill {
         height: 100%;
-        background: #2c2c2c;
+        background: var(--text-main);
         transition: width 0.3s ease;
     }
 
@@ -394,16 +419,16 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.3px;
-        border: 1px solid #d9d9d9;
-        background: #ffffff;
-        color: #252320;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-main);
         cursor: pointer;
         transition: all 0.2s ease;
     }
 
     .day-btn:hover {
         background: #fafafa;
-        border-color: #252320;
+        border-color: var(--text-main);
     }
 
     .day-btn.worn {
@@ -421,13 +446,13 @@
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 0;
-        background: #fafafa;
-        border: 1px solid #e5e5e5;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
     }
 
     .stat-item {
-        padding: 20px;
-        border-right: 1px solid #e5e5e5;
+        padding: 24px;
+        border-right: 1px solid var(--border-color);
     }
 
     .stat-item:last-child {
@@ -448,7 +473,7 @@
         font-family: 'Istok Web', sans-serif;
         font-size: 28px;
         font-weight: 700;
-        color: #252320;
+        color: var(--text-main);
         line-height: 1;
     }
 
@@ -489,8 +514,8 @@
     .empty-week {
         padding: 60px 40px;
         text-align: center;
-        background: #fafafa;
-        border: 1px solid #e5e5e5;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         margin-bottom: 24px;
     }
 
@@ -505,14 +530,14 @@
         font-family: 'Istok Web', sans-serif;
         font-size: 20px;
         font-weight: 700;
-        color: #252320;
+        color: var(--text-main);
         margin: 0 0 8px 0;
     }
 
     .empty-week p {
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        color: #757575;
+        color: var(--text-muted);
         margin: 0 0 20px 0;
     }
 
@@ -522,7 +547,7 @@
             grid-template-columns: repeat(4, 1fr);
         }
         .day-column:nth-child(n+5) {
-            border-top: 1px solid #e5e5e5;
+            border-top: 1px solid var(--border-color);
         }
     }
 
@@ -538,7 +563,7 @@
         }
         .stat-item:nth-child(3),
         .stat-item:nth-child(4) {
-            border-top: 1px solid #e5e5e5;
+            border-top: 1px solid var(--border-color);
         }
     }
 
@@ -555,7 +580,7 @@
         }
         .day-column {
             border-right: none;
-            border-bottom: 1px solid #e5e5e5;
+            border-bottom: 1px solid var(--border-color);
             min-height: auto;
         }
         .day-column:last-child {
@@ -566,7 +591,7 @@
         }
         .stat-item {
             border-right: none;
-            border-bottom: 1px solid #e5e5e5;
+            border-bottom: 1px solid var(--border-color);
         }
         .stat-item:last-child {
             border-bottom: none;
@@ -585,6 +610,7 @@
 
 {% block content %}
 <div class="planner-wrapper">
+    <div class="planner-container">
     <!-- Page Header -->
     <div class="planner-header">
         <div class="planner-title-section">
@@ -877,4 +903,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+    </div>
+</div>
 {% endblock %}

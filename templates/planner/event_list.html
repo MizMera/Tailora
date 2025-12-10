@@ -10,34 +10,50 @@
        EVENT LIST - TAILORA DESIGN SYSTEM
        ========================================= */
     
+    /* Theme Variables */
+    :root {
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
+    }
+
     /* Page Layout */
     .events-wrapper {
-        background-color: #ffffff;
+        background-color: var(--bg-color);
         min-height: 100vh;
+        padding: 40px 24px;
+    }
+
+    .events-container {
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
     /* Page Header */
     .events-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-end;
+        align-items: center;
         margin-bottom: 32px;
         flex-wrap: wrap;
-        gap: 20px;
+        gap: 16px;
     }
 
     .events-title {
         font-family: 'Istok Web', sans-serif;
         font-size: 32px;
         font-weight: 700;
-        color: #252320;
-        margin: 0 0 8px 0;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
     }
 
     .events-subtitle {
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        color: #757575;
+        color: var(--text-muted);
         margin: 0;
     }
 
@@ -49,16 +65,16 @@
     /* Stats Grid */
     .events-stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 0;
-        background: #ffffff;
-        border: 1px solid #d9d9d9;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         margin-bottom: 32px;
     }
 
     .events-stat-card {
-        padding: 28px;
-        border-right: 1px solid #d9d9d9;
+        padding: 24px;
+        border-right: 1px solid var(--border-color);
         transition: background 0.2s ease;
     }
 
@@ -72,32 +88,32 @@
 
     .events-stat-card .stat-value {
         font-family: 'Istok Web', sans-serif;
-        font-size: 36px;
+        font-size: 32px;
         font-weight: 700;
-        color: #252320;
+        color: var(--text-main);
         line-height: 1;
         margin-bottom: 8px;
     }
 
     .events-stat-card .stat-label {
         font-family: 'Inter', sans-serif;
-        font-size: 11px;
-        font-weight: 700;
+        font-size: 12px;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: #757575;
+        color: var(--text-muted);
     }
 
     .events-stat-card.needs-attention {
-        border-left: 4px solid #c9a55c;
+        border-left: 4px solid #c62828;
     }
 
     /* Filters Section */
     .filter-section {
-        background: #ffffff;
-        border: 1px solid #d9d9d9;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         padding: 24px;
-        margin-bottom: 32px;
+        margin-bottom: 24px;
     }
 
     .filter-form {
@@ -109,23 +125,24 @@
 
     .filter-input {
         width: 100%;
-        padding: 14px 16px;
+        padding: 10px 12px;
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        border: 1px solid #d9d9d9;
-        background: #ffffff;
-        color: #252320;
+        border: 1px solid #ddd;
+        border-radius: 0;
+        background: #fff;
+        color: var(--text-main);
         box-sizing: border-box;
         transition: border-color 0.2s ease;
     }
 
     .filter-input:focus {
         outline: none;
-        border-color: #2c2c2c;
+        border-color: var(--text-main);
     }
 
     .filter-input::placeholder {
-        color: #757575;
+        color: var(--text-muted);
     }
 
     .search-wrapper {
@@ -145,6 +162,43 @@
         to { transform: translateY(-50%) rotate(360deg); }
     }
 
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 0;
+    }
+
+    .btn-primary {
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
+    }
+
+    .btn-primary:hover {
+        background: #000;
+    }
+
+    .btn-secondary {
+        background: var(--card-bg);
+        color: var(--text-main);
+        border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: #f5f5f5;
+    }
+
     /* Events List */
     .events-list {
         display: flex;
@@ -152,10 +206,16 @@
         gap: 0;
     }
 
+    .content-section {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+    }
+
     .event-card {
         display: flex;
-        background: #ffffff;
-        border: 1px solid #d9d9d9;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         border-bottom: none;
         transition: all 0.2s ease;
         text-decoration: none;
@@ -164,14 +224,12 @@
     }
 
     .event-card:last-child {
-        border-bottom: 1px solid #d9d9d9;
+        border-bottom: 1px solid var(--border-color);
     }
 
     .event-card:hover {
         background: #fafafa;
-        transform: translateX(4px);
         z-index: 1;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
     /* Date Column */
@@ -184,14 +242,14 @@
         justify-content: center;
         padding: 20px;
         flex-shrink: 0;
-        border-right: 1px solid #d9d9d9;
+        border-right: 1px solid var(--border-color);
     }
 
     .date-day {
         font-family: 'Istok Web', sans-serif;
         font-size: 28px;
         font-weight: 700;
-        color: #252320;
+        color: var(--text-main);
         line-height: 1;
     }
 
@@ -225,13 +283,13 @@
         font-family: 'Inter', sans-serif;
         font-size: 18px;
         font-weight: 600;
-        color: #252320;
+        color: var(--text-main);
         margin: 0;
     }
 
     .event-title.completed {
         text-decoration: line-through;
-        color: #757575;
+        color: var(--text-muted);
     }
 
     .event-badges {
@@ -250,12 +308,12 @@
 
     .badge-occasion {
         background: #f0f0f0;
-        color: #252320;
+        color: var(--text-main);
     }
 
     .badge-completed {
-        background: #f4e9cf;
-        color: #252320;
+        background: #e8f5e9;
+        color: #2e7d32;
     }
 
     .event-meta {
@@ -263,7 +321,7 @@
         gap: 16px;
         font-family: 'Inter', sans-serif;
         font-size: 13px;
-        color: #757575;
+        color: var(--text-muted);
         align-items: center;
     }
 
@@ -287,14 +345,14 @@
     .events-empty {
         text-align: center;
         padding: 80px 40px;
-        background: #ffffff;
-        border: 1px solid #d9d9d9;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
     }
 
     .events-empty-icon {
         width: 64px;
         height: 64px;
-        background: #f4e9cf;
+        background: #fafafa;
         margin: 0 auto 24px;
         display: flex;
         align-items: center;
@@ -304,21 +362,21 @@
     .events-empty-icon svg {
         width: 32px;
         height: 32px;
-        stroke: #252320;
+        stroke: var(--text-main);
     }
 
     .events-empty h3 {
         font-family: 'Istok Web', sans-serif;
         font-size: 24px;
         font-weight: 700;
-        color: #252320;
+        color: var(--text-main);
         margin: 0 0 12px 0;
     }
 
     .events-empty p {
         font-family: 'Inter', sans-serif;
-        color: #757575;
-        font-size: 15px;
+        color: var(--text-muted);
+        font-size: 14px;
         margin: 0 0 28px 0;
         max-width: 400px;
         margin-left: auto;
@@ -328,11 +386,11 @@
 
     /* Messages */
     .success-message {
-        padding: 16px 24px;
+        padding: 12px 16px;
         margin-bottom: 24px;
-        background: #f4e9cf;
-        color: #252320;
-        border: 1px solid #d9d9d9;
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #c8e6c9;
         font-family: 'Inter', sans-serif;
         font-size: 14px;
     }
@@ -353,7 +411,7 @@
             gap: 8px;
             padding: 14px 20px;
             border-right: none;
-            border-bottom: 1px solid #d9d9d9;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .events-header {
@@ -366,6 +424,7 @@
 
 {% block content %}
 <div class="events-wrapper">
+    <div class="events-container">
     
     <!-- Header -->
     <header class="events-header">
@@ -550,4 +609,5 @@
         }
     });
 </script>
+    </div>
 {% endblock %}
