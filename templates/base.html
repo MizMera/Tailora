@@ -27,7 +27,7 @@
                 <div class="nav-pills">
                     <a href="{% url 'dashboard' %}"
                         class="nav-pill {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">User</a>
-                    <a href="{% url 'wardrobe_gallery' %}"
+                    <a href="{% url 'wardrobe:wardrobe_gallery' %}"
                         class="nav-pill {% if 'wardrobe' in request.resolver_match.url_name %}active{% endif %}">Wardrobe</a>
                     <a href="{% url 'outfits:outfit_gallery' %}"
                         class="nav-pill {% if 'outfit' in request.resolver_match.url_name %}active{% endif %}">Outfits</a>

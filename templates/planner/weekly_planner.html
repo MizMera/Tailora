@@ -1,0 +1,908 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Weekly Planner - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+    /* =========================================
+       WEEKLY PLANNER - TAILORA DESIGN SYSTEM
+       ========================================= */
+    
+    :root {
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
+    }
+
+    .planner-wrapper {
+        background: var(--bg-color);
+        min-height: 100vh;
+        padding: 40px 24px;
+    }
+
+    .planner-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Page Header */
+    .planner-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .planner-title-section h1 {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .planner-title-section h1 svg {
+        width: 28px;
+        height: 28px;
+        stroke: var(--text-main);
+    }
+
+    .planner-date-range {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    /* Navigation Controls */
+    .planner-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .nav-btn {
+        padding: 10px 20px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        background: var(--card-bg);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .nav-btn:hover {
+        background: #f5f5f5;
+    }
+
+    .nav-btn.primary {
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
+    }
+
+    .nav-btn.primary:hover {
+        background: #000;
+    }
+
+    /* Quick Links */
+    .quick-links {
+        display: flex;
+        gap: 0;
+        margin-bottom: 24px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-bottom: none;
+    }
+
+    .quick-link {
+        padding: 14px 24px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        border-right: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .quick-link:last-child {
+        border-right: none;
+    }
+
+    .quick-link:hover {
+        color: var(--text-main);
+        background: #fafafa;
+    }
+
+    .quick-link.active {
+        color: var(--text-main);
+        border-bottom-color: var(--text-main);
+        background: #fafafa;
+    }
+
+    .quick-link svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* AI Assistant Panel */
+    .ai-panel {
+        background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+        padding: 24px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        border: 1px solid var(--text-main);
+    }
+
+    .ai-panel-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .ai-panel-icon svg {
+        width: 20px;
+        height: 20px;
+        stroke: #ffffff;
+    }
+
+    .ai-panel-content {
+        flex: 1;
+    }
+
+    .ai-panel-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: rgba(255, 255, 255, 0.6);
+        margin: 0 0 6px 0;
+    }
+
+    .ai-panel-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #ffffff;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Weekly Grid */
+    .weekly-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0;
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+        background: var(--card-bg);
+    }
+
+    .day-column {
+        border-right: 1px solid var(--border-color);
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        background: var(--card-bg);
+    }
+
+    .day-column:last-child {
+        border-right: none;
+    }
+
+    .day-column.today {
+        background: #fafafa;
+    }
+
+    .day-column.past {
+        opacity: 0.7;
+    }
+
+    /* Day Header */
+    .day-header {
+        padding: 16px;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--card-bg);
+    }
+
+    .day-column.today .day-header {
+        background: #fef7ed;
+        border-top: 3px solid var(--text-main);
+    }
+
+    .day-badges {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+        min-height: 20px;
+    }
+
+    .day-badge {
+        padding: 2px 6px;
+        font-family: 'Inter', sans-serif;
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .badge-laundry {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fcd34d;
+    }
+
+    .badge-event {
+        background: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #93c5fd;
+    }
+
+    .day-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #757575;
+        margin: 0;
+    }
+
+    .day-date {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-main);
+        line-height: 1.2;
+    }
+
+    .day-weather {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        color: #757575;
+        margin-top: 2px;
+    }
+
+    .day-weather strong {
+        color: #252320;
+    }
+
+    /* Day Content */
+    .day-content {
+        flex: 1;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .outfit-section {
+        flex: 1;
+    }
+
+    .outfit-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #757575;
+        margin: 0 0 2px 0;
+    }
+
+    .outfit-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0 0 8px 0;
+        line-height: 1.3;
+    }
+
+    /* Outfit Preview Grid */
+    .outfit-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+        margin-bottom: 8px;
+    }
+
+    .outfit-item-thumb {
+        aspect-ratio: 1;
+        background: #f5f5f5;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .outfit-item-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .outfit-item-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .outfit-item-placeholder svg {
+        width: 20px;
+        height: 20px;
+        stroke: #d9d9d9;
+    }
+
+    /* Outfit Reason */
+    .outfit-reason {
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        color: var(--text-muted);
+        line-height: 1.4;
+        margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Match Score */
+    .match-score {
+        margin-bottom: 10px;
+    }
+
+    .match-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        color: var(--text-muted);
+        margin-bottom: 3px;
+    }
+
+    .match-bar {
+        height: 3px;
+        background: var(--border-color);
+        position: relative;
+    }
+
+    .match-bar-fill {
+        height: 100%;
+        background: var(--text-main);
+        transition: width 0.3s ease;
+    }
+
+    /* Day Actions */
+    .day-actions {
+        display: flex;
+        gap: 4px;
+        margin-top: auto;
+    }
+
+    .day-btn {
+        flex: 1;
+        padding: 6px 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-main);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .day-btn:hover {
+        background: #fafafa;
+        border-color: var(--text-main);
+    }
+
+    .day-btn.worn {
+        background: #2c2c2c;
+        color: #ffffff;
+        border-color: #2c2c2c;
+    }
+
+    .day-btn.worn:hover {
+        background: #1a1a1a;
+    }
+
+    /* Stats Footer */
+    .stats-footer {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+    }
+
+    .stat-item {
+        padding: 24px;
+        border-right: 1px solid var(--border-color);
+    }
+
+    .stat-item:last-child {
+        border-right: none;
+    }
+
+    .stat-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #757575;
+        margin: 0 0 6px 0;
+    }
+
+    .stat-value {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-main);
+        line-height: 1;
+    }
+
+    .stat-unit {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        color: #757575;
+        margin-left: 2px;
+    }
+
+    /* Empty State */
+    .empty-day {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        text-align: center;
+    }
+
+    .empty-day svg {
+        width: 32px;
+        height: 32px;
+        stroke: #d9d9d9;
+        margin-bottom: 8px;
+    }
+
+    .empty-day p {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        color: #757575;
+        margin: 0;
+    }
+
+    /* Empty Week State */
+    .empty-week {
+        padding: 60px 40px;
+        text-align: center;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+    }
+
+    .empty-week svg {
+        width: 48px;
+        height: 48px;
+        stroke: #d9d9d9;
+        margin-bottom: 16px;
+    }
+
+    .empty-week h3 {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 8px 0;
+    }
+
+    .empty-week p {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0 0 20px 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .weekly-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        .day-column:nth-child(n+5) {
+            border-top: 1px solid var(--border-color);
+        }
+    }
+
+    @media (max-width: 900px) {
+        .weekly-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .stats-footer {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .stat-item:nth-child(2) {
+            border-right: none;
+        }
+        .stat-item:nth-child(3),
+        .stat-item:nth-child(4) {
+            border-top: 1px solid var(--border-color);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .planner-header {
+            flex-direction: column;
+        }
+        .planner-controls {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        .weekly-grid {
+            grid-template-columns: 1fr;
+        }
+        .day-column {
+            border-right: none;
+            border-bottom: 1px solid var(--border-color);
+            min-height: auto;
+        }
+        .day-column:last-child {
+            border-bottom: none;
+        }
+        .stats-footer {
+            grid-template-columns: 1fr;
+        }
+        .stat-item {
+            border-right: none;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+    }
+
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="planner-wrapper">
+    <div class="planner-container">
+    <!-- Page Header -->
+    <div class="planner-header">
+        <div class="planner-title-section">
+            <h1>
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
+                </svg>
+                Weekly Planner
+            </h1>
+            <p class="planner-date-range">{{ week_start|date:"F j" }} - {{ week_end|date:"F j, Y" }}</p>
+        </div>
+        <div class="planner-controls">
+            <a href="?week={{ prev_week|date:'Y-m-d' }}" class="nav-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6"></path>
+                </svg>
+                Prev
+            </a>
+            <a href="{% url 'planner:weekly_planner' %}" class="nav-btn">Today</a>
+            <a href="?week={{ next_week|date:'Y-m-d' }}" class="nav-btn">
+                Next
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"></path>
+                </svg>
+            </a>
+            <button id="regenerate-btn" class="nav-btn primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Regenerate
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="quick-links">
+        <a href="{% url 'planner:calendar' %}" class="quick-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="0"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Calendar
+        </a>
+        <a href="{% url 'wardrobe:laundry_dashboard' %}" class="quick-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18l-2 13H5L3 6z"></path>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            Laundry
+        </a>
+        <a href="{% url 'profile_settings' %}" class="quick-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+            </svg>
+            Settings
+        </a>
+    </div>
+
+    <!-- AI Assistant Panel -->
+    {% if weekly_plan and weekly_plan.generation_reasoning %}
+    <div class="ai-panel">
+        <div class="ai-panel-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+            </svg>
+        </div>
+        <div class="ai-panel-content">
+            <p class="ai-panel-title">AI Style Assistant</p>
+            <p class="ai-panel-text">{{ weekly_plan.generation_reasoning }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if weekly_plan and weekly_plan.daily_slots.exists %}
+    <!-- Weekly Grid -->
+    <div class="weekly-grid">
+        {% for slot in weekly_plan.daily_slots.all %}
+        <div class="day-column {% if slot.is_today %}today{% endif %} {% if slot.is_past %}past{% endif %}">
+            <div class="day-header">
+                <div class="day-badges">
+                    {% if laundry_conflicts and slot.id|slugify in laundry_conflicts %}
+                    <span class="day-badge badge-laundry">Needs wash</span>
+                    {% endif %}
+                    {% if slot.has_events %}
+                    <span class="day-badge badge-event">Event</span>
+                    {% endif %}
+                </div>
+                <p class="day-name">{{ slot.day_name }}</p>
+                <div class="day-date">{{ slot.date|date:"j" }}</div>
+                {% if slot.temperature %}
+                <p class="day-weather"><strong>{{ slot.temperature }}°C</strong> {{ slot.weather_condition }}</p>
+                {% endif %}
+            </div>
+
+            <div class="day-content">
+                {% if slot.primary_outfit %}
+                <div class="outfit-section">
+                    <p class="outfit-label">
+                        {% if slot.status == 'suggested' %}Recommended
+                        {% elif slot.status == 'accepted' %}Accepted
+                        {% elif slot.status == 'worn' %}Worn
+                        {% else %}Planned{% endif %}
+                    </p>
+                    <p class="outfit-name">{{ slot.primary_outfit.name }}</p>
+
+                    <div class="outfit-preview-grid">
+                        {% for item in slot.primary_outfit.items.all|slice:":4" %}
+                        <div class="outfit-item-thumb">
+                            {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                            {% else %}
+                            <div class="outfit-item-placeholder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="0"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <path d="M21 15l-5-5L5 21"></path>
+                                </svg>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <div class="outfit-item-thumb">
+                            <div class="outfit-item-placeholder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="0"></rect>
+                                </svg>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if slot.selection_reason %}
+                    <p class="outfit-reason">{{ slot.selection_reason }}</p>
+                    {% endif %}
+
+                    {% if slot.confidence %}
+                    <div class="match-score">
+                        <p class="match-label">{{ slot.confidence|floatformat:0 }}% match</p>
+                        <div class="match-bar">
+                            <div class="match-bar-fill" style="width: {{ slot.confidence }}%"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="day-actions">
+                    {% if slot.status == 'worn' %}
+                    <button class="day-btn worn" disabled>Worn</button>
+                    {% else %}
+                    <form method="post" action="{% url 'planner:accept_daily_outfit' slot.id %}" style="flex:1;margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="day-btn" style="width:100%;">Accept</button>
+                    </form>
+                    <form method="post" action="{% url 'planner:swap_daily_outfit' slot.id %}" style="flex:1;margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="day-btn" style="width:100%;">Swap</button>
+                    </form>
+                    {% endif %}
+                </div>
+
+                {% elif slot.suggested_name %}
+                <!-- AI suggested items but no outfit created yet -->
+                <div class="outfit-section">
+                    <p class="outfit-label">Suggested</p>
+                    <p class="outfit-name">{{ slot.suggested_name }}</p>
+                    
+                    {% if slot.selection_reason %}
+                    <p class="outfit-reason">{{ slot.selection_reason }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="day-actions">
+                    <button class="day-btn">Create Outfit</button>
+                </div>
+
+                {% else %}
+                <div class="empty-day">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                        <rect x="2" y="7" width="20" height="15" rx="0"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                    <p>No outfit planned</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty Week State -->
+    <div class="empty-week">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+            <rect x="3" y="4" width="18" height="18" rx="0"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <h3>No Weekly Plan Yet</h3>
+        <p>Generate your AI-powered outfit recommendations for this week.</p>
+        <button id="generate-first-btn" class="nav-btn primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            Generate Weekly Plan
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Stats Footer -->
+    <div class="stats-footer">
+        <div class="stat-item">
+            <p class="stat-label">Your Outfits</p>
+            <span class="stat-value">{{ outfit_count|default:"0" }}</span>
+        </div>
+        <div class="stat-item">
+            <p class="stat-label">Wardrobe Items</p>
+            <span class="stat-value">{{ wardrobe_count|default:"0" }}</span>
+        </div>
+        <div class="stat-item">
+            <p class="stat-label">Current Weather</p>
+            <span class="stat-value">{{ current_weather.temperature|default:"--" }}<span class="stat-unit">°C</span></span>
+        </div>
+        <div class="stat-item">
+            <p class="stat-label">Condition</p>
+            <span class="stat-value" style="font-size: 18px;">{{ current_weather.description|default:"--" }}</span>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Regenerate button
+    function handleGenerate(btn) {
+        btn.disabled = true;
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Generating...';
+        
+        fetch('{% url "planner:generate_weekly_plan" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                week_start: '{{ week_start|date:"Y-m-d" }}',
+                location: '{{ location }}'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to generate. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        });
+    }
+
+    const regenerateBtn = document.getElementById('regenerate-btn');
+    if (regenerateBtn) {
+        regenerateBtn.addEventListener('click', function() {
+            handleGenerate(this);
+        });
+    }
+
+    const generateFirstBtn = document.getElementById('generate-first-btn');
+    if (generateFirstBtn) {
+        generateFirstBtn.addEventListener('click', function() {
+            handleGenerate(this);
+        });
+    }
+});
+</script>
+    </div>
+</div>
+{% endblock %}

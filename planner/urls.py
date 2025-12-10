@@ -30,6 +30,14 @@ urlpatterns = [
     # Statistics
     path('stats/', views.event_stats, name='event_stats'),
     
+    # ==================== Weekly Planner Routes ====================
+    path('weekly/', views.weekly_planner_view, name='weekly_planner'),
+    path('weekly/generate/', views.generate_weekly_plan, name='generate_weekly_plan'),
+    path('weekly/slot/<uuid:slot_id>/accept/', views.accept_daily_outfit, name='accept_daily_outfit'),
+    path('weekly/slot/<uuid:slot_id>/swap/', views.swap_daily_outfit, name='swap_daily_outfit'),
+    path('weekly/slot/<uuid:slot_id>/worn/', views.mark_outfit_worn, name='mark_outfit_worn'),
+    path('weekly/slot/<uuid:slot_id>/regenerate/', views.regenerate_daily_slot, name='regenerate_daily_slot'),
+    
     # REST API routes
     path('', include(router.urls)),
 ]

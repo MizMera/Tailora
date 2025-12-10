@@ -181,3 +181,171 @@ class WearHistory(models.Model):
     def __str__(self):
         outfit_name = self.outfit.name if self.outfit else "Custom combination"
         return f"{self.user.email} - {self.worn_date} - {outfit_name}"
+
+
+class WeeklyPlan(models.Model):
+    """
+    AI-generated weekly outfit plan
+    Stores a full week's worth of outfit recommendations
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='weekly_plans')
+    
+    # Week information
+    week_start = models.DateField()  # Monday of the planned week
+    
+    # AI generation context
+    generated_at = models.DateTimeField(auto_now_add=True)
+    weather_data = models.JSONField(default=dict, blank=True)  # 7-day forecast snapshot
+    events_considered = models.JSONField(default=list, blank=True)  # Events during this week
+    generation_reasoning = models.TextField(blank=True)  # Why these outfits were chosen
+    location = models.CharField(max_length=100, default='Tunis')  # Weather location
+    
+    # User feedback for ML improvement
+    overall_rating = models.IntegerField(null=True, blank=True)  # 1-5 stars
+    feedback = models.TextField(blank=True)
+    
+    # Status
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('archived', 'Archived'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    
+    class Meta:
+        db_table = 'weekly_plans'
+        ordering = ['-week_start']
+        unique_together = [['user', 'week_start']]
+        verbose_name = 'Weekly Plan'
+        verbose_name_plural = 'Weekly Plans'
+        indexes = [
+            models.Index(fields=['user', 'week_start']),
+            models.Index(fields=['user', 'status']),
+        ]
+    
+    def __str__(self):
+        return f"Week of {self.week_start} for {self.user.email}"
+    
+    @property
+    def week_end(self):
+        """Get the Sunday of this week"""
+        from datetime import timedelta
+        return self.week_start + timedelta(days=6)
+    
+    @property
+    def is_current_week(self):
+        """Check if this plan is for the current week"""
+        from django.utils import timezone
+        from datetime import timedelta
+        today = timezone.now().date()
+        # Get Monday of current week
+        current_monday = today - timedelta(days=today.weekday())
+        return self.week_start == current_monday
+
+
+class DailyPlanSlot(models.Model):
+    """
+    Individual day slot within a weekly plan
+    Contains the recommended outfit for a specific day
+    """
+    STATUS_CHOICES = [
+        ('suggested', 'AI Suggested'),
+        ('accepted', 'User Accepted'),
+        ('modified', 'User Modified'),
+        ('skipped', 'Skipped'),
+        ('worn', 'Worn'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    weekly_plan = models.ForeignKey(WeeklyPlan, on_delete=models.CASCADE, related_name='daily_slots')
+    
+    # Day information
+    date = models.DateField()
+    day_of_week = models.IntegerField()  # 0=Monday, 6=Sunday
+    
+    # Primary outfit recommendation
+    primary_outfit = models.ForeignKey(
+        Outfit, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='primary_daily_slots'
+    )
+    
+    # Alternative outfit options
+    alternatives = models.ManyToManyField(
+        Outfit, 
+        blank=True, 
+        related_name='alternative_daily_slots'
+    )
+    
+    # For AI suggestions before outfit creation (stores item IDs)
+    suggested_items = models.JSONField(default=list, blank=True)  # List of clothing item IDs
+    suggested_name = models.CharField(max_length=200, blank=True)  # Suggested outfit name
+    
+    # Weather context for this day
+    weather_condition = models.CharField(max_length=50, blank=True)  # sunny, rainy, cloudy
+    temperature = models.IntegerField(null=True, blank=True)  # Celsius
+    humidity = models.IntegerField(null=True, blank=True)  # Percentage
+    weather_icon = models.CharField(max_length=20, blank=True)  # Icon code
+    
+    # Events for this day
+    events = models.ManyToManyField(Event, blank=True, related_name='daily_plan_slots')
+    
+    # AI reasoning
+    selection_reason = models.TextField(blank=True)  # Why this outfit was chosen
+    confidence = models.FloatField(default=0.5)  # AI confidence 0-1
+    
+    # Scoring breakdown
+    weather_score = models.FloatField(default=0.0)
+    occasion_score = models.FloatField(default=0.0)
+    recency_score = models.FloatField(default=0.0)
+    style_score = models.FloatField(default=0.0)
+    
+    # Status tracking
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='suggested')
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'daily_plan_slots'
+        ordering = ['date']
+        unique_together = [['weekly_plan', 'date']]
+        verbose_name = 'Daily Plan Slot'
+        verbose_name_plural = 'Daily Plan Slots'
+        indexes = [
+            models.Index(fields=['weekly_plan', 'date']),
+            models.Index(fields=['status']),
+        ]
+    
+    def __str__(self):
+        day_name = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][self.day_of_week]
+        outfit_name = self.primary_outfit.name if self.primary_outfit else self.suggested_name or 'No outfit'
+        return f"{day_name} ({self.date}) - {outfit_name}"
+    
+    @property
+    def day_name(self):
+        """Get the name of the day"""
+        days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        return days[self.day_of_week] if 0 <= self.day_of_week <= 6 else 'Unknown'
+    
+    @property
+    def has_events(self):
+        """Check if this day has any events"""
+        return self.events.exists()
+    
+    @property
+    def is_today(self):
+        """Check if this slot is for today"""
+        from django.utils import timezone
+        return self.date == timezone.now().date()
+    
+    @property
+    def is_past(self):
+        """Check if this day has passed"""
+        from django.utils import timezone
+        return self.date < timezone.now().date()

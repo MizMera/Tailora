@@ -18,8 +18,9 @@
         background: #ffffff;
         padding: 24px;
         text-align: center;
-        border-radius: 0; /* Squared */
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-radius: 0;
+        /* Squared */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .stat-number {
@@ -55,18 +56,18 @@
 
     /* 4. GRID LAYOUTS */
     .category-row {
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        padding-bottom: 12px; 
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 12px;
         border-bottom: 1px solid #e0e0e0;
     }
 
     .color-dot {
-        width: 16px; 
-        height: 16px; 
-        border-radius: 50%; 
-        border: 1px solid #d9d9d9; 
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1px solid #d9d9d9;
         display: inline-block;
     }
 
@@ -74,19 +75,21 @@
     .item-card-wrapper {
         text-align: left;
     }
-    
+
     .item-image-box {
-        position: relative; 
-        background: #fafafa; 
-        border: 1px solid #e0e0e0; 
-        margin-bottom: 12px; 
+        position: relative;
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 12px;
         overflow: hidden;
     }
 
     .item-image-box img {
-        position: absolute; 
-        top: 0; left: 0; 
-        width: 100%; height: 100%; 
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
     }
 </style>
@@ -96,20 +99,24 @@
 <div class="stats-container">
 
     <!-- Page Header -->
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+    <div class="page-header"
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
         <div>
-            <h2 style="font-family: 'Istok Web', sans-serif; font-size: 28px; font-weight: 400; color: #2c2c2c; margin: 0 0 8px 0;">
+            <h2
+                style="font-family: 'Istok Web', sans-serif; font-size: 28px; font-weight: 400; color: #2c2c2c; margin: 0 0 8px 0;">
                 Wardrobe Statistics
             </h2>
             <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: 0;">
                 Analyze your collection and habits
             </p>
         </div>
-        <a href="{% url 'wardrobe_gallery' %}" class="btn btn-secondary" style="border-radius: 0;">Back to Gallery</a>
+        <a href="{% url 'wardrobe:wardrobe_gallery' %}" class="btn btn-secondary" style="border-radius: 0;">Back to
+            Gallery</a>
     </div>
 
     <!-- Stats Overview -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 40px;">
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 40px;">
         <!-- Total Items -->
         <div class="stat-card" style="border-left: 4px solid #2c2c2c;">
             <div class="stat-number">{{ stats.total_items }}</div>
@@ -139,8 +146,10 @@
         {% endif %}
 
         <!-- Remaining Slots -->
-        <div class="stat-card" style="border-left: 4px solid {% if stats.remaining_slots > 10 %}#2e7d32{% elif stats.remaining_slots > 0 %}#f57c00{% else %}#c62828{% endif %};">
-            <div class="stat-number" style="color: {% if stats.remaining_slots > 10 %}#2e7d32{% elif stats.remaining_slots > 0 %}#f57c00{% else %}#c62828{% endif %};">
+        <div class="stat-card"
+            style="border-left: 4px solid {% if stats.remaining_slots > 10 %}#2e7d32{% elif stats.remaining_slots > 0 %}#f57c00{% else %}#c62828{% endif %};">
+            <div class="stat-number"
+                style="color: {% if stats.remaining_slots > 10 %}#2e7d32{% elif stats.remaining_slots > 0 %}#f57c00{% else %}#c62828{% endif %};">
                 {{ stats.remaining_slots }}
             </div>
             <div class="stat-label">Remaining Slots</div>
@@ -148,21 +157,27 @@
     </div>
 
     <!-- Detailed Stats Grid -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 40px;">
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 40px;">
         <!-- By Category -->
         <div style="background: #ffffff; padding: 32px; border: 1px solid #e0e0e0;">
             <h3 class="section-header">By Category</h3>
             {% if stats.by_category %}
-                <div style="display: grid; gap: 16px;">
-                    {% for category, count in stats.by_category.items %}
-                    <div class="category-row">
-                        <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ category }}</span>
-                        <span style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; color: #2c2c2c;">{{ count }}</span>
-                    </div>
-                    {% endfor %}
+            <div style="display: grid; gap: 16px;">
+                {% for category, count in stats.by_category.items %}
+                <div class="category-row">
+                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ category
+                        }}</span>
+                    <span
+                        style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; color: #2c2c2c;">{{
+                        count }}</span>
                 </div>
+                {% endfor %}
+            </div>
             {% else %}
-                <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-align: center; padding: 20px 0;">No data available</p>
+            <p
+                style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-align: center; padding: 20px 0;">
+                No data available</p>
             {% endif %}
         </div>
 
@@ -170,19 +185,24 @@
         <div style="background: #ffffff; padding: 32px; border: 1px solid #e0e0e0;">
             <h3 class="section-header">Top Colors</h3>
             {% if stats.by_color %}
-                <div style="display: grid; gap: 16px;">
-                    {% for color, count in stats.by_color.items %}
-                    <div class="category-row">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <span class="color-dot" style="background: {{ color|lower }};"></span>
-                            <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ color|title }}</span>
-                        </div>
-                        <span style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; color: #2c2c2c;">{{ count }}</span>
+            <div style="display: grid; gap: 16px;">
+                {% for color, count in stats.by_color.items %}
+                <div class="category-row">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="color-dot" style="background: {{ color|lower }};"></span>
+                        <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">{{ color|title
+                            }}</span>
                     </div>
-                    {% endfor %}
+                    <span
+                        style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; color: #2c2c2c;">{{
+                        count }}</span>
                 </div>
+                {% endfor %}
+            </div>
             {% else %}
-                <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-align: center; padding: 20px 0;">No data available</p>
+            <p
+                style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-align: center; padding: 20px 0;">
+                No data available</p>
             {% endif %}
         </div>
     </div>
@@ -191,7 +211,7 @@
     {% if stats.most_worn %}
     <div style="background: #ffffff; padding: 32px; margin-bottom: 40px; border: 1px solid #e0e0e0;">
         <h3 class="section-header">Most Worn Items</h3>
-        
+
         <!-- FIX: Using auto-fill with a minimum width instead of fixed columns -->
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 24px;">
             {% for item in stats.most_worn %}
@@ -201,10 +221,15 @@
                     <img src="{{ item.image }}" alt="{{ item.name }}">
                     {% endif %}
                 </div>
-                <p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #2c2c2c; margin: 0 0 4px 0; font-weight: 600;">{{ item.name }}</p>
-                <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin: 0;">{{ item.times_worn }} times</p>
+                <p
+                    style="font-family: 'Inter', sans-serif; font-size: 13px; color: #2c2c2c; margin: 0 0 4px 0; font-weight: 600;">
+                    {{ item.name }}</p>
+                <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin: 0;">{{
+                    item.times_worn }} times</p>
                 {% if item.cost_per_wear %}
-                <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #4caf50; margin: 4px 0 0 0; font-weight: 600;">€{{ item.cost_per_wear }}/wear</p>
+                <p
+                    style="font-family: 'Inter', sans-serif; font-size: 12px; color: #4caf50; margin: 4px 0 0 0; font-weight: 600;">
+                    €{{ item.cost_per_wear }}/wear</p>
                 {% endif %}
             </div>
             {% endfor %}
@@ -215,7 +240,8 @@
     <!-- Underutilized Items -->
     {% if stats.underutilized_items %}
     <div style="background: #fff8e1; padding: 32px; margin-bottom: 40px; border-left: 4px solid #ffc107;">
-        <h3 style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">
+        <h3
+            style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #2c2c2c; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">
             ⚠️ Underutilized Items
         </h3>
         <p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #856404; margin: 0 0 24px 0;">
@@ -229,8 +255,11 @@
                     <img src="{{ item.image }}" alt="{{ item.name }}">
                     {% endif %}
                 </div>
-                <p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #2c2c2c; margin: 0 0 4px 0; font-weight: 600;">{{ item.name }}</p>
-                <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #856404; margin: 0;">{{ item.times_worn }}× in {{ item.days_owned }} days</p>
+                <p
+                    style="font-family: 'Inter', sans-serif; font-size: 13px; color: #2c2c2c; margin: 0 0 4px 0; font-weight: 600;">
+                    {{ item.name }}</p>
+                <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #856404; margin: 0;">{{
+                    item.times_worn }}× in {{ item.days_owned }} days</p>
             </div>
             {% endfor %}
         </div>
@@ -249,8 +278,11 @@
                     <img src="{{ item.image }}" alt="{{ item.name }}">
                     {% endif %}
                 </div>
-                <p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #2c2c2c; margin: 0 0 4px 0; font-weight: 500;">{{ item.name }}</p>
-                <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin: 0;">{{ item.created_at|date:'d/m/Y' }}</p>
+                <p
+                    style="font-family: 'Inter', sans-serif; font-size: 13px; color: #2c2c2c; margin: 0 0 4px 0; font-weight: 500;">
+                    {{ item.name }}</p>
+                <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin: 0;">{{
+                    item.created_at|date:'d/m/Y' }}</p>
             </div>
             {% endfor %}
         </div>
@@ -258,18 +290,20 @@
     {% endif %}
 
     <!-- Upgrade Prompt -->
-    {% if not is_premium and stats.remaining_slots < 10 %}
-    <div style="background: linear-gradient(135deg, #2c2c2c 0%, #252320 100%); color: #ffffff; padding: 32px; margin-top: 40px; text-align: center; border-radius: 0;">
-        <h3 style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; margin: 0 0 16px 0;">Upgrade to Premium</h3>
-        <p style="font-family: 'Inter', sans-serif; font-size: 14px; margin: 0 0 24px 0; color: rgba(255, 255, 255, 0.8);">
+    {% if not is_premium and stats.remaining_slots < 10 %} <div
+        style="background: linear-gradient(135deg, #2c2c2c 0%, #252320 100%); color: #ffffff; padding: 32px; margin-top: 40px; text-align: center; border-radius: 0;">
+        <h3 style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; margin: 0 0 16px 0;">Upgrade
+            to Premium</h3>
+        <p
+            style="font-family: 'Inter', sans-serif; font-size: 14px; margin: 0 0 24px 0; color: rgba(255, 255, 255, 0.8);">
             You only have {{ stats.remaining_slots }} slots left. Upgrade to Premium for an unlimited wardrobe!
         </p>
         <a href="{% url 'profile_settings' %}" class="btn btn-primary"
             style="background: #ffffff; color: #2c2c2c; border-color: #ffffff; border-radius: 0;">
             See Premium Options
         </a>
-    </div>
-    {% endif %}
+</div>
+{% endif %}
 
 </div>
 {% endblock %}

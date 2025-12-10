@@ -6,700 +6,630 @@
 {% block extra_css %}
 <style>
     /* ========================================
-       WARDROBE GALLERY - FLEX LAYOUT
+       MODERN WARDROBE VARIABLES
        ======================================== */
-
     :root {
-        --bg-color: #f4e9cf;
-        --text-dark: #2c2c2c;
-        --text-light: #666;
-        --accent: #f5a623;
-        --border: #e0e0e0;
+        --bg-body: #f9f9f9;
+        --bg-card: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #6b7280;
+        --primary: #2c2c2c;
+        --primary-hover: #000000;
+        --accent: #d97706; /* Warm amber */
+        --border-color: #e5e7eb;
+        --radius: 8px;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        
+        /* Status Colors */
+        --status-available: #10b981;
+        --status-washing: #3b82f6;
+        --status-loaned: #f59e0b;
+        --status-dry-clean: #8b5cf6;
     }
 
+    /* ========================================
+       LAYOUT
+       ======================================== */
     .wardrobe-wrapper {
-        width: 100%;
-        background: var(--bg-color);
+        background-color: var(--bg-body);
         min-height: 100vh;
+        padding-bottom: 60px;
     }
 
     .wardrobe-container {
-        max-width: 1200px;
+        max-width: 1280px;
         margin: 0 auto;
         padding: 40px 24px;
     }
 
-    /* Header */
+    /* Header Section */
     .wardrobe-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 32px;
-        flex-wrap: wrap;
-        gap: 16px;
+        align-items: flex-end;
+        margin-bottom: 40px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
     }
 
-    .wardrobe-title {
+    .header-content h1 {
         font-family: 'Istok Web', sans-serif;
-        font-size: 32px;
+        font-size: 2.25rem;
+        color: var(--text-main);
         font-weight: 700;
-        color: var(--text-dark);
         margin: 0;
-        line-height: 1.2;
+        line-height: 1.1;
     }
 
-    .wardrobe-count {
+    .stats-pill {
+        display: inline-block;
+        margin-top: 8px;
         font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        color: var(--text-light);
-        margin-top: 4px;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        background: #eef0f2;
+        padding: 4px 12px;
+        border-radius: 20px;
     }
 
-    /* Messages */
-    .wardrobe-messages {
-        margin-bottom: 24px;
-    }
-
-    .toast-message {
-        padding: 14px 20px;
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        margin-bottom: 8px;
-        border-radius: 0px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .toast-message.success {
-        background: #e8f5e9;
-        color: #2e7d32;
-        border-left: 4px solid #4caf50;
-    }
-
-    .toast-message.error {
-        background: #ffebee;
-        color: #c62828;
-        border-left: 4px solid #e53935;
-    }
-
-    /* Flex Layout (Replaces Table Layout) */
+    /* Main Grid Layout */
     .wardrobe-layout {
-        display: flex;
-        gap: 32px;
-        align-items: flex-start;
+        display: grid;
+        grid-template-columns: 260px 1fr; /* Sidebar fixed width, Grid takes rest */
+        gap: 40px;
+        align-items: start;
     }
 
-    .wardrobe-sidebar {
-        width: 260px;
-        flex-shrink: 0;
-        position: sticky;
-        top: 20px; /* Sticky sidebar */
-    }
-
-    .wardrobe-main {
-        flex-grow: 1;
-        width: 100%; /* Ensures grid takes available space */
-    }
-
-    /* Sidebar Card */
-    .sidebar-card {
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
+    /* ========================================
+       SIDEBAR FILTERS
+       ======================================== */
+    .filter-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
         padding: 24px;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
-        border-radius: 0px;
+        position: sticky;
+        top: 24px; /* Sticky sidebar */
+        box-shadow: var(--shadow-sm);
     }
 
-    .filter-section {
+    .filter-group {
         margin-bottom: 24px;
     }
 
-    .filter-section:last-of-type {
-        margin-bottom: 16px;
+    .filter-group:last-child {
+        margin-bottom: 0;
     }
 
-    .filter-label {
+    .filter-title {
         font-family: 'Inter', sans-serif;
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--text-dark);
+        font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 10px;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 12px;
         display: block;
     }
 
     /* Search Input */
-    .search-wrapper {
+    .search-box {
         position: relative;
     }
-
-    .search-icon {
+    
+    .search-box svg {
         position: absolute;
         left: 12px;
         top: 50%;
         transform: translateY(-50%);
-        color: #999;
-        pointer-events: none;
+        color: #9ca3af;
     }
 
-    .filter-search {
+    .search-input {
         width: 100%;
         padding: 10px 12px 10px 36px;
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        border: 1px solid #ddd;
-        background: #fff;
-        color: var(--text-dark);
-        outline: none;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        font-size: 0.9rem;
         transition: all 0.2s;
-        border-radius: 0px;
     }
 
-    .filter-search:focus {
-        border-color: var(--text-dark);
-        box-shadow: 0 0 0 3px rgba(44, 44, 44, 0.08);
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
     }
 
-    /* Category List */
-    .category-list {
+    /* Custom Radio/Check Inputs */
+    .radio-list {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
     }
 
-    .category-item {
-        display: block;
-        padding: 8px 12px;
-        font-family: 'Inter', sans-serif;
-        font-size: 13px;
-        font-weight: 500;
-        background: transparent;
-        border: 1px solid transparent;
-        border-radius: 0px;
-        color: #555;
-        cursor: pointer;
-        transition: all 0.15s;
-    }
-
-    .category-item:hover {
-        background: #f0f0f0;
-    }
-
-    .category-item.active {
-        background: var(--text-dark);
-        color: #fff;
-    }
-
-    .category-item input {
-        display: none;
-    }
-
-    /* Select & Checkbox */
-    .filter-select {
-        width: 100%;
-        padding: 10px;
-        font-family: 'Inter', sans-serif;
-        font-size: 13px;
-        border: 1px solid #ddd;
-        background-color: #fff;
-        border-radius: 0px;
-        cursor: pointer;
-        outline: none;
-    }
-
-    .filter-checkbox {
+    .radio-label {
         display: flex;
         align-items: center;
         gap: 10px;
+        font-size: 0.9rem;
+        color: var(--text-main);
         cursor: pointer;
-        font-family: 'Inter', sans-serif;
-        font-size: 13px;
-        color: var(--text-dark);
-        user-select: none;
+        padding: 6px 8px;
+        border-radius: 6px;
+        transition: background 0.15s;
     }
 
-    .filter-checkbox input {
+    .radio-label:hover {
+        background: #f3f4f6;
+    }
+
+    .radio-label input {
+        accent-color: var(--primary);
         width: 16px;
         height: 16px;
-        accent-color: var(--text-dark);
+    }
+
+    .radio-label.active {
+        font-weight: 600;
+        color: var(--primary);
+        background: #f3f4f6;
+    }
+
+    .styled-select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        background-color: #fff;
+        font-size: 0.9rem;
+        color: var(--text-main);
+        cursor: pointer;
     }
 
     .btn-reset {
         display: block;
         width: 100%;
-        padding: 12px;
-        font-family: 'Inter', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        background: transparent;
-        color: var(--text-dark);
-        border: 1px solid var(--text-dark);
-        border-radius: 0px;
-        cursor: pointer;
         text-align: center;
+        padding: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        border: 1px dashed var(--border-color);
+        border-radius: var(--radius);
+        margin-top: 20px;
         text-decoration: none;
         transition: all 0.2s;
-        margin-top: 16px;
     }
 
     .btn-reset:hover {
-        background: var(--text-dark);
-        color: #fff;
+        color: #ef4444;
+        border-color: #ef4444;
+        background: #fef2f2;
     }
 
-    /* Items Grid */
+    /* ========================================
+       ITEM GRID
+       ======================================== */
     .items-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
         gap: 24px;
+        width: 100%;
     }
 
-    /* Animations */
     .item-card {
-        animation: fadeInUp 0.5s ease both;
-    }
-    
-    /* Generate delays for up to 20 items */
-    .items-grid .item-card:nth-child(1) { animation-delay: 0.05s; }
-    .items-grid .item-card:nth-child(2) { animation-delay: 0.1s; }
-    .items-grid .item-card:nth-child(3) { animation-delay: 0.15s; }
-    .items-grid .item-card:nth-child(4) { animation-delay: 0.2s; }
-    .items-grid .item-card:nth-child(5) { animation-delay: 0.25s; }
-    .items-grid .item-card:nth-child(6) { animation-delay: 0.3s; }
-    .items-grid .item-card:nth-child(7) { animation-delay: 0.35s; }
-    .items-grid .item-card:nth-child(8) { animation-delay: 0.4s; }
-    .items-grid .item-card:nth-child(9) { animation-delay: 0.45s; }
-    .items-grid .item-card:nth-child(10) { animation-delay: 0.5s; }
-
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Item Card */
-    .item-card {
-        background: #fff;
-        border: 1px solid var(--border);
-        border-radius: 0px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
         overflow: hidden;
-        transition: all 0.3s ease;
-        position: relative;
+        transition: transform 0.2s, box-shadow 0.2s;
         display: flex;
         flex-direction: column;
+        position: relative;
     }
 
     .item-card:hover {
-        border-color: #bbb;
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
         transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: #d1d5db;
     }
 
-    .item-card-link {
-        text-decoration: none;
-        color: inherit;
-        flex-grow: 1;
-    }
-
-    .item-image {
+    .item-image-wrapper {
         position: relative;
         width: 100%;
         padding-top: 100%; /* 1:1 Aspect Ratio */
-        background: #f8f8f8;
+        background: #f3f4f6;
         overflow: hidden;
     }
 
-    .item-image img {
+    .item-image-wrapper img {
         position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        transition: transform 0.6s ease;
+        transition: transform 0.5s ease;
     }
 
-    .item-card:hover .item-image img {
-        transform: scale(1.08);
+    .item-card:hover .item-image-wrapper img {
+        transform: scale(1.05);
     }
 
-    .badge-favorite {
+    /* Badges */
+    .status-badge {
         position: absolute;
-        top: 10px; right: 10px;
-        width: 32px; height: 32px;
-        background: #fff;
+        bottom: 10px;
+        left: 10px;
+        padding: 4px 10px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: white;
+        border-radius: 4px;
+        z-index: 2;
+        background: var(--primary); /* Fallback */
+    }
+
+    .status-washing { background: var(--status-washing); }
+    .status-dry_cleaning { background: var(--status-dry-clean); }
+    .status-loaned { background: var(--status-loaned); }
+    .status-available { display: none; } /* Optional: Hide if available */
+
+    .fav-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.9);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--accent);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         z-index: 2;
+        backdrop-filter: blur(4px);
     }
 
-    .badge-status {
-        position: absolute;
-        bottom: 10px; left: 10px;
-        padding: 4px 10px;
-        background: rgba(44, 44, 44, 0.95);
-        color: #fff;
-        font-family: 'Inter', sans-serif;
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-        border-radius: 0px;
-        z-index: 2;
-    }
-
-    /* Item Info */
-    .item-body {
+    /* Card Content */
+    .card-content {
         padding: 16px;
-        border-bottom: 1px solid #f0f0f0;
+        flex-grow: 1;
+        border-bottom: 1px solid var(--border-color);
     }
 
-    .item-name {
-        font-family: 'Inter', sans-serif;
-        font-size: 15px;
+    .item-title {
+        font-size: 1rem;
         font-weight: 600;
-        color: var(--text-dark);
+        color: var(--text-main);
         margin: 0 0 4px 0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .item-meta {
-        font-family: 'Inter', sans-serif;
-        font-size: 12px;
-        color: #888;
+    .item-subtitle {
+        font-size: 0.8rem;
+        color: var(--text-muted);
         margin: 0;
     }
 
-    /* Item Actions */
-    .item-actions {
+    /* Actions Footer */
+    .card-actions {
         display: flex;
         background: #fafafa;
     }
 
-    .item-action {
+    .action-btn {
         flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 12px;
-        background: transparent;
         border: none;
-        color: #999;
+        background: transparent;
+        padding: 12px;
+        color: var(--text-muted);
         cursor: pointer;
         transition: all 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
-    .item-action:hover {
-        background: #fff;
-        color: var(--text-dark);
+    .action-btn:hover {
+        background: white;
+        color: var(--primary);
     }
 
-    .item-action.active { color: var(--accent); }
-    .item-action.delete:hover { color: #e53935; background: #fff5f5; }
-    
-    .item-action + .item-action {
-        border-left: 1px solid #f0f0f0;
+    .action-btn.btn-fav.active {
+        color: var(--accent);
+    }
+
+    .action-btn.btn-delete:hover {
+        color: #ef4444;
+        background: #fef2f2;
+    }
+
+    .card-actions > * + * {
+        border-left: 1px solid var(--border-color);
     }
 
     /* Empty State */
     .empty-state {
         grid-column: 1 / -1;
-        padding: 60px 20px;
         text-align: center;
-        background: rgba(255,255,255,0.5);
-        border: 2px dashed #ccc;
-        border-radius: 0px;
+        padding: 80px 20px;
+        background: white;
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius);
     }
 
-    .empty-icon {
-        width: 64px; height: 64px;
-        margin: 0 auto 16px;
-        background: #fff;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    .empty-state h3 {
+        margin-top: 16px;
+        color: var(--text-main);
     }
 
-    .empty-title {
-        font-family: 'Istok Web', sans-serif;
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--text-dark);
-        margin-bottom: 8px;
-    }
+    /* ========================================
+       MOBILE RESPONSIVENESS
+       ======================================== */
+    /* By default (Desktop), sidebar is always visible. 
+       Mobile logic follows below. */
 
-    .empty-text {
-        color: #777;
-        margin-bottom: 24px;
-        font-family: 'Inter', sans-serif;
-    }
-
-    /* Pagination */
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 16px;
-        margin-top: 40px;
-        padding-top: 24px;
-        border-top: 1px solid rgba(0,0,0,0.05);
-    }
-
-    /* Responsive */
     @media (max-width: 900px) {
         .wardrobe-layout {
-            display: block; /* Stack on mobile */
+            display: block; /* Stack layout */
         }
-        
+
         .wardrobe-sidebar {
-            width: 100%;
+            margin-bottom: 30px;
             position: static;
-            margin-bottom: 24px;
         }
 
-        .category-list {
-            flex-direction: row;
-            flex-wrap: wrap;
+        /* Mobile Filter Toggle using <details> */
+        .mobile-filter-wrapper summary {
+            list-style: none;
+            background: white;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .sidebar-card {
-            padding: 20px;
+        .mobile-filter-wrapper summary::-webkit-details-marker {
+            display: none;
         }
 
-        .items-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
+        .mobile-filter-wrapper summary::after {
+            content: '+';
+            font-size: 1.2rem;
         }
-    }
-    
-    @media (max-width: 480px) {
-        .wardrobe-container { padding: 24px 16px; }
-        .items-grid { grid-template-columns: 1fr; } 
+
+        .mobile-filter-wrapper[open] summary::after {
+            content: '-';
+        }
+
+        /* Hide the actual card content until toggled on mobile */
+        .mobile-filter-wrapper .filter-card {
+            margin-top: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
     }
 </style>
 {% endblock %}
 
-{% block container_class %}page-reveal{% endblock %}
+{% block container_class %}page-wardrobe{% endblock %}
 
 {% block content %}
 <div class="wardrobe-wrapper">
     <div class="wardrobe-container">
+        
         <!-- Header -->
         <header class="wardrobe-header">
-            <div>
-                <h1 class="wardrobe-title">My Wardrobe</h1>
-                <p class="wardrobe-count">{{ items.paginator.count|default:"0" }} items found</p>
+            <div class="header-content">
+                <h1>My Wardrobe</h1>
+                <span class="stats-pill">
+                    {{ items.paginator.count|default:"0" }} Items 
+                    {% if user.get_max_wardrobe_items %} / {{ user.get_max_wardrobe_items }} Limit{% endif %}
+                </span>
             </div>
-            
-            {% if user.wardrobe_items_count >= user.get_max_wardrobe_items %}
-                <button class="btn btn-primary" disabled style="opacity: 0.6; cursor: not-allowed;">
-                    Limit Reached
-                </button>
-            {% else %}
-                <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">
-                    + Add New Item
-                </a>
-            {% endif %}
+
+            <div class="header-actions">
+                {% if user.wardrobe_items_count >= user.get_max_wardrobe_items %}
+                    <button class="btn btn-secondary" disabled title="Wardrobe limit reached">
+                        Limit Reached
+                    </button>
+                {% else %}
+                    <a href="{% url 'wardrobe:wardrobe_upload' %}" class="btn btn-primary">
+                        + Add Item
+                    </a>
+                {% endif %}
+            </div>
         </header>
 
         <!-- Messages -->
         {% if messages %}
-        <div class="wardrobe-messages">
+        <div class="messages-container" style="margin-bottom: 24px;">
             {% for message in messages %}
-            <div class="toast-message {% if message.tags == 'error' %}error{% else %}success{% endif %}">
+            <div class="alert alert-{{ message.tags }}">
                 {{ message }}
             </div>
             {% endfor %}
         </div>
         {% endif %}
 
-        <!-- Main Layout -->
+        <!-- Layout -->
         <div class="wardrobe-layout">
-            <!-- Sidebar Filters -->
+            
+            <!-- Sidebar (Wrapped in Details for Mobile) -->
             <aside class="wardrobe-sidebar">
-                <div class="sidebar-card">
-                    <form method="get" action="{% url 'wardrobe_gallery' %}" id="filter-form">
-                        
-                        <!-- Search -->
-                        <div class="filter-section">
-                            <span class="filter-label">Search</span>
-                            <div class="search-wrapper">
-                                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <path d="M21 21l-4.35-4.35"></path>
-                                </svg>
-                                <!-- Note: Added oninput for debounce logic in JS -->
-                                <input type="text" 
-                                       name="search" 
-                                       id="search-input" 
-                                       placeholder="Type to search..." 
-                                       value="{{ search_query|default:'' }}" 
-                                       class="filter-search"
-                                       autocomplete="off">
+                <details class="mobile-filter-wrapper" open>
+                    <summary class="mobile-only">Filters & Search</summary>
+                    
+                    <div class="filter-card">
+                        <form method="get" action="{% url 'wardrobe:wardrobe_gallery' %}" id="filter-form">
+                            
+                            <!-- Search -->
+                            <div class="filter-group">
+                                <label class="filter-title">Search</label>
+                                <div class="search-box">
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    <input type="text" name="search" id="search-input" 
+                                           class="search-input" 
+                                           placeholder="Color, brand, type..." 
+                                           value="{{ search_query|default:'' }}" 
+                                           autocomplete="off">
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Categories -->
-                        <div class="filter-section">
-                            <span class="filter-label">Category</span>
-                            <div class="category-list">
-                                <label class="category-item {% if not selected_category %}active{% endif %}">
-                                    <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %} onchange="this.form.submit()">
-                                    All
-                                </label>
-                                {% for category in categories %}
-                                <label class="category-item {% if selected_category == category.name %}active{% endif %}">
-                                    <input type="radio" name="category" value="{{ category.name }}" {% if selected_category == category.name %}checked{% endif %} onchange="this.form.submit()">
-                                    {{ category.name }}
-                                </label>
-                                {% endfor %}
+                            <!-- Categories -->
+                            <div class="filter-group">
+                                <label class="filter-title">Category</label>
+                                <div class="radio-list">
+                                    <label class="radio-label {% if not selected_category %}active{% endif %}">
+                                        <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %} onchange="this.form.submit()">
+                                        All Categories
+                                    </label>
+                                    {% for category in categories %}
+                                    <label class="radio-label {% if selected_category == category.name %}active{% endif %}">
+                                        <input type="radio" name="category" value="{{ category.name }}" {% if selected_category == category.name %}checked{% endif %} onchange="this.form.submit()">
+                                        {{ category.name }}
+                                    </label>
+                                    {% endfor %}
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Season -->
-                        <div class="filter-section">
-                            <span class="filter-label">Season</span>
-                            <select name="season" class="filter-select" onchange="this.form.submit()">
-                                <option value="">All Seasons</option>
-                                <option value="spring" {% if selected_season == 'spring' %}selected{% endif %}>Spring</option>
-                                <option value="summer" {% if selected_season == 'summer' %}selected{% endif %}>Summer</option>
-                                <option value="fall" {% if selected_season == 'fall' %}selected{% endif %}>Fall</option>
-                                <option value="winter" {% if selected_season == 'winter' %}selected{% endif %}>Winter</option>
-                            </select>
-                        </div>
+                            <!-- Filters Row (Season/Status) -->
+                            <div class="filter-group">
+                                <label class="filter-title">Season</label>
+                                <select name="season" class="styled-select" onchange="this.form.submit()">
+                                    <option value="">Any Season</option>
+                                    <option value="spring" {% if selected_season == 'spring' %}selected{% endif %}>Spring</option>
+                                    <option value="summer" {% if selected_season == 'summer' %}selected{% endif %}>Summer</option>
+                                    <option value="fall" {% if selected_season == 'fall' %}selected{% endif %}>Fall</option>
+                                    <option value="winter" {% if selected_season == 'winter' %}selected{% endif %}>Winter</option>
+                                </select>
+                            </div>
 
-                        <!-- Status -->
-                        <div class="filter-section">
-                            <span class="filter-label">Status</span>
-                            <select name="status" class="filter-select" onchange="this.form.submit()">
-                                <option value="">All Statuses</option>
-                                <option value="available" {% if selected_status == 'available' %}selected{% endif %}>Available</option>
-                                <option value="washing" {% if selected_status == 'washing' %}selected{% endif %}>Washing</option>
-                                <option value="dry_cleaning" {% if selected_status == 'dry_cleaning' %}selected{% endif %}>Dry Cleaning</option>
-                                <option value="loaned" {% if selected_status == 'loaned' %}selected{% endif %}>Loaned</option>
-                            </select>
-                        </div>
+                            <div class="filter-group">
+                                <label class="filter-title">Status</label>
+                                <select name="status" class="styled-select" onchange="this.form.submit()">
+                                    <option value="">Any Status</option>
+                                    <option value="available" {% if selected_status == 'available' %}selected{% endif %}>Available</option>
+                                    <option value="washing" {% if selected_status == 'washing' %}selected{% endif %}>Washing</option>
+                                    <option value="dry_cleaning" {% if selected_status == 'dry_cleaning' %}selected{% endif %}>Dry Cleaning</option>
+                                    <option value="loaned" {% if selected_status == 'loaned' %}selected{% endif %}>Loaned</option>
+                                </select>
+                            </div>
 
-                        <!-- Color -->
-                        <div class="filter-section">
-                            <span class="filter-label">Color</span>
-                            <select name="color" class="filter-select" onchange="this.form.submit()">
-                                <option value="">All Colors</option>
-                                {% for color in colors %}
-                                <option value="{{ color }}" {% if selected_color == color %}selected{% endif %}>{{ color }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                            <!-- Favorites Toggle -->
+                            <div class="filter-group" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+                                <label class="radio-label" style="font-weight: 600;">
+                                    <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %} onchange="this.form.submit()">
+                                    <span style="color: var(--accent)">★</span> Show Favorites Only
+                                </label>
+                            </div>
 
-                        <!-- Favorites -->
-                        <div class="filter-section">
-                            <label class="filter-checkbox">
-                                <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %} onchange="this.form.submit()">
-                                Show Favorites Only
-                            </label>
-                        </div>
-
-                        {% if search_query or selected_category or selected_season or selected_status or selected_color or show_favorites %}
-                            <a href="{% url 'wardrobe_gallery' %}" class="btn-reset">Reset Filters</a>
-                        {% endif %}
-                    </form>
-                </div>
+                            <!-- Reset Button -->
+                            {% if search_query or selected_category or selected_season or selected_status or show_favorites %}
+                            <a href="{% url 'wardrobe:wardrobe_gallery' %}" class="btn-reset">
+                                Clear All Filters
+                            </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </details>
             </aside>
 
-            <!-- Main Content (Grid) -->
+            <!-- Main Gallery -->
             <main class="wardrobe-main">
                 <div class="items-grid">
                     {% if items %}
                         {% for item in items %}
                         <article class="item-card">
-                            <a href="{% url 'wardrobe_detail' item.id %}" class="item-card-link">
-                                <div class="item-image">
+                            <a href="{% url 'wardrobe:wardrobe_detail' item.id %}" style="text-decoration: none; color: inherit; display: contents;">
+                                
+                                <div class="item-image-wrapper">
                                     <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy">
                                     
+                                    <!-- Favorite Icon Overlay -->
                                     {% if item.favorite %}
-                                    <span class="badge-favorite" title="Favorite">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                        </svg>
+                                    <div class="fav-icon" title="Favorite">
+                                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Status Badge -->
+                                    {% if item.status != 'available' %}
+                                    <span class="status-badge status-{{ item.status }}">
+                                        {{ item.get_status_display }}
                                     </span>
                                     {% endif %}
-                                    
-                                    {% if item.status != 'available' %}
-                                    <span class="badge-status">{{ item.get_status_display }}</span>
-                                    {% endif %}
                                 </div>
-                                <div class="item-body">
-                                    <h3 class="item-name">{{ item.name }}</h3>
-                                    <p class="item-meta">{{ item.category.name|default:"Uncategorized" }}</p>
+
+                                <div class="card-content">
+                                    <h3 class="item-title">{{ item.name }}</h3>
+                                    <p class="item-subtitle">{{ item.category.name|default:"Uncategorized" }}</p>
                                 </div>
                             </a>
-                            
-                            <!-- Action Footer -->
-                            <div class="item-actions">
-                                <a href="{% url 'wardrobe_toggle_favorite' item.id %}" class="item-action {% if item.favorite %}active{% endif %}" title="Toggle Favorite">
+
+                            <!-- Card Actions -->
+                            <div class="card-actions">
+                                <a href="{% url 'wardrobe:wardrobe_toggle_favorite' item.id %}" 
+                                   class="action-btn btn-fav {% if item.favorite %}active{% endif %}" 
+                                   title="Toggle Favorite">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="{% if item.favorite %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                     </svg>
                                 </a>
-                                <a href="{% url 'wardrobe_edit' item.id %}" class="item-action" title="Edit Item">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                    </svg>
+                                <a href="{% url 'wardrobe:wardrobe_edit' item.id %}" class="action-btn" title="Edit">
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 </a>
-                                <form method="post" action="{% url 'wardrobe_delete' item.id %}" style="flex: 1; display: flex;" onsubmit="return confirm('Are you sure you want to delete this item? This action cannot be undone.')">
+                                <form method="post" action="{% url 'wardrobe:wardrobe_delete' item.id %}" style="flex: 1; display: flex;" onsubmit="return confirm('Delete this item?')">
                                     {% csrf_token %}
-                                    <button type="submit" class="item-action delete" title="Delete Item">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                        </svg>
+                                    <button type="submit" class="action-btn btn-delete" title="Delete">
+                                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </form>
                             </div>
                         </article>
                         {% endfor %}
-                    
                     {% else %}
-                        <!-- Empty State -->
                         <div class="empty-state">
-                            <div class="empty-icon">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5">
-                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                </svg>
-                            </div>
-                            <h2 class="empty-title">No items found</h2>
-                            <p class="empty-text">
-                                {% if search_query or selected_category or selected_season %}
-                                    We couldn't find any items matching your filters.
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">🧥</div>
+                            <h3>No items found</h3>
+                            <p style="color: var(--text-muted); margin-bottom: 20px;">
+                                {% if search_query or selected_category %}
+                                Try adjusting your filters or search terms.
                                 {% else %}
-                                    Your wardrobe is empty. Start by adding your first item!
+                                Your wardrobe is looking a bit empty. Time to add some style!
                                 {% endif %}
                             </p>
-                            <a href="{% url 'wardrobe_upload' %}" class="btn btn-primary">+ Add Item</a>
+                            <a href="{% url 'wardrobe:wardrobe_upload' %}" class="btn btn-primary">Add New Item</a>
                         </div>
                     {% endif %}
                 </div>
 
                 <!-- Pagination -->
                 {% if items.has_other_pages %}
-                <nav class="pagination">
+                <div class="pagination-container" style="display: flex; justify-content: center; margin-top: 40px; gap: 10px;">
                     {% if items.has_previous %}
-                        <a href="?page={{ items.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-secondary">← Previous</a>
+                        <a href="?page={{ items.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-secondary">Previous</a>
                     {% endif %}
                     
-                    <span class="pagination-text">Page {{ items.number }} of {{ items.paginator.num_pages }}</span>
-                    
+                    <span style="display: flex; align-items: center; color: var(--text-muted);">
+                        Page {{ items.number }} of {{ items.paginator.num_pages }}
+                    </span>
+
                     {% if items.has_next %}
-                        <a href="?page={{ items.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-secondary">Next →</a>
+                        <a href="?page={{ items.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-secondary">Next</a>
                     {% endif %}
-                </nav>
+                </div>
                 {% endif %}
             </main>
         </div>
@@ -708,42 +638,49 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Debounce Search Logic
-        // This waits 500ms after the user stops typing to submit the form.
-        // This is better than filtering client-side because it works with Pagination.
+        // Mobile Toggle Logic: Close details automatically on desktop resize
+        const mobileDetails = document.querySelector('.mobile-filter-wrapper');
+        const checkScreen = () => {
+            if (window.innerWidth > 900) {
+                if (mobileDetails) mobileDetails.setAttribute('open', '');
+                // Disable click on summary for desktop
+                if (mobileDetails) mobileDetails.querySelector('summary').style.pointerEvents = 'none';
+            } else {
+                if (mobileDetails) mobileDetails.removeAttribute('open'); // Default closed on mobile
+                if (mobileDetails) mobileDetails.querySelector('summary').style.pointerEvents = 'auto';
+            }
+        };
+        
+        // Initial check
+        checkScreen();
+        window.addEventListener('resize', checkScreen);
+
+        // Search Debounce Logic
         const searchInput = document.getElementById('search-input');
         const filterForm = document.getElementById('filter-form');
         let timeout = null;
 
         if (searchInput && filterForm) {
+            // Restore focus
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('search')) {
+                const len = searchInput.value.length;
+                searchInput.focus();
+                searchInput.setSelectionRange(len, len);
+            }
+
             searchInput.addEventListener('input', function() {
                 clearTimeout(timeout);
-                
-                // Show user we are waiting to search (optional visual cue)
-                this.style.borderColor = '#999';
-                
-                timeout = setTimeout(function() {
-                    filterForm.submit();
-                }, 500); // 500ms delay
+                timeout = setTimeout(() => filterForm.submit(), 500);
             });
 
-            // Prevent form submit on Enter key to avoid double submission
-            searchInput.addEventListener('keypress', function(e) {
+            searchInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     clearTimeout(timeout);
                     filterForm.submit();
                 }
             });
-            
-            // Focus input if there is a search query (for UX continuity after reload)
-            const urlParams = new URLSearchParams(window.location.search);
-            if(urlParams.has('search')) {
-                const len = searchInput.value.length;
-                searchInput.focus();
-                // Move cursor to end
-                searchInput.setSelectionRange(len, len);
-            }
         }
     });
 </script>
