@@ -292,9 +292,7 @@
                             <a href="{% url 'social:draft_detail' draft.id %}" class="btn btn-primary btn-sm">
                                 Edit & Publish
                             </a>
-                            <a href="{% url 'social:create_post' %}?draft={{ draft.id }}" class="btn btn-secondary btn-sm">
-                                Use as Template
-                            </a>
+
                             <button onclick="deleteDraft('{{ draft.id }}')" class="btn btn-error btn-sm">
                                 Delete
                             </button>

@@ -124,6 +124,10 @@ def create_post(request):
         schedule_post = request.POST.get('schedule_post') == 'true'
         scheduled_time_str = request.POST.get('scheduled_time') or request.POST.get('scheduled_time_custom')
         
+        # AJOUTEZ CETTE LIGNE IMPORTANTE :
+        # Détecter si l'utilisateur a sélectionné un "Best Time to Post" AI
+        ai_time_selected = bool(request.POST.get('scheduled_time'))
+        
         # Process hashtags
         hashtags = []
         for tag in hashtags_raw:
@@ -149,6 +153,7 @@ def create_post(request):
         
         # Handle scheduling
         scheduled_for = None
+        # MODIFIEZ CETTE PARTIE POUR GÉRER AI TIME AUSSI :
         if schedule_post and scheduled_time_str:
             try:
                 # Convertir en datetime avec timezone
@@ -175,6 +180,22 @@ def create_post(request):
                 print(f"Schedule error: {e}")
                 messages.error(request, f'Error with scheduled time: {e}')
                 return redirect('social:create_post')
+        elif ai_time_selected and scheduled_time_str:
+            # NOUVEAU CAS : AI time sélectionné mais pas "Schedule for later" checkbox
+            try:
+                from django.utils.dateparse import parse_datetime
+                scheduled_for = parse_datetime(scheduled_time_str)
+                
+                if scheduled_for:
+                    if timezone.is_naive(scheduled_for):
+                        scheduled_for = timezone.make_aware(scheduled_for, timezone.get_current_timezone())
+                    
+                    if scheduled_for <= timezone.now():
+                        messages.error(request, 'Scheduled time must be in the future.')
+                        return redirect('social:create_post')
+            except Exception as e:
+                print(f"AI time error: {e}")
+                # Continue sans scheduled time
         
         # Handle AI optimization if requested
         if use_ai:
@@ -224,16 +245,47 @@ def create_post(request):
                 draft.save()
             
             if schedule_post and scheduled_for:
-                messages.success(request, f'Post scheduled for {scheduled_for.strftime("%Y-%m-%d %H:%M")}')
+                # CORRECTION ICI : Utiliser le bon format de timezone
+                from django.utils.formats import date_format
+                formatted_time = date_format(scheduled_for, "F j, Y g:i A")
+                messages.success(request, f'✅ Post scheduled for {formatted_time}')
                 # Start background task for scheduling (simplified version)
                 start_scheduled_post_task(draft.id, scheduled_for)
             else:
-                messages.success(request, 'Saved as draft!')
+                messages.success(request, '✅ Saved as draft!')
             
-            return redirect('social:draft_detail', draft_id=draft.id)
+            return redirect('social:draft_list')
         
         else:
-            # Create immediate post
+            # AJOUTEZ CE NOUVEAU CAS AVANT LA PUBLICATION IMMÉDIATE :
+            # Si un AI time est sélectionné, créer un draft programmé au lieu d'un post immédiat
+            if ai_time_selected and scheduled_for:
+                draft = PostDraft.objects.create(
+                    user=request.user,
+                    outfit=outfit,
+                    caption=caption,
+                    hashtags=hashtags,
+                    enhanced_images=enhanced_images,
+                    visibility=visibility,
+                    scheduled_for=scheduled_for,
+                    status='scheduled'
+                )
+                
+                # Add AI data to draft if available
+                if use_ai and 'ai_insights' in locals():
+                    draft.ai_optimized_hashtags = ai_insights['hashtags']
+                    draft.ai_suggested_captions = ai_insights['captions']
+                    draft.ai_best_time = ai_insights['best_time']
+                    draft.save()
+                
+                # CORRECTION ICI AUSSI
+                from django.utils.formats import date_format
+                formatted_time = date_format(scheduled_for, "F j, Y g:i A")
+                messages.success(request, f'✅ Post scheduled for {formatted_time}')
+                start_scheduled_post_task(draft.id, scheduled_for)
+                return redirect('social:draft_list')
+            
+            # Create immediate post (cas original)
             post = LookbookPost.objects.create(
                 user=request.user,
                 outfit=outfit,
@@ -243,10 +295,10 @@ def create_post(request):
                 visibility=visibility
             )
             
-            messages.success(request, 'Post created successfully!')
+            messages.success(request, '✅ Post published successfully!')
             return redirect('social:post_detail', post_id=post.id)
     
-    # GET: Show form
+    # GET: Show form (reste inchangé)
     outfits = Outfit.objects.filter(user=request.user).order_by('-created_at')
     now = timezone.now()
     now_formatted = now.strftime('%Y-%m-%dT%H:%M')
@@ -273,7 +325,6 @@ def create_post(request):
     }
     
     return render(request, 'social/create_post.html', context)
-
 
 def start_scheduled_post_task(draft_id, scheduled_time):
     """Start a background task for scheduled posts (simplified)"""
@@ -314,10 +365,6 @@ def start_scheduled_post_task(draft_id, scheduled_time):
     thread = threading.Thread(target=check_and_publish, daemon=True)
     thread.start()
 
-# social/views.py - dans check_scheduled_posts_ajax
-
-# social/views.py - MODIFIEZ check_scheduled_posts_ajax
-# social/views.py
 
 @login_required
 def check_scheduled_posts_ajax(request):
@@ -898,7 +945,6 @@ from .serializers import (
     UserFollowSerializer,
     StyleChallengeSerializer
 )
-
 
 class SocialPagination(PageNumberPagination):
     """Custom pagination for social items"""
@@ -1562,4 +1608,5 @@ def test_publish_now(request):
     }
     
     return render(request, 'social/test_publish_now.html', context)
+
 

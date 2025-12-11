@@ -1,4 +1,3 @@
-# [file name]: services.py
 import json
 import random
 from datetime import datetime, timedelta
@@ -113,24 +112,189 @@ class AIEngagementOptimizer:
     def calculate_confidence_score(self, post_data):
         """
         Calculate AI confidence score for optimization suggestions
+        BASED ON OPTIMAL POSTING TIME + CONTENT QUALITY
+        Returns: Float between 0.0 and 1.0 (0% to 100%)
         """
-        score = 0.5  # Base score
+        score = 0.5  # Base score = 50%
         
-        # Add points for completeness
-        if post_data.get('caption'):
-            score += 0.1
-        if post_data.get('hashtags'):
-            score += 0.1
-        if post_data.get('outfit'):
-            score += 0.1
-        
-        # Add points for optimal posting time
-        optimal_hours = [9, 12, 18, 21]
+        # 1. POSTING TIME - MOST IMPORTANT FACTOR (max 40%)
         suggested_time = post_data.get('suggested_time')
-        if suggested_time and suggested_time.hour in optimal_hours:
-            score += 0.2
+        if suggested_time:
+            hour = suggested_time.hour
+            
+            # Different points based on hour (engagement statistics)
+            if hour == 18:  # 6 PM = BEST time
+                score += 0.40
+            elif hour == 9:  # 9 AM = Very good
+                score += 0.35
+            elif hour == 12:  # 12 PM = Good
+                score += 0.30
+            elif hour == 21:  # 9 PM = Good
+                score += 0.30
+            elif 17 <= hour <= 20:  # 5 PM - 8 PM = Decent
+                score += 0.25
+            elif 8 <= hour <= 11:  # 8 AM - 11 AM = Morning
+                score += 0.20
+            else:  # Other hours = Less optimal
+                score += 0.10
+        else:
+            # No time selected = immediate posting (less optimal)
+            score += 0.05
         
-        return min(score, 1.0)
+        # 2. CAPTION QUALITY (max 30%)
+        caption = post_data.get('caption', '')
+        if caption:
+            caption_length = len(caption)
+            
+            # Optimal length for engagement: 50-150 characters
+            if 50 <= caption_length <= 150:
+                score += 0.15
+            elif caption_length > 150:
+                score += 0.10
+            elif caption_length > 20:
+                score += 0.08
+            else:
+                score += 0.05
+            
+            # Engagement elements
+            if '?' in caption:
+                score += 0.05  # Questions increase comments
+            if '!' in caption:
+                score += 0.03  # Exclamations increase emotional engagement
+            
+            # Emojis boost engagement by ~40%
+            emojis = ['✨', '🌟', '💫', '💖', '👀', '🔥', '❤️', '😍', '☀️', '🎯', '🍽️', '🌙']
+            if any(emoji in caption for emoji in emojis):
+                score += 0.05
+        else:
+            # No caption = penalty
+            score -= 0.10
+        
+        # 3. HASHTAGS - VISIBILITY (max 15%)
+        hashtags = post_data.get('hashtags', [])
+        if isinstance(hashtags, str):
+            hashtags = [tag.strip() for tag in hashtags.split() if tag.startswith('#')]
+        
+        if hashtags:
+            hashtag_count = len(hashtags)
+            
+            # Optimal number: 5-10 hashtags
+            if 5 <= hashtag_count <= 10:
+                score += 0.15
+            elif 3 <= hashtag_count < 5:
+                score += 0.10
+            elif hashtag_count > 10:
+                score += 0.08  # A bit too many but OK
+            elif hashtag_count > 0:
+                score += 0.05
+        else:
+            # No hashtags = small penalty
+            score -= 0.05
+        
+        # 4. OUTFIT - VISUAL CONTENT (10%)
+        if post_data.get('outfit'):
+            score += 0.10
+        
+        # 5. CATEGORY SPECIFIED (5% bonus)
+        if post_data.get('category'):
+            score += 0.05
+        
+        # 6. STYLE/MOOD SPECIFIED (5% bonus)
+        if post_data.get('style') or post_data.get('mood'):
+            score += 0.05
+        
+        # 7. AI ENABLED (5% bonus)
+        if post_data.get('use_ai', True):
+            score += 0.05
+        
+        # Limit between 0% and 100%
+        return max(0.0, min(score, 1.0))
+    
+    def get_optimization_summary(self, post_data):
+        """
+        Get detailed optimization summary with explanations
+        """
+        score = self.calculate_confidence_score(post_data)
+        
+        summary = {
+            'confidence_score': score,
+            'confidence_percentage': int(score * 100),
+            'factors': [],
+            'recommendations': []
+        }
+        
+        # Analyze time factor
+        suggested_time = post_data.get('suggested_time')
+        if suggested_time:
+            hour = suggested_time.hour
+            if hour in [18, 9]:
+                summary['factors'].append({
+                    'type': 'time',
+                    'status': 'excellent',
+                    'message': f'Perfect posting time ({hour}:00) - Peak engagement hours'
+                })
+            elif hour in [12, 21]:
+                summary['factors'].append({
+                    'type': 'time',
+                    'status': 'good',
+                    'message': f'Good posting time ({hour}:00) - High engagement potential'
+                })
+            else:
+                summary['factors'].append({
+                    'type': 'time',
+                    'status': 'average',
+                    'message': f'Standard posting time ({hour}:00) - Moderate engagement'
+                })
+        else:
+            summary['recommendations'].append('Select a posting time for better engagement')
+        
+        # Analyze caption
+        caption = post_data.get('caption', '')
+        if caption:
+            if len(caption) >= 50:
+                summary['factors'].append({
+                    'type': 'caption',
+                    'status': 'good',
+                    'message': f'Caption length optimal ({len(caption)} chars)'
+                })
+            else:
+                summary['recommendations'].append('Consider writing a longer caption (50+ chars)')
+            
+            if '?' in caption:
+                summary['factors'].append({
+                    'type': 'engagement',
+                    'status': 'good',
+                    'message': 'Caption includes engaging question'
+                })
+        else:
+            summary['recommendations'].append('Add a caption to increase engagement')
+        
+        # Analyze hashtags
+        hashtags = post_data.get('hashtags', [])
+        if isinstance(hashtags, str):
+            hashtags = [tag.strip() for tag in hashtags.split() if tag.startswith('#')]
+        
+        if len(hashtags) >= 5:
+            summary['factors'].append({
+                'type': 'hashtags',
+                'status': 'good',
+                'message': f'Good hashtag coverage ({len(hashtags)} hashtags)'
+            })
+        elif hashtags:
+            summary['recommendations'].append(f'Add more hashtags (currently {len(hashtags)})')
+        
+        # Determine overall status
+        if score >= 0.8:
+            summary['status'] = 'excellent'
+            summary['message'] = 'High engagement potential! Optimal time and content.'
+        elif score >= 0.6:
+            summary['status'] = 'good'
+            summary['message'] = 'Good engagement potential. Could be improved.'
+        else:
+            summary['status'] = 'average'
+            summary['message'] = 'Moderate engagement potential. Consider optimization.'
+        
+        return summary
     
     def _extract_keywords(self, text):
         """Extract keywords from text"""

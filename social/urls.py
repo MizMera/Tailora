@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-
 app_name = 'social'
 
 # REST API router
@@ -64,4 +63,6 @@ urlpatterns = [
     path('check-scheduled-ajax/', views.check_scheduled_posts_ajax, name='check_scheduled_ajax'),    
     
     path('force-publish-scheduled/', views.force_publish_all_scheduled, name='force_publish_scheduled'),
+
+    
 ]

@@ -7,6 +7,36 @@
 <link rel="stylesheet" href="{% static 'css/social.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 <style>
+    /* Clear button styles */
+    .clear-time-btn {
+        font-size: 11px;
+        padding: 4px 8px;
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: all 0.2s ease;
+        margin-left: 8px;
+    }
+    .clear-time-btn:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Score explanation */
+    .score-explanation {
+        font-size: 12px;
+        color: rgba(255,255,255,0.8);
+        margin-top: 8px;
+        font-style: italic;
+        padding: 8px;
+        background: rgba(0,0,0,0.1);
+        border-radius: 4px;
+        line-height: 1.4;
+    }
+    
     /* AI Optimization Styles */
     .ai-optimization-panel {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -182,18 +212,26 @@
             <div id="aiContent">
                 <div style="margin-bottom: 20px;">
                     <div style="font-size: 13px; margin-bottom: 8px; opacity: 0.9;">
-                        Confidence Score: <span id="confidenceScore">75%</span>
+                        Engagement Potential: <span id="confidenceScore">75%</span>
                     </div>
                     <div class="confidence-meter">
                         <div class="confidence-fill" id="confidenceFill" style="width: 75%"></div>
+                    </div>
+                    <div id="scoreExplanation" class="score-explanation">
+                        Score predicts likes/views based on posting time and content quality
                     </div>
                 </div>
                 
                 <!-- Best Time Suggestions -->
                 <div style="margin-bottom: 20px;">
-                    <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">
-                        ⏰ Best Time to Post
-                    </h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="font-size: 14px; font-weight: 600; margin: 0;">
+                            ⏰ Best Time to Post
+                        </h4>
+                        <button id="clearTime" type="button" class="clear-time-btn">
+                            Clear Time
+                        </button>
+                    </div>
                     <div id="timeSuggestions">
                         <span class="time-slot" data-time="1" data-hour="9">
                             Tomorrow 9:00 AM
@@ -207,6 +245,9 @@
                         <span class="time-slot" data-time="1" data-hour="21">
                             Tomorrow 9:00 PM
                         </span>
+                    </div>
+                    <div style="font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 8px;">
+                        Optional: Select for scheduled posting • Higher score = better engagement
                     </div>
                 </div>
             </div>
@@ -240,6 +281,9 @@
             <div class="form-group">
                 <textarea name="caption" class="input-control" rows="4" id="captionInput" 
                           placeholder="Write a caption... What's inspiring about this outfit?"></textarea>
+                <div style="font-size: 12px; color: #666; margin-top: 5px; text-align: right;">
+                    <span id="captionLength">0</span> characters • 50-150 chars optimal
+                </div>
             </div>
         </div>
 
@@ -258,6 +302,9 @@
             <div class="form-group">
                 <input type="text" name="hashtags" class="input-control" id="hashtagsInput" 
                        placeholder="#ootd #style #fashion #look #outfitoftheday">
+                <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                    <span id="hashtagCount">0</span> hashtags • 5-10 hashtags optimal
+                </div>
             </div>
         </div>
 
@@ -370,6 +417,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const styleOptions = document.getElementById('ai_style_options');
     const previewSection = document.getElementById('ai_preview_section');
     const previewBtn = document.getElementById('preview_ai');
+    const clearTimeBtn = document.getElementById('clearTime');
+    const captionLength = document.getElementById('captionLength');
+    const hashtagCount = document.getElementById('hashtagCount');
     
     // Toggle AI features
     enableAI.addEventListener('change', function() {
@@ -380,10 +430,10 @@ document.addEventListener('DOMContentLoaded', function() {
         useAIInput.value = isEnabled ? 'true' : 'false';
         
         if (isEnabled) {
-            updateConfidence(75);
+            updateScoreAutomatically();
             getAISuggestions();
         } else {
-            updateConfidence(50);
+            updateScoreAutomatically();
             // Clear AI scheduled time if disabled
             if (!schedulePost.checked) {
                 scheduledTimeInput.value = '';
@@ -391,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Time slot selection for AI
+    // Time slot selection for AI - NOUVELLE LOGIQUE
     document.querySelectorAll('.time-slot').forEach(slot => {
         slot.addEventListener('click', function() {
             if (!enableAI.checked) return;
@@ -406,9 +456,46 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Store in hidden field
             scheduledTimeInput.value = scheduledDate.toISOString();
-            updateConfidence(85);
+            
+            // Mettre à jour le score (IMPORTANT!)
+            updateScoreAutomatically();
+            
+            // Show time explanation
+            showTimeExplanation(hour);
         });
     });
+    
+    // Clear time button
+    clearTimeBtn.addEventListener('click', function() {
+        // Remove selection from all slots
+        document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('active'));
+        
+        // Clear scheduled time
+        scheduledTimeInput.value = '';
+        
+        // Also clear custom time if present
+        if (schedulePost.checked) {
+            schedulePost.checked = false;
+            scheduleTimePicker.style.display = 'none';
+            scheduledTimeCustom.value = '';
+        }
+        
+        // Update score
+        updateScoreAutomatically();
+    });
+    
+    // Fonction pour montrer l'explication du temps
+    function showTimeExplanation(hour) {
+        const explanations = {
+            9: "🌅 9 AM - Morning peak: Users check feeds while commuting/starting work",
+            12: "🍽️ 12 PM - Lunch break: High mobile engagement during lunch",
+            18: "🌟 6 PM - BEST TIME: Evening peak after work, highest engagement",
+            21: "🌙 9 PM - Evening relaxation: Users scroll before bed"
+        };
+        
+        const explanation = explanations[hour] || `Selected ${hour}:00 for posting`;
+        console.log("⏰ " + explanation);
+    }
     
     function calculateScheduledDate(daysFromNow, hour) {
         const date = new Date();
@@ -427,7 +514,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 hashtagsInput.value = currentHashtags 
                     ? `${currentHashtags} ${newTag}`
                     : newTag;
-                updateConfidence(getConfidenceScore());
+                updateCounters();
+                updateScoreAutomatically();
             }
         });
     });
@@ -436,8 +524,30 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.ai-suggestion-item').forEach(item => {
         item.addEventListener('click', function() {
             captionInput.value = this.dataset.caption;
-            updateConfidence(getConfidenceScore());
+            updateCounters();
+            updateScoreAutomatically();
         });
+    });
+    
+    // Update character and hashtag counters
+    function updateCounters() {
+        // Caption length
+        captionLength.textContent = captionInput.value.length;
+        
+        // Hashtag count
+        const hashtags = hashtagsInput.value.trim().split(/\s+/).filter(tag => tag.startsWith('#'));
+        hashtagCount.textContent = hashtags.length;
+    }
+    
+    // Listen for input changes
+    captionInput.addEventListener('input', function() {
+        updateCounters();
+        updateScoreAutomatically();
+    });
+    
+    hashtagsInput.addEventListener('input', function() {
+        updateCounters();
+        updateScoreAutomatically();
     });
     
     // Draft and schedule toggles
@@ -446,10 +556,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!this.checked) {
             schedulePost.checked = false;
             scheduleTimePicker.style.display = 'none';
-            // Clear scheduled time when unscheduled
             scheduledTimeCustom.value = '';
             scheduledTimeInput.value = '';
         }
+        updateScoreAutomatically();
     });
     
     schedulePost.addEventListener('change', function() {
@@ -466,6 +576,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 tomorrow.setHours(18, 0, 0, 0);
                 scheduledTimeCustom.value = tomorrow.toISOString().slice(0, 16);
+                scheduledTimeInput.value = tomorrow.toISOString();
             }
         } else {
             scheduledTimeCustom.value = '';
@@ -474,6 +585,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 scheduledTimeInput.value = '';
             }
         }
+        updateScoreAutomatically();
     });
     
     // When custom schedule time changes
@@ -483,6 +595,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const customTime = new Date(this.value);
             scheduledTimeInput.value = customTime.toISOString();
         }
+        updateScoreAutomatically();
     });
     
     // Original AI photo enhancer
@@ -493,6 +606,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     outfitSelect.addEventListener('change', function() {
         previewSection.style.display = (enhanceCheckbox.checked && this.value) ? 'block' : 'none';
+        updateScoreAutomatically();
+        
         // Get AI suggestions when outfit is selected
         if (enableAI.checked && this.value) {
             getAISuggestions();
@@ -528,9 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.captions) {
                 updateCaptionSuggestions(data.captions);
             }
-            if (data.confidence_score) {
-                updateConfidence(data.confidence_score * 100);
-            }
+            updateScoreAutomatically();
         })
         .catch(error => {
             console.error('Error getting AI suggestions:', error);
@@ -555,7 +668,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     hashtagsInput.value = currentHashtags 
                         ? `${currentHashtags} ${newTag}`
                         : newTag;
-                    updateConfidence(getConfidenceScore());
+                    updateCounters();
+                    updateScoreAutomatically();
                 }
             });
         });
@@ -573,39 +687,167 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.ai-suggestion-item').forEach(item => {
             item.addEventListener('click', function() {
                 captionInput.value = this.dataset.caption;
-                updateConfidence(getConfidenceScore());
+                updateCounters();
+                updateScoreAutomatically();
             });
         });
     }
     
+    // NOUVELLE LOGIQUE DU SCORE - BASÉE SUR L'HEURE OPTIMALE
+    
+    // Fonction pour calculer le score de confiance (potentiel d'engagement)
+    function getConfidenceScore() {
+        let score = 50; // Score de base = 50%
+        
+        // 1. HEURE DE PUBLICATION - FACTEUR PRINCIPAL (max 40 points)
+        const selectedTimeSlot = document.querySelector('.time-slot.active');
+        if (selectedTimeSlot) {
+            const hour = parseInt(selectedTimeSlot.dataset.hour);
+            
+            // Score basé sur les statistiques d'engagement par heure
+            if (hour === 18) { // 18h = MEILLEURE heure (pic du soir)
+                score += 40;
+            } else if (hour === 9) { // 9h = Très bonne (matinée)
+                score += 35;
+            } else if (hour === 12) { // 12h = Bonne (pause déjeuner)
+                score += 30;
+            } else if (hour === 21) { // 21h = Bonne (soirée)
+                score += 30;
+            } else if (hour >= 17 && hour <= 20) { // 17h-20h = Décent
+                score += 25;
+            } else if (hour >= 8 && hour <= 11) { // 8h-11h = Matinée
+                score += 20;
+            } else {
+                score += 10; // Heures moins optimales
+            }
+        } else {
+            // Pas d'heure sélectionnée = publication immédiate (moins optimale)
+            score += 5;
+        }
+        
+        // 2. CAPTION - QUALITÉ DU CONTENU (max 25 points)
+        const caption = captionInput.value.trim();
+        const captionLength = caption.length;
+        
+        if (captionLength > 0) {
+            // Longueur optimale pour engagement: 50-150 caractères
+            if (captionLength >= 50 && captionLength <= 150) {
+                score += 15;
+            } else if (captionLength > 150) {
+                score += 10;
+            } else if (captionLength > 20) {
+                score += 8;
+            } else {
+                score += 5;
+            }
+            
+            // Éléments engageants qui augmentent les interactions
+            if (caption.includes('?')) {
+                score += 5; // Questions = + de commentaires
+            }
+            if (caption.includes('!')) {
+                score += 3; // Exclamations = engagement émotionnel
+            }
+            
+            // Émoticônes boostent l'engagement de ~40%
+            const hasEmoji = /[✨🌟💫💖👀🔥❤️😍☀️🎯🍽️🌙]/.test(caption);
+            if (hasEmoji) {
+                score += 5;
+            }
+        } else {
+            // Pas de caption = engagement réduit
+            score -= 10;
+        }
+        
+        // 3. HASHTAGS - VISIBILITÉ (max 15 points)
+        const hashtagsText = hashtagsInput.value.trim();
+        if (hashtagsText) {
+            const hashtags = hashtagsText.split(/\s+/).filter(tag => tag.startsWith('#'));
+            const hashtagCount = hashtags.length;
+            
+            // Nombre optimal: 5-10 hashtags
+            if (hashtagCount >= 5 && hashtagCount <= 10) {
+                score += 15;
+            } else if (hashtagCount >= 3 && hashtagCount < 5) {
+                score += 10;
+            } else if (hashtagCount > 10) {
+                score += 8; // Un peu trop mais OK
+            } else if (hashtagCount > 0) {
+                score += 5;
+            }
+        }
+        
+        // 4. OUTFIT - CONTENU VISUEL ESSENTIEL (10 points)
+        if (outfitSelect.value) {
+            score += 10;
+        }
+        
+        // 5. AI ACTIVÉ - OPTIMISATIONS APPLIQUÉES (5 points bonus)
+        if (enableAI.checked) {
+            score += 5;
+        }
+        
+        // Limiter entre 0 et 100
+        const finalScore = Math.max(0, Math.min(score, 100));
+        
+        return finalScore;
+    }
+    
+    // Fonction pour mettre à jour l'affichage du score
     function updateConfidence(score) {
         const clampedScore = Math.min(Math.max(score, 0), 100);
-        confidenceScore.textContent = `${Math.round(clampedScore)}%`;
+        const roundedScore = Math.round(clampedScore);
+        
+        confidenceScore.textContent = `${roundedScore}%`;
         confidenceFill.style.width = `${clampedScore}%`;
+        
+        // Changer la couleur en fonction du score
+        if (clampedScore >= 80) {
+            confidenceFill.style.background = 'linear-gradient(90deg, #10b981, #3b82f6)';
+            confidenceScore.style.color = '#10b981';
+        } else if (clampedScore >= 60) {
+            confidenceFill.style.background = 'linear-gradient(90deg, #f59e0b, #eab308)';
+            confidenceScore.style.color = '#f59e0b';
+        } else {
+            confidenceFill.style.background = 'linear-gradient(90deg, #ef4444, #f97316)';
+            confidenceScore.style.color = '#ef4444';
+        }
+        
+        // Mettre à jour l'explication
+        updateScoreExplanation(clampedScore);
     }
     
-    function getConfidenceScore() {
-        let score = 50;
+    // Fonction pour mettre à jour l'explication du score
+    function updateScoreExplanation(score) {
+        const explanationDiv = document.getElementById('scoreExplanation');
+        if (!explanationDiv) return;
         
-        if (captionInput.value.trim().length > 10) score += 10;
-        if (hashtagsInput.value.trim().split(' ').length >= 3) score += 10;
-        if (outfitSelect.value) score += 10;
-        if (enableAI.checked) score += 5;
+        let explanation = '';
         
-        return Math.min(score, 95);
+        if (score >= 80) {
+            explanation = '🎉 Excellent engagement potential! Perfect time + great content = high chance of likes/views';
+        } else if (score >= 60) {
+            explanation = '👍 Good engagement potential. Your post should perform well with the current setup';
+        } else if (score >= 40) {
+            explanation = '💡 Moderate engagement potential. Consider choosing an optimal time (6 PM best)';
+        } else {
+            explanation = '⚠️ Low engagement potential. Add a caption, hashtags and select an optimal time';
+        }
+        
+        explanationDiv.textContent = explanation;
     }
     
-    // Auto-get suggestions when caption changes
-    let captionTimeout;
-    captionInput.addEventListener('input', function() {
-        clearTimeout(captionTimeout);
-        captionTimeout = setTimeout(() => {
-            if (enableAI.checked && outfitSelect.value) {
-                getAISuggestions();
-            }
-            updateConfidence(getConfidenceScore());
-        }, 500);
-    });
+    // Fonction pour mettre à jour le score automatiquement
+    function updateScoreAutomatically() {
+        const newScore = getConfidenceScore();
+        updateConfidence(newScore);
+    }
+    
+    // Écouter tous les changements qui affectent le score
+    captionInput.addEventListener('input', updateScoreAutomatically);
+    hashtagsInput.addEventListener('input', updateScoreAutomatically);
+    outfitSelect.addEventListener('change', updateScoreAutomatically);
+    enableAI.addEventListener('change', updateScoreAutomatically);
     
     // Form submission
     document.getElementById('postForm').addEventListener('submit', function(e) {
@@ -635,11 +877,38 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        // If AI time is selected but not scheduled, ask
+        const aiTimeSelected = document.querySelector('.time-slot.active');
+        if (aiTimeSelected && !schedulePost.checked) {
+            if (confirm('You have selected an optimal posting time. Would you like to schedule the post for better engagement?')) {
+                schedulePost.checked = true;
+                scheduleTimePicker.style.display = 'block';
+                
+                const days = parseInt(aiTimeSelected.dataset.time);
+                const hour = parseInt(aiTimeSelected.dataset.hour);
+                const scheduledDate = calculateScheduledDate(days, hour);
+                scheduledTimeCustom.value = scheduledDate.toISOString().slice(0, 16);
+                scheduledTimeInput.value = scheduledDate.toISOString();
+                
+                e.preventDefault();
+                setTimeout(() => {
+                    if (confirm(`Post will be scheduled for ${scheduledDate.toLocaleString()}. Continue?`)) {
+                        document.getElementById('postForm').submit();
+                    }
+                }, 100);
+                return false;
+            } else {
+                aiTimeSelected.classList.remove('active');
+                scheduledTimeInput.value = '';
+            }
+        }
+        
         return true;
     });
     
     // Initialize
-    updateConfidence(75);
+    updateCounters();
+    updateScoreAutomatically();
     
     // Set initial AI time slot as active
     const defaultTimeSlot = document.querySelector('.time-slot.active');
@@ -648,6 +917,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const hour = parseInt(defaultTimeSlot.dataset.hour);
         const scheduledDate = calculateScheduledDate(days, hour);
         scheduledTimeInput.value = scheduledDate.toISOString();
+        showTimeExplanation(hour);
     }
 });
 
