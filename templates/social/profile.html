@@ -255,8 +255,8 @@
 
 <div class="profile-posts-section">
     <div class="posts-section-header">
-        <h3 class="posts-section-title">📸 Posts</h3>
-        <span style="font-size: 13px; color: #888;">{{ posts_count }} total</span>
+        <h3 class="posts-section-title">Posts</h3>
+        <span style="font-size: 13px; color: #757575;">{{ posts_count }} total</span>
     </div>
     
     {% if posts %}
@@ -274,10 +274,10 @@
             {% endwith %}
             <div class="post-grid-overlay">
                 <div class="overlay-stat">
-                    ❤️ {{ post.likes_count }}
+                    <span style="font-weight: 600;">{{ post.likes_count }}</span> likes
                 </div>
                 <div class="overlay-stat">
-                    💬 {{ post.comments_count }}
+                    <span style="font-weight: 600;">{{ post.comments_count }}</span> comments
                 </div>
             </div>
         </a>
@@ -285,7 +285,7 @@
     </div>
     {% else %}
     <div class="empty-posts">
-        <div class="empty-posts-icon">📷</div>
+        <div class="empty-posts-icon" style="font-size: 32px; color: #757575;">No posts</div>
         <h3>No Posts Yet</h3>
         <p>{% if is_own_profile %}Share your first outfit to get started!{% else %}{{ profile_user.first_name }} hasn't posted anything yet.{% endif %}</p>
         {% if is_own_profile %}

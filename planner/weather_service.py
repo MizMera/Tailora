@@ -7,6 +7,7 @@ import requests
 from django.conf import settings
 from django.core.cache import cache
 from datetime import datetime, timedelta
+from typing import Dict, Optional, List
 import logging
 
 logger = logging.getLogger(__name__)
@@ -248,6 +249,44 @@ class WeatherService:
                 suitable_outfits.append(outfit)
         
         return suitable_outfits
+
+    def get_forecast_for_date(self, location: str, target_date) -> Optional[Dict]:
+        """
+        Get weather forecast for a specific date
+        
+        Args:
+            location: City name
+            target_date: Date object or YYYY-MM-DD string
+        
+        Returns:
+            dict: Weather data for that day or None
+        """
+        if isinstance(target_date, str):
+            try:
+                target_date = datetime.strptime(target_date, '%Y-%m-%d').date()
+            except ValueError:
+                logger.error(f"Invalid date string format: {target_date}")
+                return None
+                
+        # Get 7-day forecast
+        forecast_list = self.get_forecast(location, days=7)
+        
+        # Fallback to Tunis if location fails (e.g. detailed address provided)
+        if not forecast_list and location != 'Tunis':
+            logger.info(f"Location '{location}' failed to return forecast, attempting fallback to 'Tunis'")
+            forecast_list = self.get_forecast('Tunis', days=7)
+            
+        if not forecast_list:
+            logger.warning(f"No forecast list returned for location: {location} (or fallback)")
+            return None
+            
+        target_str = target_date.isoformat()
+        
+        for day_data in forecast_list:
+            if day_data['date'] == target_str:
+                return day_data
+        
+        return None
 
 
 # Global instance (needed by planner.views)

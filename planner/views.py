@@ -156,11 +156,59 @@ def event_create(request):
         location = request.POST.get('location', '')
         notes = request.POST.get('notes', '')
         outfit_id = request.POST.get('outfit')
+        use_ai_suggest = request.POST.get('use_ai_suggest') == 'on'
         
         if not title or not date:
             messages.error(request, 'Title and date are required.')
             return redirect('planner:event_create')
-        
+            
+        # AI Suggestion Logic
+        if use_ai_suggest and not outfit_id:
+            from .weekly_planner_ai import WeeklyPlannerAI
+            planner_ai = WeeklyPlannerAI(request.user)
+            
+            # Get weather context (need date object)
+            try:
+                date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+                weather = planner_ai.weather_service.get_forecast_for_date(
+                    location or 'Tunis', 
+                    date_obj
+                )
+            except:
+                weather = {}
+                date_obj = timezone.now().date()
+            
+            # Score outfits
+            outfits_pool = planner_ai._get_available_outfits()
+            scored_outfits = []
+            wear_history = planner_ai._get_recent_wear_history()
+            
+            # Create a temporary event-like object for scoring
+            class TempEvent:
+                def __init__(self, title, date, occasion):
+                    self.title = title
+                    self.date = date
+                    self.occasion_type = occasion
+            
+            temp_event = TempEvent(title, date_obj, occasion_type)
+            
+            for outfit in outfits_pool:
+                scores = planner_ai._calculate_outfit_scores(
+                    outfit=outfit,
+                    day_weather=weather,
+                    day_events=[temp_event],
+                    wear_history=wear_history,
+                    target_date=date_obj
+                )
+                scored_outfits.append((outfit, scores))
+                
+            scored_outfits.sort(key=lambda x: x[1]['total'], reverse=True)
+            
+            if scored_outfits:
+                best_outfit, _ = scored_outfits[0]
+                outfit_id = best_outfit.id
+                messages.success(request, f'AI selected "{best_outfit.name}" based on your event details!')
+
         # Create event
         event = Event.objects.create(
             user=request.user,
@@ -173,7 +221,9 @@ def event_create(request):
             outfit_id=outfit_id if outfit_id else None
         )
         
-        messages.success(request, f'Event "{event.title}" created successfully!')
+        if not use_ai_suggest:
+            messages.success(request, f'Event "{event.title}" created successfully!')
+        
         return redirect('planner:event_detail', event_id=event.id)
     
     # GET: Show form
@@ -200,9 +250,17 @@ def event_detail(request, event_id):
             occasion=event.occasion_type
         ).order_by('-created_at')[:4]
     
+    # Get weather forecast
+    from .weather_service import weather_service
+    weather = weather_service.get_forecast_for_date(
+        location=event.location or 'Tunis',
+        target_date=event.date
+    )
+    
     context = {
         'event': event,
         'suggested_outfits': suggested_outfits,
+        'weather': weather,
     }
     
     return render(request, 'planner/event_detail.html', context)
@@ -355,6 +413,98 @@ def event_stats(request):
     }
     
     return render(request, 'planner/event_stats.html', context)
+
+
+@login_required
+def event_suggest_outfit(request, event_id):
+    """Suggest an outfit for an event using AI"""
+    event = get_object_or_404(Event, id=event_id, user=request.user)
+    
+    if request.method == 'POST':
+        # Use WeeklyPlannerAI for suggestions
+        from .weekly_planner_ai import WeeklyPlannerAI
+        planner_ai = WeeklyPlannerAI(request.user)
+        
+        # Get weather context
+        weather = {}
+        try:
+            weather = planner_ai.weather_service.get_forecast_for_date(
+                event.location or 'Tunis', 
+                event.date
+            )
+        except:
+            pass
+            
+        # Get available outfits
+        outfits = planner_ai._get_available_outfits()
+        
+        # Score outfits for this specific event context
+        scored_outfits = []
+        wear_history = planner_ai._get_recent_wear_history()
+        
+        for outfit in outfits:
+            scores = planner_ai._calculate_outfit_scores(
+                outfit=outfit,
+                day_weather=weather,
+                day_events=[event],
+                wear_history=wear_history,
+                target_date=event.date
+            )
+            scored_outfits.append((outfit, scores))
+            
+        scored_outfits.sort(key=lambda x: x[1]['total'], reverse=True)
+        
+        if scored_outfits:
+            best_outfit, _ = scored_outfits[0]
+            event.outfit = best_outfit
+            event.save()
+            messages.success(request, f'AI suggested "{best_outfit.name}" for your event!')
+        else:
+            messages.warning(request, 'Could not find a suitable outfit. Try adding more outfits to your wardrobe.')
+            
+    return redirect('planner:event_detail', event_id=event.id)
+
+
+@login_required
+def event_mark_worn(request, event_id):
+    """Mark event outfit as worn"""
+    event = get_object_or_404(Event, id=event_id, user=request.user)
+    
+    if request.method == 'POST':
+        if not event.outfit:
+            messages.error(request, 'No outfit assigned to this event.')
+            return redirect('planner:event_detail', event_id=event.id)
+            
+        # Use localized AI logic
+        from .weekly_planner_ai import WeeklyPlannerAI
+        planner_ai = WeeklyPlannerAI(request.user)
+        
+        # Get weather context
+        weather_condition = ''
+        temperature = None
+        try:
+            weather = planner_ai.weather_service.get_forecast_for_date(
+                event.location or 'Tunis', 
+                event.date
+            )
+            weather_condition = weather.get('condition', '')
+            temperature = weather.get('temperature')
+        except:
+            pass
+
+        planner_ai.record_outfit_used(
+            outfit=event.outfit,
+            worn_date=event.date,
+            weather_condition=weather_condition,
+            temperature=temperature
+        )
+        
+        event.is_completed = True
+        event.save()
+        
+        messages.success(request, f'Marked "{event.outfit.name}" as worn! Laundry stats updated.')
+        
+    return redirect('planner:event_detail', event_id=event.id)
 
 
 # ==================== REST API Views ====================

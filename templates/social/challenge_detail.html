@@ -13,7 +13,7 @@
     <h1>{{ challenge.title }}</h1>
     <p class="challenge-description">{{ challenge.description }}</p>
     <div class="challenge-dates">
-        <span>📅 {{ challenge.start_date|date:"F d, Y" }} - {{ challenge.end_date|date:"F d, Y" }}</span>
+        <span>{{ challenge.start_date|date:"F d, Y" }} - {{ challenge.end_date|date:"F d, Y" }}</span>
     </div>
     <a href="{% url 'social:create_post' %}?challenge={{ challenge.id }}" class="btn btn-primary">Join Challenge</a>
 </div>

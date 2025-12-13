@@ -26,6 +26,8 @@ urlpatterns = [
     # Outfit assignment
     path('events/<uuid:event_id>/assign-outfit/', views.assign_outfit, name='assign_outfit'),
     path('events/<uuid:event_id>/toggle-complete/', views.toggle_complete, name='toggle_complete'),
+    path('events/<uuid:event_id>/suggest-outfit/', views.event_suggest_outfit, name='event_suggest_outfit'),
+    path('events/<uuid:event_id>/mark-worn/', views.event_mark_worn, name='event_mark_worn'),
     
     # Statistics
     path('stats/', views.event_stats, name='event_stats'),

@@ -9,7 +9,7 @@
     /* =========================================
        WEEKLY PLANNER - TAILORA DESIGN SYSTEM
        ========================================= */
-    
+
     :root {
         --bg-color: #f8f8f8;
         --card-bg: #ffffff;
@@ -546,6 +546,7 @@
         .weekly-grid {
             grid-template-columns: repeat(4, 1fr);
         }
+
         .day-column:nth-child(n+5) {
             border-top: 1px solid var(--border-color);
         }
@@ -555,12 +556,15 @@
         .weekly-grid {
             grid-template-columns: repeat(2, 1fr);
         }
+
         .stats-footer {
             grid-template-columns: repeat(2, 1fr);
         }
+
         .stat-item:nth-child(2) {
             border-right: none;
         }
+
         .stat-item:nth-child(3),
         .stat-item:nth-child(4) {
             border-top: 1px solid var(--border-color);
@@ -571,28 +575,35 @@
         .planner-header {
             flex-direction: column;
         }
+
         .planner-controls {
             width: 100%;
             flex-wrap: wrap;
         }
+
         .weekly-grid {
             grid-template-columns: 1fr;
         }
+
         .day-column {
             border-right: none;
             border-bottom: 1px solid var(--border-color);
             min-height: auto;
         }
+
         .day-column:last-child {
             border-bottom: none;
         }
+
         .stats-footer {
             grid-template-columns: 1fr;
         }
+
         .stat-item {
             border-right: none;
             border-bottom: 1px solid var(--border-color);
         }
+
         .stat-item:last-child {
             border-bottom: none;
         }
@@ -601,9 +612,15 @@
     .spin {
         animation: spin 1s linear infinite;
     }
+
     @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
     }
 </style>
 {% endblock %}
@@ -611,298 +628,490 @@
 {% block content %}
 <div class="planner-wrapper">
     <div class="planner-container">
-    <!-- Page Header -->
-    <div class="planner-header">
-        <div class="planner-title-section">
-            <h1>
+        <!-- Page Header -->
+        <div class="planner-header">
+            <div class="planner-title-section">
+                <h1>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                    Weekly Planner
+                </h1>
+                <p class="planner-date-range">{{ week_start|date:"F j" }} - {{ week_end|date:"F j, Y" }}</p>
+            </div>
+            <div class="planner-controls">
+                <a href="?week={{ prev_week|date:'Y-m-d' }}" class="nav-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6"></path>
+                    </svg>
+                    Prev
+                </a>
+                <a href="{% url 'planner:weekly_planner' %}" class="nav-btn">Today</a>
+                <a href="?week={{ next_week|date:'Y-m-d' }}" class="nav-btn">
+                    Next
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"></path>
+                    </svg>
+                </a>
+                <button id="regenerate-btn" class="nav-btn primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M1 20v-6h6"></path>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    Regenerate
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <a href="{% url 'planner:calendar' %}" class="quick-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="0"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Calendar
+            </a>
+            <a href="{% url 'wardrobe:laundry_dashboard' %}" class="quick-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18l-2 13H5L3 6z"></path>
+                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Laundry
+            </a>
+            <a href="{% url 'profile_settings' %}" class="quick-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42">
+                    </path>
+                </svg>
+                Settings
+            </a>
+        </div>
+
+        <!-- AI Assistant Panel -->
+        {% if weekly_plan and weekly_plan.generation_reasoning %}
+        <div class="ai-panel">
+            <div class="ai-panel-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
                     <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
                     <path d="M2 17l10 5 10-5"></path>
                     <path d="M2 12l10 5 10-5"></path>
                 </svg>
-                Weekly Planner
-            </h1>
-            <p class="planner-date-range">{{ week_start|date:"F j" }} - {{ week_end|date:"F j, Y" }}</p>
+            </div>
+            <div class="ai-panel-content">
+                <p class="ai-panel-title">AI Style Assistant</p>
+                <p class="ai-panel-text">{{ weekly_plan.generation_reasoning }}</p>
+            </div>
         </div>
-        <div class="planner-controls">
-            <a href="?week={{ prev_week|date:'Y-m-d' }}" class="nav-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15 18l-6-6 6-6"></path>
-                </svg>
-                Prev
-            </a>
-            <a href="{% url 'planner:weekly_planner' %}" class="nav-btn">Today</a>
-            <a href="?week={{ next_week|date:'Y-m-d' }}" class="nav-btn">
-                Next
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 18l6-6-6-6"></path>
-                </svg>
-            </a>
-            <button id="regenerate-btn" class="nav-btn primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M23 4v6h-6"></path>
-                    <path d="M1 20v-6h6"></path>
-                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                </svg>
-                Regenerate
-            </button>
-        </div>
-    </div>
+        {% endif %}
 
-    <!-- Quick Links -->
-    <div class="quick-links">
-        <a href="{% url 'planner:calendar' %}" class="quick-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        {% if weekly_plan and weekly_plan.daily_slots.exists %}
+        <!-- Weekly Grid -->
+        <div class="weekly-grid">
+            {% for slot in weekly_plan.daily_slots.all %}
+            <div class="day-column {% if slot.is_today %}today{% endif %} {% if slot.is_past %}past{% endif %}">
+                <div class="day-header">
+                    <div class="day-badges">
+                        {% if laundry_conflicts and slot.id|slugify in laundry_conflicts %}
+                        <span class="day-badge badge-laundry">Needs wash</span>
+                        {% endif %}
+                        {% if slot.has_events %}
+                        <span class="day-badge badge-event">Event</span>
+                        {% endif %}
+                    </div>
+                    <p class="day-name">{{ slot.day_name }}</p>
+                    <div class="day-date">{{ slot.date|date:"j" }}</div>
+                    {% if slot.temperature %}
+                    <p class="day-weather"><strong>{{ slot.temperature }}°C</strong> {{ slot.weather_condition }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="day-content">
+                    {% if slot.primary_outfit %}
+                    <div class="outfit-section">
+                        <p class="outfit-label">
+                            {% if slot.status == 'suggested' %}Recommended
+                            {% elif slot.status == 'accepted' %}Accepted
+                            {% elif slot.status == 'worn' %}Worn
+                            {% else %}Planned{% endif %}
+                        </p>
+                        <p class="outfit-name">{{ slot.primary_outfit.name }}</p>
+
+                        <div class="outfit-preview-grid">
+                            {% for item in slot.primary_outfit.items.all|slice:":4" %}
+                            <div class="outfit-item-thumb">
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                {% else %}
+                                <div class="outfit-item-placeholder">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                                        <rect x="3" y="3" width="18" height="18" rx="0"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <path d="M21 15l-5-5L5 21"></path>
+                                    </svg>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% empty %}
+                            <div class="outfit-item-thumb">
+                                <div class="outfit-item-placeholder">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                                        <rect x="3" y="3" width="18" height="18" rx="0"></rect>
+                                    </svg>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if slot.selection_reason %}
+                        <p class="outfit-reason">{{ slot.selection_reason }}</p>
+                        {% endif %}
+
+                        {% if slot.confidence %}
+                        <div class="match-score">
+                            <p class="match-label">{{ slot.confidence|floatformat:0 }}% match</p>
+                            <div class="match-bar">
+                                <div class="match-bar-fill" style="width: {{ slot.confidence }}%"></div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="day-actions">
+                        {% if slot.status == 'worn' %}
+                        <button class="day-btn worn" disabled>Worn</button>
+                        {% elif slot.status == 'accepted' %}
+                        <button type="button" class="day-btn btn-worn"
+                            data-url="{% url 'planner:mark_outfit_worn' slot.id %}"
+                            style="background-color:#4CAF50; color:white; border-color:#4CAF50; flex:1;">Wear</button>
+
+                        {% if slot.alternatives.exists %}
+                        <button type="button" class="day-btn btn-swap" data-slot-id="{{ slot.id }}"
+                            style="flex:1;">Swap</button>
+                        {% else %}
+                        <button type="button" class="day-btn btn-regen-day"
+                            data-url="{% url 'planner:regenerate_daily_slot' slot.id %}" style="flex:1;"
+                            title="Regenerate this day">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M23 4v6h-6"></path>
+                                <path d="M1 20v-6h6"></path>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                        </button>
+                        {% endif %}
+
+                        {% else %}
+                        <button type="button" class="day-btn btn-accept"
+                            data-url="{% url 'planner:accept_daily_outfit' slot.id %}" style="flex:1;">Accept</button>
+
+                        {% if slot.alternatives.exists %}
+                        <button type="button" class="day-btn btn-swap" data-slot-id="{{ slot.id }}"
+                            style="flex:1;">Swap</button>
+                        {% else %}
+                        <button type="button" class="day-btn btn-regen-day"
+                            data-url="{% url 'planner:regenerate_daily_slot' slot.id %}" style="flex:1;"
+                            title="Regenerate this day">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M23 4v6h-6"></path>
+                                <path d="M1 20v-6h6"></path>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                        </button>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Alternatives Panel (Hidden by default) -->
+                    {% if slot.alternatives.exists %}
+                    <div id="alternatives-{{ slot.id }}" class="alternatives-panel"
+                        style="display:none; padding:12px; background:#f9f9f9; border-top:1px solid #eee; margin-top:8px;">
+                        <p style="font-size:10px; font-weight:bold; color:#757575; margin-bottom:8px;">SWAP TO:</p>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            {% for alt in slot.alternatives.all %}
+                            <div class="alt-option"
+                                style="display:flex; align-items:center; gap:8px; padding:4px; background:white; border:1px solid #eee; cursor:pointer;">
+                                <img src="{% if alt.items.first.image %}{{ alt.items.first.image.url }}{% endif %}"
+                                    style="width:30px; height:30px; object-fit:cover;">
+                                <span style="font-size:11px; flex:1;">{{ alt.name }}</span>
+                                <button class="btn-confirm-swap"
+                                    data-url="{% url 'planner:swap_daily_outfit' slot.id %}"
+                                    data-outfit-id="{{ alt.id }}"
+                                    style="border:none; background:none; color:blue; font-size:10px; cursor:pointer;">SELECT</button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% elif slot.suggested_name %}
+                    <!-- AI suggested items but no outfit created yet -->
+                    <div class="outfit-section">
+                        <p class="outfit-label">Suggested</p>
+                        <p class="outfit-name">{{ slot.suggested_name }}</p>
+
+                        {% if slot.selection_reason %}
+                        <p class="outfit-reason">{{ slot.selection_reason }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="day-actions">
+                        <button type="button" class="day-btn btn-regen-day"
+                            data-url="{% url 'planner:regenerate_daily_slot' slot.id %}"
+                            style="width:100%;">Regenerate</button>
+                    </div>
+
+                    {% else %}
+                    <div class="empty-day">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                            <rect x="2" y="7" width="20" height="15" rx="0"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                        <p>No outfit planned</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Empty Week State -->
+        <div class="empty-week">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
                 <rect x="3" y="4" width="18" height="18" rx="0"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
                 <line x1="8" y1="2" x2="8" y2="6"></line>
                 <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            Calendar
-        </a>
-        <a href="{% url 'wardrobe:laundry_dashboard' %}" class="quick-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 6h18l-2 13H5L3 6z"></path>
-                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            Laundry
-        </a>
-        <a href="{% url 'profile_settings' %}" class="quick-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
-            </svg>
-            Settings
-        </a>
-    </div>
-
-    <!-- AI Assistant Panel -->
-    {% if weekly_plan and weekly_plan.generation_reasoning %}
-    <div class="ai-panel">
-        <div class="ai-panel-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                <path d="M2 17l10 5 10-5"></path>
-                <path d="M2 12l10 5 10-5"></path>
-            </svg>
+            <h3>No Weekly Plan Yet</h3>
+            <p>Generate your AI-powered outfit recommendations for this week.</p>
+            <button id="generate-first-btn" class="nav-btn primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
+                </svg>
+                Generate Weekly Plan
+            </button>
         </div>
-        <div class="ai-panel-content">
-            <p class="ai-panel-title">AI Style Assistant</p>
-            <p class="ai-panel-text">{{ weekly_plan.generation_reasoning }}</p>
-        </div>
-    </div>
-    {% endif %}
+        {% endif %}
 
-    {% if weekly_plan and weekly_plan.daily_slots.exists %}
-    <!-- Weekly Grid -->
-    <div class="weekly-grid">
-        {% for slot in weekly_plan.daily_slots.all %}
-        <div class="day-column {% if slot.is_today %}today{% endif %} {% if slot.is_past %}past{% endif %}">
-            <div class="day-header">
-                <div class="day-badges">
-                    {% if laundry_conflicts and slot.id|slugify in laundry_conflicts %}
-                    <span class="day-badge badge-laundry">Needs wash</span>
-                    {% endif %}
-                    {% if slot.has_events %}
-                    <span class="day-badge badge-event">Event</span>
-                    {% endif %}
-                </div>
-                <p class="day-name">{{ slot.day_name }}</p>
-                <div class="day-date">{{ slot.date|date:"j" }}</div>
-                {% if slot.temperature %}
-                <p class="day-weather"><strong>{{ slot.temperature }}°C</strong> {{ slot.weather_condition }}</p>
-                {% endif %}
+        <!-- Stats Footer -->
+        <div class="stats-footer">
+            <div class="stat-item">
+                <p class="stat-label">Your Outfits</p>
+                <span class="stat-value">{{ outfit_count|default:"0" }}</span>
             </div>
-
-            <div class="day-content">
-                {% if slot.primary_outfit %}
-                <div class="outfit-section">
-                    <p class="outfit-label">
-                        {% if slot.status == 'suggested' %}Recommended
-                        {% elif slot.status == 'accepted' %}Accepted
-                        {% elif slot.status == 'worn' %}Worn
-                        {% else %}Planned{% endif %}
-                    </p>
-                    <p class="outfit-name">{{ slot.primary_outfit.name }}</p>
-
-                    <div class="outfit-preview-grid">
-                        {% for item in slot.primary_outfit.items.all|slice:":4" %}
-                        <div class="outfit-item-thumb">
-                            {% if item.image %}
-                            <img src="{{ item.image.url }}" alt="{{ item.name }}">
-                            {% else %}
-                            <div class="outfit-item-placeholder">
-                                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
-                                    <rect x="3" y="3" width="18" height="18" rx="0"></rect>
-                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                    <path d="M21 15l-5-5L5 21"></path>
-                                </svg>
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% empty %}
-                        <div class="outfit-item-thumb">
-                            <div class="outfit-item-placeholder">
-                                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
-                                    <rect x="3" y="3" width="18" height="18" rx="0"></rect>
-                                </svg>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-
-                    {% if slot.selection_reason %}
-                    <p class="outfit-reason">{{ slot.selection_reason }}</p>
-                    {% endif %}
-
-                    {% if slot.confidence %}
-                    <div class="match-score">
-                        <p class="match-label">{{ slot.confidence|floatformat:0 }}% match</p>
-                        <div class="match-bar">
-                            <div class="match-bar-fill" style="width: {{ slot.confidence }}%"></div>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div class="day-actions">
-                    {% if slot.status == 'worn' %}
-                    <button class="day-btn worn" disabled>Worn</button>
-                    {% else %}
-                    <form method="post" action="{% url 'planner:accept_daily_outfit' slot.id %}" style="flex:1;margin:0;">
-                        {% csrf_token %}
-                        <button type="submit" class="day-btn" style="width:100%;">Accept</button>
-                    </form>
-                    <form method="post" action="{% url 'planner:swap_daily_outfit' slot.id %}" style="flex:1;margin:0;">
-                        {% csrf_token %}
-                        <button type="submit" class="day-btn" style="width:100%;">Swap</button>
-                    </form>
-                    {% endif %}
-                </div>
-
-                {% elif slot.suggested_name %}
-                <!-- AI suggested items but no outfit created yet -->
-                <div class="outfit-section">
-                    <p class="outfit-label">Suggested</p>
-                    <p class="outfit-name">{{ slot.suggested_name }}</p>
-                    
-                    {% if slot.selection_reason %}
-                    <p class="outfit-reason">{{ slot.selection_reason }}</p>
-                    {% endif %}
-                </div>
-
-                <div class="day-actions">
-                    <button class="day-btn">Create Outfit</button>
-                </div>
-
-                {% else %}
-                <div class="empty-day">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
-                        <rect x="2" y="7" width="20" height="15" rx="0"></rect>
-                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                    </svg>
-                    <p>No outfit planned</p>
-                </div>
-                {% endif %}
+            <div class="stat-item">
+                <p class="stat-label">Wardrobe Items</p>
+                <span class="stat-value">{{ wardrobe_count|default:"0" }}</span>
+            </div>
+            <div class="stat-item">
+                <p class="stat-label">Current Weather</p>
+                <span class="stat-value">{{ current_weather.temperature|default:"--" }}<span
+                        class="stat-unit">°C</span></span>
+            </div>
+            <div class="stat-item">
+                <p class="stat-label">Condition</p>
+                <span class="stat-value" style="font-size: 18px;">{{ current_weather.description|default:"--" }}</span>
             </div>
         </div>
-        {% endfor %}
     </div>
 
-    {% else %}
-    <!-- Empty Week State -->
-    <div class="empty-week">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
-            <rect x="3" y="4" width="18" height="18" rx="0"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-        </svg>
-        <h3>No Weekly Plan Yet</h3>
-        <p>Generate your AI-powered outfit recommendations for this week.</p>
-        <button id="generate-first-btn" class="nav-btn primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                <path d="M2 17l10 5 10-5"></path>
-                <path d="M2 12l10 5 10-5"></path>
-            </svg>
-            Generate Weekly Plan
-        </button>
-    </div>
-    {% endif %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Helper for AJAX requests
+            async function sendRequest(url, method = 'POST', data = null) {
+                const headers = {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                };
 
-    <!-- Stats Footer -->
-    <div class="stats-footer">
-        <div class="stat-item">
-            <p class="stat-label">Your Outfits</p>
-            <span class="stat-value">{{ outfit_count|default:"0" }}</span>
-        </div>
-        <div class="stat-item">
-            <p class="stat-label">Wardrobe Items</p>
-            <span class="stat-value">{{ wardrobe_count|default:"0" }}</span>
-        </div>
-        <div class="stat-item">
-            <p class="stat-label">Current Weather</p>
-            <span class="stat-value">{{ current_weather.temperature|default:"--" }}<span class="stat-unit">°C</span></span>
-        </div>
-        <div class="stat-item">
-            <p class="stat-label">Condition</p>
-            <span class="stat-value" style="font-size: 18px;">{{ current_weather.description|default:"--" }}</span>
-        </div>
-    </div>
-</div>
+                const config = {
+                    method: method,
+                    headers: headers
+                };
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Regenerate button
-    function handleGenerate(btn) {
-        btn.disabled = true;
-        const originalContent = btn.innerHTML;
-        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Generating...';
-        
-        fetch('{% url "planner:generate_weekly_plan" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                week_start: '{{ week_start|date:"Y-m-d" }}',
-                location: '{{ location }}'
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.reload();
-            } else {
-                alert(data.error || 'Failed to generate. Please try again.');
-                btn.disabled = false;
-                btn.innerHTML = originalContent;
+                if (data) {
+                    config.body = JSON.stringify(data);
+                }
+
+                try {
+                    const response = await fetch(url, config);
+                    const json = await response.json();
+                    return json;
+                } catch (error) {
+                    console.error('Request failed:', error);
+                    throw error;
+                }
             }
-        })
-        .catch(err => {
-            console.error(err);
-            btn.disabled = false;
-            btn.innerHTML = originalContent;
-        });
-    }
 
-    const regenerateBtn = document.getElementById('regenerate-btn');
-    if (regenerateBtn) {
-        regenerateBtn.addEventListener('click', function() {
-            handleGenerate(this);
-        });
-    }
+            // Regenerate Global Plan
+            function handleGenerate(btn) {
+                btn.disabled = true;
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Generating...';
 
-    const generateFirstBtn = document.getElementById('generate-first-btn');
-    if (generateFirstBtn) {
-        generateFirstBtn.addEventListener('click', function() {
-            handleGenerate(this);
+                sendRequest('{% url "planner:generate_weekly_plan" %}', 'POST', {
+                    week_start: '{{ week_start|date:"Y-m-d" }}',
+                    location: '{{ location }}'
+                })
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert(data.error || 'Failed to generate. Please try again.');
+                            btn.disabled = false;
+                            btn.innerHTML = originalContent;
+                        }
+                    })
+                    .catch(err => {
+                        alert('An error occurred. Please try again.');
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                    });
+            }
+
+            const regenerateBtn = document.getElementById('regenerate-btn');
+            if (regenerateBtn) {
+                regenerateBtn.addEventListener('click', function () {
+                    handleGenerate(this);
+                });
+            }
+
+            const generateFirstBtn = document.getElementById('generate-first-btn');
+            if (generateFirstBtn) {
+                generateFirstBtn.addEventListener('click', function () {
+                    handleGenerate(this);
+                });
+            }
+
+            // Accept Day Outfit
+            document.querySelectorAll('.btn-accept').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const url = this.dataset.url;
+                    if (!url) {
+                        console.error('No URL found for accept button');
+                        return;
+                    }
+
+                    this.disabled = true;
+                    this.textContent = '...';
+
+                    sendRequest(url)
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            } else {
+                                alert(data.error || 'Failed to accept outfit.');
+                                this.disabled = false;
+                                this.textContent = 'Accept';
+                            }
+                        })
+                        .catch(err => {
+                            this.disabled = false;
+                            this.textContent = 'Accept';
+                        });
+                });
+            });
+
+            // Swap Logic (Show Alternatives)
+            document.querySelectorAll('.btn-swap').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const slotId = this.dataset.slotId;
+                    const alternativesPanel = document.getElementById(`alternatives-${slotId}`);
+                    if (alternativesPanel) {
+                        // Toggle visibility
+                        if (alternativesPanel.style.display === 'none') {
+                            alternativesPanel.style.display = 'block';
+                        } else {
+                            alternativesPanel.style.display = 'none';
+                        }
+                    } else {
+                        alert('No alternatives available for this day. Try regenerating specific day instead.');
+                    }
+                });
+            });
+
+            // Confirm Swap
+            document.querySelectorAll('.btn-confirm-swap').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const url = this.dataset.url;
+                    const outfitId = this.dataset.outfitId;
+
+                    if (!url) return;
+
+                    sendRequest(url, 'POST', { outfit_id: outfitId })
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            } else {
+                                alert(data.error || 'Failed to swap outfit.');
+                            }
+                        })
+                        .catch(err => console.error(err));
+                });
+            });
+
+            // Mark as Worn Button
+            document.querySelectorAll('.btn-worn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const url = this.dataset.url;
+                    if (!url) return;
+
+                    this.disabled = true;
+                    this.textContent = '...';
+
+                    sendRequest(url)
+                        .then(data => {
+                            window.location.reload();
+                        })
+                        .catch(e => {
+                            console.error(e);
+                            this.disabled = false;
+                            this.textContent = 'Wear';
+                        });
+                });
+            });
+
+            // Regenerate Single Day
+            document.querySelectorAll('.btn-regen-day').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const url = this.dataset.url;
+                    if (!url) return;
+
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<span class="spin">↻</span>';
+                    this.disabled = true;
+
+                    sendRequest(url)
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            } else {
+                                alert(data.error || 'Failed to regenerate.');
+                                this.innerHTML = originalText;
+                                this.disabled = false;
+                            }
+                        })
+                        .catch(err => {
+                            this.innerHTML = originalText;
+                            this.disabled = false;
+                        });
+                });
+            });
         });
-    }
-});
-</script>
-    </div>
+    </script>
+</div>
 </div>
 {% endblock %}

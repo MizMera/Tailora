@@ -18,37 +18,37 @@
     .draft-card {
         background: white;
         border: 1px solid #e0e0e0;
-        border-radius: 12px;
         padding: 20px;
         margin-bottom: 16px;
         transition: all 0.3s ease;
         position: relative;
     }
     .draft-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        border-color: #d4b88c;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border-color: #2c2c2c;
     }
     .draft-card.scheduled {
-        border-left: 4px solid #4caf50;
+        border-left: 4px solid #2c2c2c;
     }
     .draft-card.draft {
-        border-left: 4px solid #ff9800;
+        border-left: 4px solid #d4b88c;
     }
     .draft-badge {
         position: absolute;
         top: 16px;
         right: 16px;
         padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     .badge-draft {
-        background: #ff9800;
-        color: white;
+        background: #f4e9cf;
+        color: #2c2c2c;
     }
     .badge-scheduled {
-        background: #4caf50;
+        background: #2c2c2c;
         color: white;
     }
     .draft-actions {
@@ -58,7 +58,7 @@
     }
     .draft-preview {
         font-size: 14px;
-        color: #666;
+        color: #757575;
         margin: 8px 0;
         line-height: 1.4;
     }
@@ -66,14 +66,13 @@
         display: flex;
         gap: 16px;
         font-size: 12px;
-        color: #999;
+        color: #757575;
         margin-top: 12px;
     }
     .empty-state {
         text-align: center;
         padding: 60px 40px;
         background: #fafafa;
-        border-radius: 12px;
         margin: 40px 0;
     }
     .empty-icon {
@@ -81,22 +80,20 @@
         height: 80px;
         margin: 0 auto 24px;
         background: #f4e9cf;
-        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
     }
     .ai-insight {
-        background: #f8f9fa;
+        background: #fafafa;
         border: 1px solid #e0e0e0;
-        border-radius: 8px;
         padding: 12px;
         margin-top: 12px;
         font-size: 13px;
     }
     .ai-tag {
-        background: #e3f2fd;
-        color: #1976d2;
+        background: #f4e9cf;
+        color: #2c2c2c;
         padding: 2px 8px;
         border-radius: 10px;
         font-size: 11px;
@@ -138,7 +135,7 @@
     {% if scheduled_posts %}
     <div style="margin-bottom: 40px;">
         <h3 class="section-title" style="margin-bottom: 20px;">
-            📅 Scheduled Posts
+            Scheduled Posts
             <span style="float: right; font-size: 14px; color: #757575; font-weight: normal;">
                 {{ scheduled_posts|length }} upcoming
             </span>
@@ -171,8 +168,8 @@
                         <!-- AI Insights -->
                         {% if draft.ai_suggested_captions or draft.ai_optimized_hashtags %}
                         <div class="ai-insight">
-                            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
-                                🤖 AI Suggestions
+                            <div style="font-size: 11px; color: #757575; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                AI Suggestions
                             </div>
                             {% if draft.ai_optimized_hashtags %}
                             <div style="margin-bottom: 4px;">
@@ -182,8 +179,8 @@
                             </div>
                             {% endif %}
                             {% if draft.ai_best_time %}
-                            <div style="font-size: 11px; color: #4caf50;">
-                                ⏰ Best time: {{ draft.ai_best_time|date:"F j, g:i A" }}
+                            <div style="font-size: 11px; color: #2c2c2c;">
+                                Best time: {{ draft.ai_best_time|date:"F j, g:i A" }}
                             </div>
                             {% endif %}
                         </div>
@@ -192,8 +189,8 @@
                         <div class="draft-meta">
                             <span>Visibility: {{ draft.get_visibility_display }}</span>
                             <span>Created: {{ draft.created_at|date:"M d, Y" }}</span>
-                            <span style="color: #4caf50; font-weight: 500;">
-                                📅 Scheduled for: {{ draft.scheduled_for|date:"F j, Y g:i A" }}
+                            <span style="color: #2c2c2c; font-weight: 500;">
+                                Scheduled: {{ draft.scheduled_for|date:"F j, Y g:i A" }}
                             </span>
                         </div>
 
@@ -219,7 +216,7 @@
     <!-- Drafts Section -->
     <div>
         <h3 class="section-title" style="margin-bottom: 20px;">
-            📝 Drafts
+            Drafts
             <span style="float: right; font-size: 14px; color: #757575; font-weight: normal;">
                 {{ drafts|length }} saved
             </span>

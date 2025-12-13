@@ -6,6 +6,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/social.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -22,39 +23,146 @@
 {% endfor %}
 {% endif %}
 
-<div class="content-section" style="max-width: 700px; margin: 0 auto;">
-    <form method="post" class="social-form">
+<div class="content-section" style="max-width: 800px; margin: 0 auto;">
+    <form method="post" class="social-form" id="postForm">
         {% csrf_token %}
         <input type="hidden" name="enhanced_images" id="enhanced_images_input">
+        <input type="hidden" name="use_ai" id="useAIInput" value="true">
+        <input type="hidden" name="scheduled_time" id="scheduledTime" value="">
 
-        <div class="form-section">
-            <h3 class="section-title">SELECT OUTFIT</h3>
+        <!-- AI Optimization Panel -->
+        <div class="settings-section" style="background: #2c2c2c; color: #fff; padding: 24px; margin-bottom: 32px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                <h3 style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 0; color: #fff;">
+                    AI Engagement Optimizer
+                </h3>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <span style="font-size: 12px; color: rgba(255,255,255,0.7);">Enable</span>
+                    <input type="checkbox" id="enableAI" checked style="width: 18px; height: 18px; cursor: pointer;">
+                </label>
+            </div>
+
+            <div id="aiContent">
+                <div style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 13px; color: rgba(255,255,255,0.8);">Engagement Potential</span>
+                        <span id="confidenceScore" style="font-size: 14px; font-weight: 600; color: #fff;">75%</span>
+                    </div>
+                    <div style="height: 6px; background: rgba(255,255,255,0.2); overflow: hidden;">
+                        <div id="confidenceFill" style="height: 100%; background: linear-gradient(90deg, #f4e9cf, #4caf50); width: 75%; transition: width 0.3s;"></div>
+                    </div>
+                    <p id="scoreExplanation" style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 8px;">
+                        Excellent engagement potential. Perfect time and great content.
+                    </p>
+                </div>
+
+                <!-- Best Time Suggestions -->
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9);">Best Time to Post</span>
+                        <button id="clearTime" type="button" style="font-size: 11px; padding: 4px 8px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); cursor: pointer;">
+                            Clear
+                        </button>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <button type="button" class="time-slot" data-time="1" data-hour="9" style="padding: 10px 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                            Tomorrow 9:00 AM
+                        </button>
+                        <button type="button" class="time-slot" data-time="1" data-hour="12" style="padding: 10px 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                            Tomorrow 12:00 PM
+                        </button>
+                        <button type="button" class="time-slot active" data-time="1" data-hour="18" style="padding: 10px 16px; background: #f4e9cf; border: 1px solid #f4e9cf; color: #2c2c2c; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                            Tomorrow 6:00 PM
+                        </button>
+                        <button type="button" class="time-slot" data-time="1" data-hour="21" style="padding: 10px 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                            Tomorrow 9:00 PM
+                        </button>
+                    </div>
+                    <p style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px;">
+                        Optional: Select for scheduled posting. Higher score = better engagement.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outfit Selection -->
+        <div class="settings-section">
+            <h3 class="section-title">Select Outfit</h3>
             <div class="form-group">
-                <select name="outfit" class="input-control" required id="outfit_select">
+                <select name="outfit" class="input-control" required id="outfitSelect">
                     <option value="">Choose an outfit...</option>
                     {% for outfit in outfits %}
-                    <option value="{{ outfit.id }}">{{ outfit.name }} - {{ outfit.items.count }} items</option>
+                    <option value="{{ outfit.id }}">{{ outfit.name }}</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
 
-        <!-- AI Photo Enhancer Section -->
-        <div class="form-section" style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 20px;">
-            <h3 class="section-title">AI PHOTO ENHANCER</h3>
-            <p style="font-size: 13px; color: #757575; margin-bottom: 16px;">Automatically enhance your fashion photos
-                with AI</p>
+        <!-- Caption Section -->
+        <div class="settings-section">
+            <h3 class="section-title">Caption</h3>
+            <div id="aiCaptionSection">
+                <p style="font-size: 12px; color: #757575; margin-bottom: 12px;">AI Suggestions (click to use):</p>
+                <div id="captionSuggestions" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+                    {% for caption in default_captions %}
+                    <div class="ai-suggestion-item" data-caption="{{ caption }}" style="padding: 12px 16px; background: #fafafa; border: 1px solid #e0e0e0; cursor: pointer; font-size: 13px; color: #2c2c2c; transition: all 0.2s;">
+                        {{ caption }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-group">
+                <textarea name="caption" class="input-control" rows="4" id="captionInput"
+                          placeholder="Write a caption... What's inspiring about this outfit?"></textarea>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                    <span style="font-size: 12px; color: #757575;">
+                        <span id="captionLength">0</span> characters
+                    </span>
+                    <span style="font-size: 12px; color: #757575;">50-150 chars optimal</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hashtags Section -->
+        <div class="settings-section">
+            <h3 class="section-title">Hashtags</h3>
+            <div id="aiHashtagSection">
+                <p style="font-size: 12px; color: #757575; margin-bottom: 12px;">Suggested hashtags (click to add):</p>
+                <div id="hashtagSuggestions" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+                    {% for hashtag in default_hashtags %}
+                    <span class="hashtag-suggestion" data-tag="{{ hashtag }}" style="padding: 6px 12px; background: #f4e9cf; color: #2c2c2c; font-size: 12px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent;">
+                        {{ hashtag }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="text" name="hashtags" class="input-control" id="hashtagsInput"
+                       placeholder="#ootd #style #fashion #look #outfitoftheday">
+                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                    <span style="font-size: 12px; color: #757575;">
+                        <span id="hashtagCount">0</span> hashtags
+                    </span>
+                    <span style="font-size: 12px; color: #757575;">5-10 hashtags optimal</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Photo Enhancer -->
+        <div class="settings-section">
+            <h3 class="section-title">AI Photo Enhancer</h3>
+            <p style="font-size: 13px; color: #757575; margin-bottom: 16px;">Automatically enhance your fashion photos with AI</p>
 
             <div class="form-group">
                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                     <input type="checkbox" name="enhance_photos" id="enhance_photos" value="true">
-                    <span style="font-size: 14px;">Enable automatic photo enhancement</span>
+                    <span style="font-size: 14px; color: #2c2c2c;">Enable automatic photo enhancement</span>
                 </label>
             </div>
 
-            <div id="ai_style_options" style="display: none; margin-top: 15px;">
+            <div id="ai_style_options" style="display: none; margin-top: 16px;">
                 <div class="form-group">
-                    <label class="form-label">Enhancement Style</label>
+                    <label class="input-label">Enhancement Style</label>
                     <select name="photo_style" class="input-control" id="photo_style">
                         <option value="auto">Auto - Smart enhancement</option>
                         <option value="vibrant">Vibrant - Bold colors</option>
@@ -64,53 +172,19 @@
                     </select>
                 </div>
 
-                <div id="ai_preview_section" style="display: none;">
-                    <button type="button" id="preview_ai" class="btn btn-secondary" style="font-size: 13px;">
+                <div id="ai_preview_section" style="display: none; margin-top: 16px;">
+                    <button type="button" id="preview_ai" class="btn btn-secondary">
                         Preview AI Enhancement
                     </button>
-                    <div id="preview_results" style="margin-top: 15px;"></div>
+                    <div id="preview_results" style="margin-top: 16px;"></div>
                 </div>
             </div>
         </div>
 
-        <div class="form-section">
-            <h3 class="section-title">POST DETAILS</h3>
+        <!-- Visibility -->
+        <div class="settings-section">
+            <h3 class="section-title">Visibility</h3>
             <div class="form-group">
-                <label class="form-label">Caption</label>
-                <textarea name="caption" class="input-control" rows="4" placeholder="Write a caption..." id="caption_input"></textarea>
-                {% if default_captions %}
-                <div style="margin-top: 8px;">
-                    <span style="font-size: 11px; color: #757575;">💡 AI Suggestions:</span>
-                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
-                        {% for caption in default_captions|slice:":3" %}
-                        <button type="button" class="caption-suggestion" data-caption="{{ caption }}" style="padding: 6px 12px; background: #f0f0f0; border: 1px solid #e0e0e0; font-size: 11px; cursor: pointer; border-radius: 4px;">
-                            {{ caption|truncatechars:40 }}
-                        </button>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Hashtags (space-separated)</label>
-                <input type="text" name="hashtags" class="input-control" placeholder="#ootd #style #fashion" id="hashtags_input">
-                {% if default_hashtags %}
-                <div style="margin-top: 8px;">
-                    <span style="font-size: 11px; color: #757575;">💡 Suggested:</span>
-                    <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;">
-                        {% for tag in default_hashtags|slice:":8" %}
-                        <span class="hashtag-suggestion" data-tag="{{ tag }}" style="padding: 4px 8px; background: #e3f2fd; color: #1976d2; font-size: 11px; cursor: pointer; border-radius: 12px;">
-                            {{ tag }}
-                        </span>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Visibility</label>
                 <select name="visibility" class="input-control">
                     <option value="public">Public - Everyone can see</option>
                     <option value="followers">Followers Only</option>
@@ -119,241 +193,351 @@
             </div>
         </div>
 
-        <!-- Scheduling Section -->
-        <div class="form-section" style="background: #fafafa; border: 1px solid #e0e0e0; padding: 20px;">
-            <h3 class="section-title">📅 SCHEDULING OPTIONS</h3>
-            
+        <!-- Publication Options -->
+        <div class="settings-section">
+            <h3 class="section-title">Publication Options</h3>
+
             <div class="form-group">
                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 16px;">
-                    <input type="checkbox" name="save_as_draft" id="save_as_draft" value="true">
-                    <span style="font-size: 14px;">Save as draft (don't publish yet)</span>
+                    <input type="checkbox" name="save_as_draft" id="saveAsDraft" value="true">
+                    <span style="font-size: 14px; font-weight: 500; color: #2c2c2c;">Save as draft</span>
                 </label>
-            </div>
 
-            <div class="form-group">
-                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                    <input type="checkbox" name="schedule_post" id="schedule_post" value="true">
-                    <span style="font-size: 14px;">Schedule for later</span>
-                </label>
-            </div>
+                <div id="scheduleOptions" style="display: none; margin-top: 16px; padding: 16px; background: #fafafa; border: 1px solid #e0e0e0;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 12px;">
+                        <input type="checkbox" name="schedule_post" id="schedulePost" value="true">
+                        <span style="font-size: 14px; font-weight: 500; color: #2c2c2c;">Schedule for later</span>
+                    </label>
 
-            <div id="schedule_options" style="display: none; margin-top: 16px; padding: 16px; background: white; border: 1px solid #e0e0e0;">
-                <div class="form-group">
-                    <label class="form-label">Schedule Date & Time</label>
-                    <input type="datetime-local" name="scheduled_time_custom" class="input-control" id="scheduled_time" min="{{ now_formatted }}">
-                </div>
-                
-                <div style="margin-top: 12px;">
-                    <span style="font-size: 12px; color: #757575;">⏰ AI Suggested Best Times:</span>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
-                        <button type="button" class="time-slot-btn" data-hours="1" style="padding: 8px 16px; background: #e8f5e9; border: 1px solid #c8e6c9; font-size: 12px; cursor: pointer; border-radius: 4px;">
-                            In 1 hour
-                        </button>
-                        <button type="button" class="time-slot-btn" data-hours="3" style="padding: 8px 16px; background: #e8f5e9; border: 1px solid #c8e6c9; font-size: 12px; cursor: pointer; border-radius: 4px;">
-                            In 3 hours
-                        </button>
-                        <button type="button" class="time-slot-btn" data-day="1" data-hour="9" style="padding: 8px 16px; background: #fff3e0; border: 1px solid #ffe0b2; font-size: 12px; cursor: pointer; border-radius: 4px;">
-                            Tomorrow 9 AM
-                        </button>
-                        <button type="button" class="time-slot-btn" data-day="1" data-hour="18" style="padding: 8px 16px; background: #fff3e0; border: 1px solid #ffe0b2; font-size: 12px; cursor: pointer; border-radius: 4px;">
-                            Tomorrow 6 PM ⭐
-                        </button>
+                    <div id="scheduleTimePicker" style="display: none; margin-top: 12px;">
+                        <label class="input-label">Schedule Date & Time</label>
+                        <input type="datetime-local" name="scheduled_time_custom" class="input-control"
+                               id="scheduledTimeCustom"
+                               min="{{ now_formatted }}">
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="form-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <button type="submit" class="btn btn-primary">Share Post</button>
-            <button type="submit" name="save_as_draft" value="true" class="btn btn-secondary">Save as Draft</button>
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 12px; padding-top: 24px; border-top: 1px solid #e0e0e0;">
+            <button type="submit" name="action" value="publish" class="btn btn-primary" id="publishBtn">
+                Publish Now
+            </button>
+            <button type="submit" name="action" value="draft" class="btn btn-secondary" id="saveDraftBtn">
+                Save as Draft
+            </button>
             <a href="{% url 'social:feed' %}" class="btn btn-outline">Cancel</a>
-            <a href="{% url 'social:draft_list' %}" class="btn btn-outline" style="margin-left: auto;">My Drafts</a>
         </div>
     </form>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const enhanceCheckbox = document.getElementById('enhance_photos');
-        const styleOptions = document.getElementById('ai_style_options');
-        const previewSection = document.getElementById('ai_preview_section');
-        const outfitSelect = document.getElementById('outfit_select');
-        const previewBtn = document.getElementById('preview_ai');
+document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+    const enableAI = document.getElementById('enableAI');
+    const aiContent = document.getElementById('aiContent');
+    const aiHashtagSection = document.getElementById('aiHashtagSection');
+    const aiCaptionSection = document.getElementById('aiCaptionSection');
+    const useAIInput = document.getElementById('useAIInput');
+    const scheduledTimeInput = document.getElementById('scheduledTime');
+    const outfitSelect = document.getElementById('outfitSelect');
+    const hashtagsInput = document.getElementById('hashtagsInput');
+    const captionInput = document.getElementById('captionInput');
+    const confidenceScore = document.getElementById('confidenceScore');
+    const confidenceFill = document.getElementById('confidenceFill');
+    const scoreExplanation = document.getElementById('scoreExplanation');
+    const saveAsDraft = document.getElementById('saveAsDraft');
+    const scheduleOptions = document.getElementById('scheduleOptions');
+    const schedulePost = document.getElementById('schedulePost');
+    const scheduleTimePicker = document.getElementById('scheduleTimePicker');
+    const scheduledTimeCustom = document.getElementById('scheduledTimeCustom');
+    const enhanceCheckbox = document.getElementById('enhance_photos');
+    const styleOptions = document.getElementById('ai_style_options');
+    const previewSection = document.getElementById('ai_preview_section');
+    const previewBtn = document.getElementById('preview_ai');
+    const clearTimeBtn = document.getElementById('clearTime');
+    const captionLength = document.getElementById('captionLength');
+    const hashtagCount = document.getElementById('hashtagCount');
 
-        // Show/hide AI options
-        enhanceCheckbox.addEventListener('change', function () {
-            styleOptions.style.display = this.checked ? 'block' : 'none';
-            previewSection.style.display = (this.checked && outfitSelect.value) ? 'block' : 'none';
-        });
+    // Initialize
+    updateCounters();
+    updateScoreAutomatically();
 
-        // Show/hide preview based on outfit selection
-        outfitSelect.addEventListener('change', function () {
-            previewSection.style.display = (enhanceCheckbox.checked && this.value) ? 'block' : 'none';
-        });
+    // Toggle AI features
+    enableAI.addEventListener('change', function() {
+        const isEnabled = this.checked;
+        aiContent.style.display = isEnabled ? 'block' : 'none';
+        aiHashtagSection.style.display = isEnabled ? 'block' : 'none';
+        aiCaptionSection.style.display = isEnabled ? 'block' : 'none';
+        useAIInput.value = isEnabled ? 'true' : 'false';
+        updateScoreAutomatically();
+    });
 
-        // AI Preview functionality
-        previewBtn.addEventListener('click', function () {
-            const outfitId = outfitSelect.value;
-            const style = document.getElementById('photo_style').value;
+    // Time slot selection
+    document.querySelectorAll('.time-slot').forEach(slot => {
+        slot.addEventListener('click', function() {
+            if (!enableAI.checked) return;
 
-            if (!outfitId) {
-                alert('Please select an outfit first');
-                return;
-            }
-
-            this.innerHTML = 'Processing...';
-            this.disabled = true;
-
-            fetch(`/social/ai-preview/${outfitId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify({ style: style })
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Server error: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    this.innerHTML = 'Preview AI Enhancement';
-                    this.disabled = false;
-
-                    if (data.previews && data.previews.length > 0) {
-                        // Filter definitions for visual preview
-                        const filterStyles = {
-                            'auto': 'contrast(1.2) saturate(1.2)',
-                            'vibrant': 'saturate(1.6) contrast(1.2)',
-                            'elegant': 'sepia(0.2) contrast(1.1)',
-                            'vintage': 'sepia(0.6) contrast(1.2) brightness(0.9)',
-                            'bright': 'brightness(1.2) contrast(1.1) saturate(1.1)'
-                        };
-                        const activeFilter = filterStyles[data.style] || '';
-
-                        let html = `
-                <div style="background: white; padding: 15px; border: 1px solid #e0e0e0;">
-                    <h4 style="margin-bottom: 15px; font-size: 14px;">AI Preview - ${data.previews.length} images</h4>
-                    <div class="ai-previews-grid">
-                `;
-
-                        // Store enhanced images for submission
-                        if (data.enhanced_images) {
-                            document.getElementById('enhanced_images_input').value = JSON.stringify(data.enhanced_images);
-                        }
-
-                        data.previews.forEach(preview => {
-                            html += `
-                    <div class="preview-item">
-                        <h5 style="font-size: 13px; margin-bottom: 10px;">${preview.item.name}</h5>
-                        <div style="display: flex; gap: 15px; justify-content: center; align-items: center;">
-                            <div>
-                                <p style="font-size: 11px; margin-bottom: 5px; color: #666;">BEFORE</p>
-                                <img src="${preview.original}" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #ddd;">
-                            </div>
-                            <div style="font-size: 18px;">→</div>
-                            <div>
-                                <p style="font-size: 11px; margin-bottom: 5px; color: #ff4081;">AFTER</p>
-                                <img src="${preview.enhanced}" style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #ff4081; filter: ${activeFilter};">
-                            </div>
-                        </div>
-                    </div>
-                    `;
-                        });
-
-                        html += `
-                    </div>
-                    <p style="margin-top: 10px; font-size: 12px; color: #4caf50;">
-                        ✓ Enhancements will be applied when you share the post
-                    </p>
-                </div>
-                `;
-                        document.getElementById('preview_results').innerHTML = html;
-                    } else {
-                        document.getElementById('preview_results').innerHTML =
-                            '<p style="color: #757575;">No preview available. Check that the outfit has images.</p>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    this.innerHTML = 'Preview AI Enhancement';
-                    this.disabled = false;
-                    document.getElementById('preview_results').innerHTML =
-                        `<p style="color: #c62828;">Error: ${error.message}</p>`;
-                });
-        });
-
-        // === NEW: Scheduling Features ===
-        const scheduleCheckbox = document.getElementById('schedule_post');
-        const scheduleOptions = document.getElementById('schedule_options');
-        const scheduledTime = document.getElementById('scheduled_time');
-        const saveAsDraftCheckbox = document.getElementById('save_as_draft');
-
-        // Show/hide schedule options
-        scheduleCheckbox.addEventListener('change', function() {
-            scheduleOptions.style.display = this.checked ? 'block' : 'none';
-            if (this.checked) {
-                saveAsDraftCheckbox.checked = true;
-            }
-        });
-
-        // Time slot buttons
-        document.querySelectorAll('.time-slot-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const hours = this.dataset.hours;
-                const day = this.dataset.day;
-                const hour = this.dataset.hour;
-                
-                const date = new Date();
-                
-                if (hours) {
-                    date.setHours(date.getHours() + parseInt(hours));
-                } else if (day && hour) {
-                    date.setDate(date.getDate() + parseInt(day));
-                    date.setHours(parseInt(hour), 0, 0, 0);
-                }
-                
-                // Format for datetime-local input
-                const offset = date.getTimezoneOffset() * 60000;
-                const localDate = new Date(date.getTime() - offset);
-                scheduledTime.value = localDate.toISOString().slice(0, 16);
-                
-                // Visual feedback
-                document.querySelectorAll('.time-slot-btn').forEach(b => {
-                    b.style.background = b === this ? '#4caf50' : '';
-                    b.style.color = b === this ? 'white' : '';
-                });
+            document.querySelectorAll('.time-slot').forEach(s => {
+                s.style.background = 'rgba(255,255,255,0.1)';
+                s.style.borderColor = 'rgba(255,255,255,0.2)';
+                s.style.color = '#fff';
+                s.classList.remove('active');
             });
-        });
+            
+            this.style.background = '#f4e9cf';
+            this.style.borderColor = '#f4e9cf';
+            this.style.color = '#2c2c2c';
+            this.classList.add('active');
 
-        // === NEW: AI Suggestion Features ===
-        const captionInput = document.getElementById('caption_input');
-        const hashtagsInput = document.getElementById('hashtags_input');
-
-        // Caption suggestions
-        document.querySelectorAll('.caption-suggestion').forEach(btn => {
-            btn.addEventListener('click', function() {
-                captionInput.value = this.dataset.caption;
-            });
-        });
-
-        // Hashtag suggestions
-        document.querySelectorAll('.hashtag-suggestion').forEach(tag => {
-            tag.addEventListener('click', function() {
-                const currentHashtags = hashtagsInput.value.trim();
-                const newTag = this.dataset.tag;
-                
-                if (!currentHashtags.includes(newTag)) {
-                    hashtagsInput.value = currentHashtags ? `${currentHashtags} ${newTag}` : newTag;
-                }
-                
-                // Visual feedback
-                this.style.background = '#1976d2';
-                this.style.color = 'white';
-            });
+            const days = parseInt(this.dataset.time);
+            const hour = parseInt(this.dataset.hour);
+            const scheduledDate = calculateScheduledDate(days, hour);
+            scheduledTimeInput.value = scheduledDate.toISOString();
+            updateScoreAutomatically();
         });
     });
+
+    // Clear time button
+    clearTimeBtn.addEventListener('click', function() {
+        document.querySelectorAll('.time-slot').forEach(s => {
+            s.style.background = 'rgba(255,255,255,0.1)';
+            s.style.borderColor = 'rgba(255,255,255,0.2)';
+            s.style.color = '#fff';
+            s.classList.remove('active');
+        });
+        scheduledTimeInput.value = '';
+        if (schedulePost.checked) {
+            schedulePost.checked = false;
+            scheduleTimePicker.style.display = 'none';
+            scheduledTimeCustom.value = '';
+        }
+        updateScoreAutomatically();
+    });
+
+    function calculateScheduledDate(daysFromNow, hour) {
+        const date = new Date();
+        date.setDate(date.getDate() + daysFromNow);
+        date.setHours(hour, 0, 0, 0);
+        return date;
+    }
+
+    // Update score automatically
+    function updateScoreAutomatically() {
+        let score = 50;
+
+        const activeSlot = document.querySelector('.time-slot.active');
+        if (activeSlot && enableAI.checked) {
+            const hour = parseInt(activeSlot.dataset.hour);
+            if (hour === 18) score += 40;
+            else if (hour === 9) score += 35;
+            else if (hour === 12 || hour === 21) score += 30;
+            else score += 20;
+        } else {
+            score += 5;
+        }
+
+        const captionText = captionInput.value;
+        if (captionText.length >= 50 && captionText.length <= 150) {
+            score += 15;
+        } else if (captionText.length > 150) {
+            score += 10;
+        } else if (captionText.length > 20) {
+            score += 8;
+        }
+
+        if (captionText.includes('?')) score += 5;
+        if (captionText.includes('!')) score += 3;
+
+        const hashtags = hashtagsInput.value.trim().split(/\s+/).filter(tag => tag.startsWith('#'));
+        if (hashtags.length >= 5 && hashtags.length <= 10) {
+            score += 15;
+        } else if (hashtags.length >= 3) {
+            score += 10;
+        } else if (hashtags.length > 0) {
+            score += 5;
+        }
+
+        if (outfitSelect.value) score += 10;
+        if (enableAI.checked) score += 5;
+
+        score = Math.min(score, 100);
+
+        confidenceScore.textContent = score + '%';
+        confidenceFill.style.width = score + '%';
+
+        if (score >= 80) {
+            scoreExplanation.textContent = 'Excellent engagement potential. Perfect time and great content.';
+        } else if (score >= 60) {
+            scoreExplanation.textContent = 'Good engagement potential. Consider adding more hashtags or selecting a prime time.';
+        } else {
+            scoreExplanation.textContent = 'Moderate potential. Select a better time and add more details to boost engagement.';
+        }
+    }
+
+    // Hashtag suggestions
+    document.querySelectorAll('.hashtag-suggestion').forEach(tag => {
+        tag.addEventListener('click', function() {
+            const currentHashtags = hashtagsInput.value.trim();
+            const newTag = this.dataset.tag;
+
+            if (!currentHashtags.includes(newTag)) {
+                hashtagsInput.value = currentHashtags ? `${currentHashtags} ${newTag}` : newTag;
+                this.style.background = '#2c2c2c';
+                this.style.color = '#fff';
+                updateCounters();
+                updateScoreAutomatically();
+            }
+        });
+    });
+
+    // Caption suggestions
+    document.querySelectorAll('.ai-suggestion-item').forEach(item => {
+        item.addEventListener('click', function() {
+            captionInput.value = this.dataset.caption;
+            document.querySelectorAll('.ai-suggestion-item').forEach(i => {
+                i.style.background = '#fafafa';
+                i.style.borderColor = '#e0e0e0';
+            });
+            this.style.background = '#f4e9cf';
+            this.style.borderColor = '#2c2c2c';
+            updateCounters();
+            updateScoreAutomatically();
+        });
+    });
+
+    // Update counters
+    function updateCounters() {
+        captionLength.textContent = captionInput.value.length;
+        const hashtags = hashtagsInput.value.trim().split(/\s+/).filter(tag => tag.startsWith('#'));
+        hashtagCount.textContent = hashtags.length;
+    }
+
+    captionInput.addEventListener('input', function() {
+        updateCounters();
+        updateScoreAutomatically();
+    });
+
+    hashtagsInput.addEventListener('input', function() {
+        updateCounters();
+        updateScoreAutomatically();
+    });
+
+    outfitSelect.addEventListener('change', function() {
+        updateScoreAutomatically();
+        previewSection.style.display = (enhanceCheckbox.checked && this.value) ? 'block' : 'none';
+    });
+
+    // Draft and schedule toggles
+    saveAsDraft.addEventListener('change', function() {
+        scheduleOptions.style.display = this.checked ? 'block' : 'none';
+        if (!this.checked) {
+            schedulePost.checked = false;
+            scheduleTimePicker.style.display = 'none';
+            scheduledTimeCustom.value = '';
+        }
+    });
+
+    schedulePost.addEventListener('change', function() {
+        scheduleTimePicker.style.display = this.checked ? 'block' : 'none';
+        if (this.checked && scheduledTimeInput.value) {
+            const aiTime = new Date(scheduledTimeInput.value);
+            const offset = aiTime.getTimezoneOffset() * 60000;
+            const localDate = new Date(aiTime.getTime() - offset);
+            scheduledTimeCustom.value = localDate.toISOString().slice(0, 16);
+        }
+    });
+
+    scheduledTimeCustom.addEventListener('change', function() {
+        if (this.value) {
+            const customDate = new Date(this.value);
+            scheduledTimeInput.value = customDate.toISOString();
+            updateScoreAutomatically();
+        }
+    });
+
+    // AI Photo Enhancer
+    enhanceCheckbox.addEventListener('change', function() {
+        styleOptions.style.display = this.checked ? 'block' : 'none';
+        previewSection.style.display = (this.checked && outfitSelect.value) ? 'block' : 'none';
+    });
+
+    // Preview AI Enhancement
+    previewBtn.addEventListener('click', function() {
+        const outfitId = outfitSelect.value;
+        const style = document.getElementById('photo_style').value;
+
+        if (!outfitId) {
+            alert('Please select an outfit first');
+            return;
+        }
+
+        this.innerHTML = 'Processing...';
+        this.disabled = true;
+
+        fetch(`/social/ai-preview/${outfitId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ style: style })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Server error: ' + response.status);
+            return response.json();
+        })
+        .then(data => {
+            this.innerHTML = 'Preview AI Enhancement';
+            this.disabled = false;
+
+            if (data.previews && data.previews.length > 0) {
+                const filterStyles = {
+                    'auto': 'contrast(1.2) saturate(1.2)',
+                    'vibrant': 'saturate(1.6) contrast(1.2)',
+                    'elegant': 'sepia(0.2) contrast(1.1)',
+                    'vintage': 'sepia(0.6) contrast(1.2) brightness(0.9)',
+                    'bright': 'brightness(1.2) contrast(1.1) saturate(1.1)'
+                };
+                const activeFilter = filterStyles[data.style] || '';
+
+                let html = `<div style="background: #fafafa; padding: 16px; border: 1px solid #e0e0e0;">
+                    <h4 style="margin-bottom: 16px; font-size: 14px; font-weight: 600; color: #2c2c2c;">AI Preview - ${data.previews.length} images</h4>`;
+
+                if (data.enhanced_images) {
+                    document.getElementById('enhanced_images_input').value = JSON.stringify(data.enhanced_images);
+                }
+
+                data.previews.forEach(preview => {
+                    html += `<div style="margin-bottom: 16px;">
+                        <h5 style="font-size: 13px; margin-bottom: 10px; color: #2c2c2c;">${preview.item.name}</h5>
+                        <div style="display: flex; gap: 16px; align-items: center;">
+                            <div style="text-align: center;">
+                                <p style="font-size: 11px; margin-bottom: 6px; color: #757575;">BEFORE</p>
+                                <img src="${preview.original}" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #e0e0e0;">
+                            </div>
+                            <div style="font-size: 16px; color: #757575;">→</div>
+                            <div style="text-align: center;">
+                                <p style="font-size: 11px; margin-bottom: 6px; color: #2c2c2c; font-weight: 600;">AFTER</p>
+                                <img src="${preview.enhanced}" style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #2c2c2c; filter: ${activeFilter};">
+                            </div>
+                        </div>
+                    </div>`;
+                });
+
+                html += `<p style="margin-top: 12px; font-size: 12px; color: #4caf50;">Enhancements will be applied when you share the post</p></div>`;
+                document.getElementById('preview_results').innerHTML = html;
+            } else {
+                document.getElementById('preview_results').innerHTML = '<p style="color: #757575;">No preview available.</p>';
+            }
+        })
+        .catch(error => {
+            this.innerHTML = 'Preview AI Enhancement';
+            this.disabled = false;
+            document.getElementById('preview_results').innerHTML = `<p style="color: #f44336;">Error: ${error.message}</p>`;
+        });
+    });
+});
 </script>
 {% endblock %}

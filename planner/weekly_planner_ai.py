@@ -693,35 +693,55 @@ class WeeklyPlannerAI:
         
         return daily_slot
     
+    def record_outfit_used(
+        self,
+        outfit: Outfit,
+        worn_date,
+        weather_condition: str = '',
+        temperature: int = None
+    ):
+        """
+        Record that an outfit was used, updating wear history and laundry stats.
+        Reusable for both Weekly Planner and Events.
+        """
+        # Create wear history entry
+        wear_entry = WearHistory.objects.create(
+            user=self.user,
+            outfit=outfit,
+            worn_date=worn_date,
+            weather_condition=weather_condition,
+            temperature=temperature
+        )
+        
+        # Add individual items to wear history
+        items = outfit.items.all()
+        wear_entry.clothing_items.set(items)
+        
+        # Update outfit wear count
+        outfit.times_worn += 1
+        outfit.last_worn = worn_date
+        outfit.save()
+        
+        # Update each item's wear count and laundry tracking
+        for item in items:
+            item.times_worn += 1
+            item.wears_since_wash += 1  # Track laundry needs
+            item.last_worn = worn_date
+            item.save()
+            
+        return wear_entry
+
     def mark_as_worn(self, daily_slot: DailyPlanSlot) -> DailyPlanSlot:
         """Mark outfit as worn and record in wear history"""
         daily_slot.status = 'worn'
         daily_slot.save()
         
-        # Create wear history entry
         if daily_slot.primary_outfit:
-            wear_entry = WearHistory.objects.create(
-                user=self.user,
+            self.record_outfit_used(
                 outfit=daily_slot.primary_outfit,
                 worn_date=daily_slot.date,
                 weather_condition=daily_slot.weather_condition,
                 temperature=daily_slot.temperature
             )
-            
-            # Add individual items to wear history
-            items = daily_slot.primary_outfit.items.all()
-            wear_entry.clothing_items.set(items)
-            
-            # Update outfit wear count
-            daily_slot.primary_outfit.times_worn += 1
-            daily_slot.primary_outfit.last_worn = daily_slot.date
-            daily_slot.primary_outfit.save()
-            
-            # Update each item's wear count and laundry tracking
-            for item in items:
-                item.times_worn += 1
-                item.wears_since_wash += 1  # Track laundry needs
-                item.last_worn = daily_slot.date
-                item.save()
         
         return daily_slot

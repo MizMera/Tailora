@@ -86,46 +86,45 @@
                     </div>
                 </div>
                 <a href="{% url 'social:profile' user.id %}" class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;">View Profile</a>
-                <a href="{% url 'social:saved_posts' %}" class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;">Saved Posts</a>
-                <a href="{% url 'social:draft_list' %}" class="btn btn-secondary" style="width: 100%;">
-                    📝 My Drafts {% if draft_count %}<span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 8px;">{{ draft_count }}</span>{% endif %}
-                </a>
+                <a href="{% url 'social:saved_posts' %}" class="btn btn-secondary" style="width: 100%;">Saved Posts</a>
             </div>
             
-            <!-- Drafts & Scheduled Posts -->
-            {% if scheduled_posts or recent_drafts %}
+            <!-- MY DRAFTS Section -->
             <div class="settings-section" style="margin-bottom: 32px;">
-                <h3 class="section-title">📅 Upcoming Posts</h3>
+                <h3 class="section-title">My Drafts <span style="font-weight: 400; color: #757575; font-size: 12px; text-transform: none; letter-spacing: 0;">{{ draft_count }} total</span></h3>
                 
                 {% if scheduled_posts %}
-                <div style="margin-bottom: 16px;">
-                    {% for draft in scheduled_posts %}
-                    <div style="padding: 12px; background: #e8f5e9; border: 1px solid #c8e6c9; margin-bottom: 8px;">
-                        <div style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: #2e7d32; margin-bottom: 4px;">
-                            {{ draft.outfit.name }}
+                <div style="font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Upcoming Scheduled</div>
+                {% for draft in scheduled_posts %}
+                <a href="{% url 'social:draft_detail' draft.id %}" style="display: block; padding: 12px; background: #fafafa; border: 1px solid #e0e0e0; margin-bottom: 8px; text-decoration: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: #2c2c2c; margin-bottom: 4px;">
+                                {{ draft.outfit.name }}
+                            </div>
+                            <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575;">
+                                {{ draft.scheduled_for|date:"M d, g:i A" }}
+                            </div>
                         </div>
-                        <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #4caf50;">
-                            📅 {{ draft.scheduled_for|date:"M d, g:i A" }}
-                        </div>
+                        <span style="background: #2c2c2c; color: white; font-size: 10px; padding: 4px 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Scheduled</span>
                     </div>
-                    {% endfor %}
-                </div>
+                </a>
+                {% endfor %}
                 {% endif %}
                 
                 {% if recent_drafts %}
-                <div style="font-size: 12px; color: #757575; margin-bottom: 8px;">Recent Drafts:</div>
+                <div style="font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 12px;">Recent Drafts</div>
                 {% for draft in recent_drafts %}
-                <a href="{% url 'social:draft_detail' draft.id %}" style="display: block; padding: 10px; background: #fff3e0; border: 1px solid #ffe0b2; margin-bottom: 6px; text-decoration: none;">
-                    <div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; color: #e65100;">
+                <a href="{% url 'social:draft_detail' draft.id %}" style="display: block; padding: 12px; background: #f4e9cf; border: 1px solid #e0e0e0; margin-bottom: 6px; text-decoration: none;">
+                    <div style="font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; color: #2c2c2c;">
                         {{ draft.outfit.name|truncatechars:25 }}
                     </div>
                 </a>
                 {% endfor %}
                 {% endif %}
                 
-                <a href="{% url 'social:draft_list' %}" class="btn btn-secondary" style="width: 100%; margin-top: 8px;">Manage All Drafts</a>
+                <a href="{% url 'social:draft_list' %}" class="btn btn-secondary" style="width: 100%; margin-top: 12px;">View All Drafts</a>
             </div>
-            {% endif %}
             
             <!-- Active Challenges -->
             {% if active_challenges %}
