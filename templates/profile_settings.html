@@ -63,7 +63,6 @@
     .settings-grid {
         display: grid;
         grid-template-columns: 2.5fr 1fr;
-        /* Main Content vs Sidebar */
         gap: 32px;
         align-items: start;
     }
@@ -185,7 +184,7 @@
     }
 
     /* =========================================
-       VISUAL SELECTORS (Styles & Colors)
+       VISUAL SELECTORS
        ========================================= */
     .checkbox-grid {
         display: grid;
@@ -459,9 +458,8 @@
 
                         <!-- Profile Image -->
                         <div class="profile-section">
-                            {% if user.profile_image %}
-                            <img src="{{ user.profile_image.url }}" alt="Profile" class="profile-preview"
-                                id="preview-img">
+                            {% if user.profile_image and user.profile_image.name %}
+                            <img src="{{ user.profile_image.url }}" alt="Profile" class="profile-preview" id="preview-img">
                             {% else %}
                             <div class="profile-placeholder" id="preview-placeholder">
                                 {{ user.first_name.0|default:user.username.0|upper }}
@@ -484,12 +482,12 @@
                             <div class="input-group">
                                 <label for="first_name" class="input-label">First Name</label>
                                 <input type="text" name="first_name" id="first_name" class="form-control"
-                                    value="{{ user.first_name }}">
+                                    value="{{ user.first_name|default:'' }}">
                             </div>
                             <div class="input-group">
                                 <label for="last_name" class="input-label">Last Name</label>
                                 <input type="text" name="last_name" id="last_name" class="form-control"
-                                    value="{{ user.last_name }}">
+                                    value="{{ user.last_name|default:'' }}">
                             </div>
                         </div>
 
@@ -511,8 +509,7 @@
                         <span class="ai-tag">New Feature</span>
                         <h3 style="margin: 0 0 8px 0; font-size: 18px;">AI Style Assistant</h3>
                         <p style="margin: 0 0 16px 0; font-size: 13px; color: #ddd; max-width: 600px;">
-                            Upload photos of outfits you love and let our AI automatically detect your style persona and
-                            color palette.
+                            Upload photos of outfits you love and let our AI automatically detect your style persona and color palette.
                         </p>
                         <a href="{% url 'ai_style_analyze' %}" class="btn btn-secondary" style="border: none;">
                             Analyze My Style
@@ -525,34 +522,44 @@
 
                         <div class="input-group">
                             <label class="input-label">Preferred Styles</label>
-                            <span class="input-hint" style="margin-bottom: 12px; display:block;">Select styles that
-                                describe you.</span>
+                            <span class="input-hint" style="margin-bottom: 12px; display:block;">Select styles that describe you.</span>
 
                             <div class="checkbox-grid">
-                                {% for style_code, style_name in preferred_style_choices %}
-                                <label class="visual-checkbox">
-                                    <input type="checkbox" name="preferred_styles" value="{{ style_code }}" {% if
-                                        style_code in style_profile.preferred_styles %}checked{% endif %}>
-                                    <span class="visual-label">{{ style_name }}</span>
-                                </label>
-                                {% endfor %}
-                                <!-- Fallback manually if no context variable -->
-                                {% if not preferred_style_choices %}
-                                <label class="visual-checkbox"><input type="checkbox" name="preferred_styles"
-                                        value="casual" {% if 'casual' in style_profile.preferred_styles %}checked{%
-                                        endif %}><span class="visual-label">Casual</span></label>
-                                <label class="visual-checkbox"><input type="checkbox" name="preferred_styles"
-                                        value="chic" {% if 'chic' in style_profile.preferred_styles %}checked{% endif
-                                        %}><span class="visual-label">Chic</span></label>
-                                <label class="visual-checkbox"><input type="checkbox" name="preferred_styles"
-                                        value="boho" {% if 'boho' in style_profile.preferred_styles %}checked{% endif
-                                        %}><span class="visual-label">Boho</span></label>
-                                <label class="visual-checkbox"><input type="checkbox" name="preferred_styles"
-                                        value="formal" {% if 'formal' in style_profile.preferred_styles %}checked{%
-                                        endif %}><span class="visual-label">Formal</span></label>
-                                <label class="visual-checkbox"><input type="checkbox" name="preferred_styles"
-                                        value="streetwear" {% if 'streetwear' in style_profile.preferred_styles
-                                        %}checked{% endif %}><span class="visual-label">Streetwear</span></label>
+                                {% if preferred_style_choices %}
+                                    {% for style_code, style_name in preferred_style_choices %}
+                                    <label class="visual-checkbox">
+                                        <input type="checkbox" name="preferred_styles" value="{{ style_code }}" 
+                                        {% if style_profile and style_code in style_profile.preferred_styles %}checked{% endif %}>
+                                        <span class="visual-label">{{ style_name }}</span>
+                                    </label>
+                                    {% endfor %}
+                                {% else %}
+                                    <!-- Fallback Options -->
+                                    <label class="visual-checkbox">
+                                        <input type="checkbox" name="preferred_styles" value="casual" 
+                                        {% if style_profile and 'casual' in style_profile.preferred_styles %}checked{% endif %}>
+                                        <span class="visual-label">Casual</span>
+                                    </label>
+                                    <label class="visual-checkbox">
+                                        <input type="checkbox" name="preferred_styles" value="chic" 
+                                        {% if style_profile and 'chic' in style_profile.preferred_styles %}checked{% endif %}>
+                                        <span class="visual-label">Chic</span>
+                                    </label>
+                                    <label class="visual-checkbox">
+                                        <input type="checkbox" name="preferred_styles" value="boho" 
+                                        {% if style_profile and 'boho' in style_profile.preferred_styles %}checked{% endif %}>
+                                        <span class="visual-label">Boho</span>
+                                    </label>
+                                    <label class="visual-checkbox">
+                                        <input type="checkbox" name="preferred_styles" value="formal" 
+                                        {% if style_profile and 'formal' in style_profile.preferred_styles %}checked{% endif %}>
+                                        <span class="visual-label">Formal</span>
+                                    </label>
+                                    <label class="visual-checkbox">
+                                        <input type="checkbox" name="preferred_styles" value="streetwear" 
+                                        {% if style_profile and 'streetwear' in style_profile.preferred_styles %}checked{% endif %}>
+                                        <span class="visual-label">Streetwear</span>
+                                    </label>
                                 {% endif %}
                             </div>
                         </div>
@@ -562,16 +569,11 @@
                                 <label for="body_type" class="input-label">Body Type</label>
                                 <select name="body_type" id="body_type" class="form-control">
                                     <option value="">Select...</option>
-                                    <option value="rectangle" {% if style_profile.body_type=='rectangle' %}selected{%
-                                        endif %}>Rectangle</option>
-                                    <option value="triangle" {% if style_profile.body_type=='triangle' %}selected{%
-                                        endif %}>Triangle (Pear)</option>
-                                    <option value="inverted_triangle" {% if style_profile.body_type=='inverted_triangle'
-                                        %}selected{% endif %}>Inverted Triangle</option>
-                                    <option value="hourglass" {% if style_profile.body_type=='hourglass' %}selected{%
-                                        endif %}>Hourglass</option>
-                                    <option value="oval" {% if style_profile.body_type=='oval' %}selected{% endif %}>
-                                        Oval (Apple)</option>
+                                    <option value="rectangle" {% if style_profile.body_type == 'rectangle' %}selected{% endif %}>Rectangle</option>
+                                    <option value="triangle" {% if style_profile.body_type == 'triangle' %}selected{% endif %}>Triangle (Pear)</option>
+                                    <option value="inverted_triangle" {% if style_profile.body_type == 'inverted_triangle' %}selected{% endif %}>Inverted Triangle</option>
+                                    <option value="hourglass" {% if style_profile.body_type == 'hourglass' %}selected{% endif %}>Hourglass</option>
+                                    <option value="oval" {% if style_profile.body_type == 'oval' %}selected{% endif %}>Oval (Apple)</option>
                                 </select>
                             </div>
                             <div class="input-group">
@@ -583,22 +585,17 @@
 
                         {% if style_profile.ai_palette %}
                         <div class="input-group">
-                            <label class="input-label"
-                                style="display:flex; justify-content:space-between; align-items:center;">
+                            <label class="input-label" style="display:flex; justify-content:space-between; align-items:center;">
                                 AI Detected Palette
-                                <span
-                                    style="font-size:10px; background:#f5a623; color:black; padding:2px 6px; border-radius:4px; font-weight:bold;">AUTO</span>
+                                <span style="font-size:10px; background:#f5a623; color:black; padding:2px 6px; border-radius:4px; font-weight:bold;">AUTO</span>
                             </label>
-                            <span class="input-hint" style="margin-bottom: 8px;">Colors identified from your recent
-                                style analysis.</span>
+                            <span class="input-hint" style="margin-bottom: 8px;">Colors identified from your recent style analysis.</span>
 
-                            <div class="color-grid"
-                                style="margin-top: 8px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px dashed #eee;">
+                            <div class="color-grid" style="margin-top: 8px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px dashed #eee;">
                                 {% for color in style_profile.ai_palette %}
                                 <div class="color-option" title="{{ color.name }}">
                                     <!-- Display only, not editable directly here -->
-                                    <span class="color-swatch"
-                                        style="background-color: {{ color.hex }}; cursor: default; border-radius: 50%;"></span>
+                                    <span class="color-swatch" style="background-color: {{ color.hex }}; cursor: default; border-radius: 50%;"></span>
                                     <span class="color-label-text">{{ color.name|title }}</span>
                                 </div>
                                 {% endfor %}
@@ -609,28 +606,37 @@
                         <div class="input-group">
                             <label class="input-label">Favorite Colors</label>
                             <div class="color-grid" style="margin-top: 8px;">
-                                {% for color_hex, color_name in color_choices %}
-                                <label class="color-option" title="{{ color_name }}">
-                                    <input type="checkbox" name="favorite_colors" value="{{ color_hex }}" {% if
-                                        color_hex in style_profile.favorite_colors %}checked{% endif %}>
-                                    <span class="color-swatch" style="background-color: {{ color_hex }};"></span>
-                                    <span class="color-label-text">{{ color_name }}</span>
-                                </label>
-                                {% endfor %}
-                                <!-- Fallback manually if no context variable -->
-                                {% if not color_choices %}
-                                <label class="color-option"><input type="checkbox" name="favorite_colors"
-                                        value="#000000"><span class="color-swatch"
-                                        style="background:#000;"></span></label>
-                                <label class="color-option"><input type="checkbox" name="favorite_colors"
-                                        value="#FFFFFF"><span class="color-swatch"
-                                        style="background:#fff;"></span></label>
-                                <label class="color-option"><input type="checkbox" name="favorite_colors"
-                                        value="#FF0000"><span class="color-swatch"
-                                        style="background:red;"></span></label>
-                                <label class="color-option"><input type="checkbox" name="favorite_colors"
-                                        value="#0000FF"><span class="color-swatch"
-                                        style="background:blue;"></span></label>
+                                {% if color_choices %}
+                                    {% for color_hex, color_name in color_choices %}
+                                    <label class="color-option" title="{{ color_name }}">
+                                        <input type="checkbox" name="favorite_colors" value="{{ color_hex }}" 
+                                        {% if style_profile and color_hex in style_profile.favorite_colors %}checked{% endif %}>
+                                        <span class="color-swatch" style="background-color: {{ color_hex }};"></span>
+                                        <span class="color-label-text">{{ color_name }}</span>
+                                    </label>
+                                    {% endfor %}
+                                {% else %}
+                                    <!-- Fallback Options -->
+                                    <label class="color-option" title="Black">
+                                        <input type="checkbox" name="favorite_colors" value="#000000"
+                                        {% if style_profile and '#000000' in style_profile.favorite_colors %}checked{% endif %}>
+                                        <span class="color-swatch" style="background:#000;"></span>
+                                    </label>
+                                    <label class="color-option" title="White">
+                                        <input type="checkbox" name="favorite_colors" value="#FFFFFF"
+                                        {% if style_profile and '#FFFFFF' in style_profile.favorite_colors %}checked{% endif %}>
+                                        <span class="color-swatch" style="background:#fff;"></span>
+                                    </label>
+                                    <label class="color-option" title="Red">
+                                        <input type="checkbox" name="favorite_colors" value="#FF0000"
+                                        {% if style_profile and '#FF0000' in style_profile.favorite_colors %}checked{% endif %}>
+                                        <span class="color-swatch" style="background:red;"></span>
+                                    </label>
+                                    <label class="color-option" title="Blue">
+                                        <input type="checkbox" name="favorite_colors" value="#0000FF"
+                                        {% if style_profile and '#0000FF' in style_profile.favorite_colors %}checked{% endif %}>
+                                        <span class="color-swatch" style="background:blue;"></span>
+                                    </label>
                                 {% endif %}
                             </div>
                         </div>
@@ -653,8 +659,7 @@
                     </div>
                     <div class="info-row">
                         <span class="info-label">Verification</span>
-                        <span class="info-value"
-                            style="color: {% if user.is_verified %}#2e7d32{% else %}#c62828{% endif %};">
+                        <span class="info-value" style="color: {% if user.is_verified %}#2e7d32{% else %}#c62828{% endif %};">
                             {% if user.is_verified %}Verified{% else %}Unverified{% endif %}
                         </span>
                     </div>
@@ -679,8 +684,7 @@
                 {% else %}
                 <div class="sidebar-card premium-zone">
                     <h3 class="section-title" style="font-size: 16px; color: #2e7d32;">Upgrade</h3>
-                    <p style="font-size: 13px; color: #666; margin-bottom: 16px;">Unlock unlimited outfits and AI
-                        features.</p>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 16px;">Unlock unlimited outfits and AI features.</p>
                     <a href="{% url 'upgrade_account' %}" class="btn btn-primary btn-full">Go Premium</a>
                 </div>
                 {% endif %}
