@@ -8,184 +8,388 @@
 <link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 <style>
-.filter-section {
-    background: #fafafa;
-    padding: 24px;
-    border-radius: 8px;
-    margin-bottom: 24px;
-}
-.filter-group {
-    margin-bottom: 20px;
-}
-.filter-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    gap: 20px;
-}
-.filter-header h4 {
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    color: #2c2c2c;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin: 0;
-}
-.selected-counter {
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    color: #757575;
-    white-space: nowrap;
-}
-.filter-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-.filter-chip {
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    padding: 6px 12px;
-    border-radius: 16px;
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.filter-chip:hover {
-    border-color: #2c2c2c;
-}
-.filter-chip.active {
-    background: #2c2c2c;
-    color: #ffffff;
-    border-color: #2c2c2c;
-}
-.item-selector-mini {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 8px;
-    max-height: 300px;
-    overflow-y: auto;
-    padding: 8px;
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-}
-.mini-item {
-    cursor: pointer;
-    border: 2px solid transparent;
-    border-radius: 4px;
-    overflow: hidden;
-    transition: all 0.2s;
-    position: relative;
-}
-.mini-item:hover {
-    transform: scale(1.05);
-    border-color: #2c2c2c;
-}
-.mini-item.selected {
-    border-color: #2c2c2c;
-    background: #f0f0f0;
-}
-.mini-item.selected::after {
-    content: "✓";
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    background: #2c2c2c;
-    color: white;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: bold;
-}
-.mini-item img {
-    width: 100%;
-    height: 80px;
-    object-fit: cover;
-    display: block;
-}
-.filter-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid #e0e0e0;
-}
-.search-navigation {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    justify-content: flex-start;
-    margin-right: auto;
-}
-.nav-btn {
-    padding: 8px 16px;
-    border: 1px solid #e0e0e0;
-    background: #ffffff;
-    border-radius: 4px;
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    color: #2c2c2c;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-}
-.nav-btn:hover {
-    background: #f5f5f5;
-    border-color: #2c2c2c;
-}
-.nav-btn.active {
-    background: #2c2c2c;
-    color: #ffffff;
-    border-color: #2c2c2c;
-}
+    /* Wardrobe-like style variables */
+    :root {
+        --bg-body: #f9f9f9;
+        --bg-card: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #6b7280;
+        --primary: #2c2c2c;
+        --primary-hover: #000000;
+        --border-color: #e5e7eb;
+        --radius: 8px;
+        --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    }
 
-.no-items-message {
-    text-align: center;
-    color: #757575;
-    font-style: italic;
-    padding: 20px;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    grid-column: 1 / -1;
-}
+    .wardrobe-wrapper {
+        background-color: var(--bg-body);
+        min-height: 100vh;
+        padding-bottom: 60px;
+    }
+
+    .wardrobe-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 40px 24px;
+    }
+
+    .wardrobe-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 40px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
+    }
+
+    .header-content h1 {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 2.25rem;
+        color: var(--text-main);
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.1;
+    }
+
+    .stats-pill {
+        display: inline-block;
+        margin-top: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        background: #eef0f2;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+
+    .wardrobe-layout {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 40px;
+        align-items: start;
+    }
+
+    .filter-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        padding: 24px;
+        position: sticky;
+        top: 24px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .filter-group {
+        margin-bottom: 24px;
+    }
+
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .filter-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .search-box { position: relative; }
+    .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+    .search-input {
+        width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--border-color);
+        border-radius: var(--radius); font-size: 0.9rem; transition: all 0.2s;
+    }
+    .search-input:focus {
+        outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    }
+
+    .styled-select {
+        width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius);
+        background-color: #fff; font-size: 0.9rem; color: var(--text-main); cursor: pointer;
+    }
+
+    .radio-label {
+        display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--text-main);
+        cursor: pointer; padding: 6px 8px; border-radius: 6px; transition: background 0.15s;
+    }
+    .radio-label:hover { background: #f3f4f6; }
+    .radio-label input { accent-color: var(--primary); width: 16px; height: 16px; }
+
+    .btn-reset {
+        display: block; width: 100%; text-align: center; padding: 10px; font-size: 0.85rem;
+        font-weight: 600; color: var(--text-muted); border: 1px dashed var(--border-color);
+        border-radius: var(--radius); margin-top: 20px; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-reset:hover { color: #ef4444; border-color: #ef4444; background: #fef2f2; }
+
+    .wardrobe-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 24px;
+    }
+
+    .filter-section {
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        margin-bottom: 0;
+    }
+
+    .filter-header {
+        display: none;
+    }
+
+    .filter-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .filter-chip {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .filter-chip:hover {
+        border-color: #2c2c2c;
+    }
+
+    .filter-chip.active {
+        background: #2c2c2c;
+        color: #ffffff;
+        border-color: #2c2c2c;
+    }
+
+    .item-selector-mini {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 8px;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+    }
+
+    .mini-item {
+        cursor: pointer;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        overflow: hidden;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+    .mini-item:hover {
+        transform: scale(1.05);
+        border-color: #2c2c2c;
+    }
+
+    .mini-item.selected {
+        border-color: #2c2c2c;
+        background: #f0f0f0;
+    }
+
+    .mini-item.selected::after {
+        content: "✓";
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: #2c2c2c;
+        color: white;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: bold;
+    }
+
+    .mini-item img {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .input-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .no-items-message {
+        text-align: center;
+        color: #757575;
+        font-style: italic;
+        padding: 20px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        grid-column: 1 / -1;
+    }
+
+    /* Wardrobe Item Card Styling */
+    .wardrobe-item {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+    }
+
+    .wardrobe-item:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .item-image-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 133%;
+        background-color: #f3f4f6;
+        overflow: hidden;
+    }
+
+    .item-image-wrapper img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+
+    .wardrobe-item:hover .item-image-wrapper img {
+        transform: scale(1.05);
+    }
+
+    .fav-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .card-content {
+        padding: 16px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .item-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+        line-height: 1.2;
+    }
+
+    .item-subtitle {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .card-actions {
+        display: flex;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .card-actions form {
+        flex: 1;
+        border-right: 1px solid var(--border-color);
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 12px;
+        background: none;
+        border: none;
+        border-left: 1px solid var(--border-color);
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        font-size: 0;
+    }
+
+    .card-actions form .action-btn {
+        border-left: none;
+    }
+
+    .action-btn:hover {
+        background: #f9f9f9;
+        color: var(--text-main);
+    }
+
+    .action-btn svg {
+        display: inline;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
-        <div style="flex: 1;">
-            <h1 class="page-title">Advanced Outfit Search</h1>
-            <p class="page-subtitle">Find outfits using advanced filters</p>
-            
-            <!-- Search Navigation -->
-            <div class="search-navigation" style="margin-top: 16px; margin-bottom: 0;">
-                <a href="{% url 'outfits:outfit_gallery' %}" class="nav-btn">Basic Search</a>
+<div class="wardrobe-wrapper">
+    <div class="wardrobe-container">
+        
+        <!-- Header -->
+        <div class="wardrobe-header">
+            <div class="header-content">
+                <h1>Advanced Search</h1>
+                <span class="stats-pill">Find outfits with detailed filters</span>
             </div>
+            <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">Back to Gallery</a>
         </div>
-        <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">Back to Gallery</a>
-    </div>
-</div>
 
-<!-- Advanced Search Form -->
-<div class="filter-section">
+        <!-- Two-column layout -->
+        <div class="wardrobe-layout">
+            <!-- Sidebar Filters -->
+            <div class="filter-card">
     <form method="get" action="{% url 'outfits:outfit_advanced_search' %}" id="advancedSearchForm">
         
         <!-- Must Contain Items -->
         <div class="filter-group">
-            <div class="filter-header">
-                <h4>Must Contain Items</h4>
-                <div class="selected-counter">
-                    <span id="containsCounter">0</span> items selected
-                </div>
-            </div>
+            <span class="filter-title">Must Contain Items</span>
             <div class="item-selector-mini" id="containsItemsGrid">
                 {% for item in wardrobe_items %}
                 <div class="mini-item {% if item.id|stringformat:'s' in filter_params.contains %}selected{% endif %}" 
@@ -203,12 +407,7 @@
 
         <!-- Must Not Contain Items -->
         <div class="filter-group">
-            <div class="filter-header">
-                <h4>Must Not Contain Items</h4>
-                <div class="selected-counter">
-                    <span id="excludesCounter">0</span> items selected
-                </div>
-            </div>
+            <span class="filter-title">Must Not Contain Items</span>
             <div class="item-selector-mini" id="excludesItemsGrid">
                 {% for item in wardrobe_items %}
                 <div class="mini-item {% if item.id|stringformat:'s' in filter_params.excludes %}selected{% endif %}" 
@@ -226,7 +425,7 @@
 
         <!-- Color Palette -->
         <div class="filter-group">
-            <h4>Color Palette</h4>
+            <span class="filter-title">Color Palette</span>
             <input type="text" name="colors" value="{{ filter_params.colors }}" 
                    placeholder="Enter colors (comma separated)" class="input-control"
                    onchange="submitForm()">
@@ -234,7 +433,7 @@
 
         <!-- Categories -->
         <div class="filter-group">
-            <h4>Item Categories</h4>
+            <span class="filter-title">Item Categories</span>
             <div class="filter-options">
                 {% for category in available_categories %}
                 <label class="filter-chip {% if category in filter_params.categories %}active{% endif %}">
@@ -249,7 +448,7 @@
 
         <!-- Last Worn -->
         <div class="filter-group">
-            <h4>Last Worn</h4>
+            <span class="filter-title">Last Worn</span>
             <div class="filter-options">
                 {% for value, label in last_worn_choices %}
                 <label class="filter-chip {% if filter_params.last_worn == value %}active{% endif %}">
@@ -264,7 +463,7 @@
 
         <!-- Wear Count -->
         <div class="filter-group">
-            <h4>Wear Frequency</h4>
+            <span class="filter-title">Wear Frequency</span>
             <div class="filter-options">
                 <label class="filter-chip {% if filter_params.wear_count == 'most_worn' %}active{% endif %}">
                     <input type="radio" name="wear_count" value="most_worn" 
@@ -289,8 +488,8 @@
 
         <!-- Occasion -->
         <div class="filter-group">
-            <h4>Occasion</h4>
-            <select name="occasion" class="input-control" onchange="submitForm()">
+            <span class="filter-title">Occasion</span>
+            <select name="occasion" class="styled-select" onchange="submitForm()">
                 <option value="">All Occasions</option>
                 {% for value, label in occasions %}
                 <option value="{{ value }}" {% if filter_params.occasion == value %}selected{% endif %}>{{ label }}</option>
@@ -300,107 +499,106 @@
 
         <!-- Favorites -->
         <div class="filter-group">
-            <label style="display: flex; align-items: center; gap: 8px;">
+            <label class="radio-label">
                 <input type="checkbox" name="favorites" value="true" 
                        {% if filter_params.favorites %}checked{% endif %} onchange="submitForm()">
-                <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">
-                    ★ Favorites Only
-                </span>
+                <span>★ Favorites Only</span>
             </label>
         </div>
 
         <!-- Action Buttons -->
-        <div class="filter-actions">
-            <button type="submit" class="btn btn-primary">Apply Filters</button>
-            <a href="{% url 'outfits:outfit_advanced_search' %}" class="btn btn-secondary">Reset All</a>
-            <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">Back to Gallery</a>
-        </div>
-    </form>
-</div>
+        {% if filter_params.contains or filter_params.excludes or filter_params.colors or filter_params.categories or filter_params.last_worn or filter_params.wear_count or filter_params.occasion or filter_params.favorites %}
+        <a href="{% url 'outfits:outfit_advanced_search' %}" class="btn-reset">Clear All Filters</a>
+        {% endif %}
+        </form>
+            </div>
 
-<!-- Results -->
-<div class="content-section">
-    {% if outfits %}
-    <h3 style="font-family: 'Inter', sans-serif; font-size: 16px; color: #2c2c2c; margin-bottom: 16px;">
-        Found {{ outfits.paginator.count }} outfit{{ outfits.paginator.count|pluralize }}
-    </h3>
-    
-    <div class="wardrobe-grid">
-        {% for outfit in outfits %}
-        <div class="wardrobe-item">
-            <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="item-link">
-                <div class="item-image">
-                    {% if outfit.outfit_image %}
-                    <img src="{{ outfit.outfit_image.url }}" alt="{{ outfit.name }}">
-                    {% else %}
-                    {% with outfit.items.first as first_item %}
-                        {% if first_item %}
-                        <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}">
-                        {% else %}
-                        <div class="item-placeholder">👔 Outfit</div>
+            <!-- Main Content -->
+            <div>
+                <!-- Results -->
+                {% if outfits %}
+                <h3 style="font-family: 'Inter', sans-serif; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: var(--text-muted); margin-bottom: 16px;">
+                    Found {{ outfits.paginator.count }} outfit{{ outfits.paginator.count|pluralize }}
+                </h3>
+                
+                <div class="wardrobe-grid">
+                    {% for outfit in outfits %}
+                    <article class="wardrobe-item">
+                        <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="item-link">
+                            <div class="item-image-wrapper">
+                                {% if outfit.outfit_image %}
+                                <img src="{{ outfit.outfit_image.url }}" alt="{{ outfit.name }}">
+                                {% else %}
+                                {% with outfit.items.first as first_item %}
+                                    {% if first_item %}
+                                    <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}">
+                                    {% else %}
+                                    <div class="item-placeholder">👔 Outfit</div>
+                                    {% endif %}
+                                {% endwith %}
+                                {% endif %}
+                            </div>
+                        </a>
+                        {% if outfit.favorite %}
+                        <div class="fav-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color: #ef4444;">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        </div>
                         {% endif %}
-                    {% endwith %}
+                        <div class="card-content">
+                            <h3 class="item-title">{{ outfit.name }}</h3>
+                            <p class="item-subtitle">{{ outfit.get_occasion_display }} • {{ outfit.items.count }} items</p>
+                        </div>
+                        <div class="card-actions">
+                            <form method="post" action="{% url 'outfits:outfit_toggle_favorite' outfit.id %}" style="flex: 1; border-right: 1px solid var(--border-color);">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn" title="{% if outfit.favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">
+                                    {% if outfit.favorite %}
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color: #ef4444;">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                    {% else %}
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                    {% endif %}
+                                </button>
+                            </form>
+                            <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="action-btn" title="View Details">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 6l6 6m0 0l6 6m-6-6l-6 6m6-6l6-6"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if outfits.has_other_pages %}
+                <div class="pagination" style="margin-top: 32px; display: flex; justify-content: center; align-items: center; gap: 16px;">
+                    {% if outfits.has_previous %}
+                    <a href="?page={{ outfits.previous_page_number }}{% for key, value in filter_params.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-secondary">← Previous</a>
+                    {% endif %}
+                    
+                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text-muted);">
+                        Page {{ outfits.number }} of {{ outfits.paginator.num_pages }}
+                    </span>
+                    
+                    {% if outfits.has_next %}
+                    <a href="?page={{ outfits.next_page_number }}{% for key, value in filter_params.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-secondary">Next →</a>
                     {% endif %}
                 </div>
-                <div class="item-info">
-                    <h3 class="item-name">{{ outfit.name }}</h3>
-                    <p class="item-category">{{ outfit.get_occasion_display }}</p>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                        <span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575;">
-                            {{ outfit.items.count }} items • {{ outfit.times_worn }} wears
-                        </span>
-                        {% if outfit.favorite %}
-                        <span style="color: #2c2c2c; font-size: 16px;">★</span>
-                        {% endif %}
-                    </div>
+                {% endif %}
+                {% else %}
+                <div class="no-items-message">
+                    No outfits found matching your criteria. Try adjusting your filters.
                 </div>
-            </a>
-            <div class="item-actions">
-                <form method="post" action="{% url 'outfits:outfit_toggle_favorite' outfit.id %}" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-icon"
-                        title="{% if outfit.favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">
-                        {% if outfit.favorite %}★ Favorite{% else %}☆ Favorite{% endif %}
-                    </button>
-                </form>
-                <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn-icon" title="View">View Details →</a>
+                {% endif %}
             </div>
         </div>
-        {% endfor %}
     </div>
-
-    <!-- Pagination -->
-    {% if outfits.has_other_pages %}
-    <div class="pagination">
-        {% if outfits.has_previous %}
-        <a href="?page={{ outfits.previous_page_number }}{% for key, value in filter_params.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-secondary">← Previous</a>
-        {% endif %}
-        
-        <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575;">
-            Page {{ outfits.number }} of {{ outfits.paginator.num_pages }}
-        </span>
-        
-        {% if outfits.has_next %}
-        <a href="?page={{ outfits.next_page_number }}{% for key, value in filter_params.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-secondary">Next →</a>
-        {% endif %}
-    </div>
-    {% endif %}
-
-    {% else %}
-    <div class="empty-state">
-        <div style="font-size: 64px; margin-bottom: 24px; opacity: 0.3;">🔍</div>
-        <h3 style="font-family: 'Istok Web', sans-serif; font-size: 24px; font-weight: 400; color: #2c2c2c; margin: 0 0 12px 0;">
-            No outfits found
-        </h3>
-        <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin: 0 0 32px 0;">
-            Try adjusting your search filters to find more outfits.
-        </p>
-        <div style="display: flex; gap: 12px; justify-content: center;">
-            <a href="{% url 'outfits:outfit_advanced_search' %}" class="btn btn-secondary">Reset Filters</a>
-            <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-primary">Back to Gallery</a>
-        </div>
-    </div>
-    {% endif %}
 </div>
 
 <script>
@@ -495,8 +693,7 @@ function updateExcludesVisual() {
 }
 
 function updateCounters() {
-    document.getElementById('containsCounter').textContent = containsItems.length;
-    document.getElementById('excludesCounter').textContent = excludesItems.length;
+    // Counter display removed - no longer needed with wardrobe-style layout
 }
 
 function submitForm() {

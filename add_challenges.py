@@ -13,6 +13,11 @@ from users.models import User
 today = timezone.now().date()
 creator = User.objects.filter(is_staff=True).first() or User.objects.first()
 
+# Delete old challenges
+print("Deleting old challenges...")
+StyleChallenge.objects.all().delete()
+print("✓ Cleared\n")
+
 daily_challenges = [
     {'name': 'Monochrome Monday', 'description': 'Create an outfit using only one color palette', 'challenge_type': 'daily', 'duration_days': 1},
     {'name': 'Thrift Tuesday', 'description': 'Style an outfit featuring thrifted pieces', 'challenge_type': 'daily', 'duration_days': 1},
@@ -36,10 +41,9 @@ for data in daily_challenges:
     data['end_date'] = today
     data['created_by'] = creator
     data['is_public'] = True
-    ch, created = StyleChallenge.objects.get_or_create(name=data['name'], defaults=data)
-    if created:
-        count += 1
-        print(f'  ✓ {data["name"]}')
+    ch = StyleChallenge.objects.create(**data)
+    count += 1
+    print(f'  ✓ {data["name"]}')
 
 print("\nCreating Weekly Challenges:")
 for data in weekly_challenges:
@@ -47,9 +51,8 @@ for data in weekly_challenges:
     data['end_date'] = today + timedelta(days=6)
     data['created_by'] = creator
     data['is_public'] = True
-    ch, created = StyleChallenge.objects.get_or_create(name=data['name'], defaults=data)
-    if created:
-        count += 1
-        print(f'  ✓ {data["name"]}')
+    ch = StyleChallenge.objects.create(**data)
+    count += 1
+    print(f'  ✓ {data["name"]}')
 
 print(f'\nTotal challenges created: {count}')

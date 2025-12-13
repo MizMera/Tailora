@@ -24,38 +24,46 @@
         margin-top: 24px;
     }
 
-    /* 3. CARD STYLING */
+    /* 3. CARD STYLING (match wardrobe cards) */
     .wardrobe-item {
-        background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 0; /* Squared corners */
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
         overflow: hidden;
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         display: flex;
         flex-direction: column;
+        box-shadow: var(--shadow-sm);
     }
 
     .wardrobe-item:hover {
         transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        border-color: #d1d5db;
     }
 
     /* 4. IMAGE ASPECT RATIO FIX (3:4) */
-    .item-image {
+    .item-image-wrapper {
         position: relative;
         width: 100%;
-        padding-top: 133%; /* Creates standard fashion aspect ratio */
-        background: #f5f5f5;
+        padding-top: 133%; /* 3:4 fashion aspect ratio */
+        background: #f3f4f6;
         overflow: hidden;
+        transition: transform 0.5s ease;
     }
 
-    .item-image img {
+    .item-image-wrapper img {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .wardrobe-item:hover .item-image-wrapper img {
+        transform: scale(1.05);
     }
 
     .item-placeholder {
@@ -72,111 +80,290 @@
     }
 
     /* Info & Action styling */
-    .item-info {
+    .card-content {
         padding: 16px;
-        flex: 1;
+        flex-grow: 1;
+        border-bottom: 1px solid var(--border-color);
     }
 
-    .item-name {
-        font-family: 'Inter', sans-serif;
-        font-size: 16px;
+    .item-title {
+        font-size: 1rem;
         font-weight: 600;
-        color: #252320;
+        color: var(--text-main);
         margin: 0 0 4px 0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .item-category {
-        font-size: 13px;
-        color: #757575;
+    .item-subtitle {
+        font-size: 0.8rem;
+        color: var(--text-muted);
         margin: 0;
     }
 
-    .item-actions {
-        padding: 12px;
-        border-top: 1px solid #f0f0f0;
+    /* Favorite Icon Overlay */
+    .fav-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
         display: flex;
-        justify-content: space-between;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent, #d97706);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        z-index: 2;
+        backdrop-filter: blur(4px);
+    }
+
+    /* Actions Footer */
+    .card-actions {
+        display: flex;
         background: #fafafa;
     }
 
-    .btn-icon {
-        background: none;
+    .action-btn {
+        flex: 1;
         border: none;
+        background: transparent;
+        padding: 12px;
+        color: var(--text-muted);
         cursor: pointer;
-        color: #555;
-        font-size: 14px;
+        transition: all 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         text-decoration: none;
     }
 
-    .btn-icon:hover {
-        color: #000;
+    .action-btn:hover {
+        background: white;
+        color: var(--primary);
     }
+
+    .action-btn.btn-fav.active {
+        color: var(--accent, #d97706);
+    }
+
+    .card-actions form {
+        flex: 1;
+        display: flex;
+        border-right: 1px solid var(--border-color);
+    }
+
+    .card-actions a {
+        flex: 1;
+        border-left: 1px solid var(--border-color);
+    }
+
+    .item-actions {
+        padding: 0;
+        border-top: none;
+        display: flex;
+        background: #fafafa;
+    }
+
+    .item-actions form {
+        flex: 1;
+        display: flex;
+        border-right: 1px solid var(--border-color);
+    }
+
+    .item-actions a {
+        flex: 1;
+        border-left: 1px solid var(--border-color);
+    }
+
+    .item-actions > *:last-child {
+        border-right: none;
+    }
+
+    .btn-icon {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--text-muted);
+        font-size: 14px;
+        text-decoration: none;
+        padding: 12px;
+        transition: all 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex: 1;
+        white-space: nowrap;
+    }
+
+    .btn-icon:hover {
+        background: white;
+        color: var(--primary);
+    }
+    /* Wardrobe-like style variables and layout */
+    :root {
+        --bg-body: #f9f9f9;
+        --bg-card: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #6b7280;
+        --primary: #2c2c2c;
+        --primary-hover: #000000;
+        --border-color: #e5e7eb;
+        --radius: 8px;
+        --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .wardrobe-wrapper {
+        background-color: var(--bg-body);
+        min-height: 100vh;
+    }
+    .wardrobe-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 32px 24px;
+    }
+    .wardrobe-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 16px;
+        background: transparent;
+    }
+    .wardrobe-header .header-content h1 { 
+        font-family: 'Istok Web', sans-serif; 
+        font-size: 28px; 
+        margin: 0; 
+        color: var(--text-main);
+    }
+    .stats-pill {
+        display: inline-block;
+        margin-top: 6px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: var(--text-muted);
+        background: #eef0f2;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+    .wardrobe-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+    .filter-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        padding: 24px;
+        position: sticky;
+        top: 24px;
+        box-shadow: var(--shadow-sm);
+    }
+    .filter-group { margin-bottom: 24px; }
+    .filter-group:last-child { margin-bottom: 0; }
+    .filter-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+        display: block;
+    }
+    .search-box { position: relative; }
+    .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+    .search-input {
+        width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--border-color);
+        border-radius: var(--radius); font-size: 0.9rem; transition: all 0.2s;
+    }
+    .search-input:focus {
+        outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    }
+    .styled-select {
+        width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius);
+        background-color: #fff; font-size: 0.9rem; color: var(--text-main); cursor: pointer;
+    }
+    .radio-label {
+        display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--text-main);
+        cursor: pointer; padding: 6px 8px; border-radius: 6px; transition: background 0.15s;
+    }
+    .radio-label:hover { background: #f3f4f6; }
+    .radio-label input { accent-color: var(--primary); width: 16px; height: 16px; }
+
+    .btn-reset {
+        display: block; width: 100%; text-align: center; padding: 10px; font-size: 0.85rem;
+        font-weight: 600; color: var(--text-muted); border: 1px dashed var(--border-color);
+        border-radius: var(--radius); margin-top: 20px; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-reset:hover { color: #ef4444; border-color: #ef4444; background: #fef2f2; }
+
+    /* Fix buttons overlay near banner */
+    .banner-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .banner-actions .btn { border-radius: 8px; padding: 8px 12px; }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- Main Wrapper -->
-<div class="outfit-container-wrapper">
-
-    <!-- Page Header -->
-    <div class="page-header" style="margin-bottom: 32px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-            <div>
-                <h1 class="page-title" style="margin: 0 0 8px 0;">My Outfits</h1>
-                <p class="page-subtitle" style="margin: 0; color: #757575;">
-                    {{ total_outfits }} outfit{{ total_outfits|pluralize }} • {{ favorite_count }} favorite{{ favorite_count|pluralize }}
-                </p>
+<!-- Main Wrapper (Wardrobe-like) -->
+<div class="wardrobe-wrapper">
+    <div class="wardrobe-container">
+        <!-- Header -->
+        <div class="wardrobe-header">
+            <div class="header-content">
+                <h1>My Outfits</h1>
+                <span class="stats-pill">{{ total_outfits }} outfits • {{ favorite_count }} favorites</span>
             </div>
-            <div style="display: flex; gap: 12px;">
-                <a href="{% url 'outfits:outfit_advanced_search' %}" class="btn btn-secondary" style="border-radius: 0;">Advanced Search</a>
-                <a href="{% url 'outfits:outfit_stats' %}" class="btn btn-secondary" style="border-radius: 0;">Statistics</a>
-                <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary" style="border-radius: 0;">Create Outfit</a>
+            <div style="display:flex; gap:12px;">
+                <a href="{% url 'outfits:outfit_advanced_search' %}" class="btn btn-secondary">Advanced Search</a>
+                <a href="{% url 'outfits:outfit_stats' %}" class="btn btn-secondary">Statistics</a>
+                <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">Create Outfit</a>
             </div>
         </div>
-    </div>
 
-    <!-- Messages -->
-    {% if messages %}
-    <div style="margin-bottom: 24px;">
-        {% for message in messages %}
-        <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}"
-            style="padding: 12px 16px; margin-bottom: 8px; border-radius: 0; border: 1px solid transparent; 
-                   {% if message.tags == 'error' %}background:#fde8e8; color:#9b1c1c; border-color:#f8b4b4;{% else %}background:#def7ec; color:#03543f; border-color:#84e1bc;{% endif %}">
-            {{ message }}
+        <!-- Messages -->
+        {% if messages %}
+        <div style="margin-bottom: 24px;">
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}"
+                style="padding: 12px 16px; margin-bottom: 8px; border-radius: 0; border: 1px solid transparent; 
+                       {% if message.tags == 'error' %}background:#fde8e8; color:#9b1c1c; border-color:#f8b4b4;{% else %}background:#def7ec; color:#03543f; border-color:#84e1bc;{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+        {% endif %}
 
-    <!-- Filter Section -->
-    <div class="filter-section" style="background: #fff; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0; margin-bottom: 32px;">
-        <form method="get" action="{% url 'outfits:outfit_gallery' %}" id="outfit-filter-form">
+        <!-- Two-column layout -->
+        <div class="wardrobe-layout">
+            <!-- Sidebar Filters (sticky) -->
+            <div class="filter-card">
+                <form method="get" action="{% url 'outfits:outfit_gallery' %}" id="outfit-filter-form">
             <!-- Search Bar -->
-            <div style="display: flex; gap: 16px; margin-bottom: 20px;">
-                <div style="flex: 1; position: relative;">
-                    <input type="text" name="search" id="outfit-search" value="{{ search_query }}"
-                        placeholder="Search by name, description, tags..." class="input-control"
-                        style="width: 100%; padding: 10px; padding-right: 40px; border: 1px solid #ddd; border-radius: 0;" autocomplete="off">
-                    <div id="search-spinner" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#757575" style="animation: spin 1s linear infinite;">
-                            <circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="32" stroke-dashoffset="32" />
-                        </svg>
+                <div class="filter-group">
+                    <label class="filter-title">Search</label>
+                    <div class="search-box">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af"><circle cx="11" cy="11" r="8" stroke-width="2"></circle><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2"></line></svg>
+                        <input class="search-input" type="text" name="search" id="outfit-search" value="{{ search_query }}" placeholder="Search outfits..." autocomplete="off">
+                        <div id="search-spinner" style="display:none; position:absolute; right:12px; top:50%; transform:translateY(-50%);">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#757575" style="animation: spin 1s linear infinite;">
+                                <circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="32" stroke-dashoffset="32" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="border-radius: 0;">Search</button>
-            </div>
 
             <!-- Filter Grid -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div class="filter-group">
                 <!-- Occasion Filter -->
-                <div class="input-field">
-                    <label for="occasion" class="input-label" style="display:block; margin-bottom:8px; font-size:12px; font-weight:600; color:#555;">OCCASION</label>
-                    <select name="occasion" id="occasion" class="input-control" onchange="this.form.submit()"
-                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 0;">
+                    <label for="occasion" class="filter-title">Occasion</label>
+                    <select name="occasion" id="occasion" class="styled-select" onchange="this.form.submit()">
                         <option value="">All occasions</option>
                         {% for value, label in occasions %}
                         <option value="{{ value }}" {% if selected_occasion == value %}selected{% endif %}>{{ label }}</option>
@@ -185,31 +372,31 @@
                 </div>
 
                 <!-- Favorites Filter -->
-                <div class="input-field" style="display: flex; align-items: end;">
-                    <label class="checkbox-item-inline"
-                        style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding-bottom: 10px;">
-                        <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %}
-                            onchange="this.form.submit()">
-                        <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; text-transform: uppercase; letter-spacing: 0.5px;">★ Favorites only</span>
+                <div class="filter-group">
+                    <label class="filter-title">Favorites</label>
+                    <label class="radio-label">
+                        <input type="checkbox" name="favorites" value="true" {% if show_favorites %}checked{% endif %} onchange="this.form.submit()">
+                        <span>★ Only favorites</span>
                     </label>
                 </div>
-            </div>
 
             <!-- Action Buttons -->
-            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
-                <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary" style="border-radius: 0;">Reset Filters</a>
+                {% if search_query or selected_occasion or show_favorites %}
+                <a href="{% url 'outfits:outfit_gallery' %}" class="btn-reset">Clear All Filters</a>
+                {% endif %}
+                </form>
             </div>
-        </form>
-    </div>
 
-    <!-- Challenge Banners -->
-    {% if daily_challenge or weekly_challenge %}
-    <div style="margin-bottom: 48px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h2 style="font-family: 'Istok Web', sans-serif; font-size: 20px; font-weight: 600; margin: 0; color: #2c2c2c;">Challenges</h2>
-            <a href="{% url 'outfits:challenges_list' %}" class="btn btn-secondary" style="border-radius: 8px; padding: 8px 12px;">View All Challenges</a>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+            <!-- Main content column -->
+            <div>
+                <!-- Challenge Banners -->
+                {% if daily_challenge or weekly_challenge %}
+                <div style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h2 style="font-family: 'Istok Web', sans-serif; font-size: 20px; font-weight: 600; margin: 0; color: #2c2c2c;">Challenges</h2>
+                        <a href="{% url 'outfits:challenges_list' %}" class="btn btn-secondary" style="border-radius: 8px; padding: 8px 12px;">View All Challenges</a>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
             
             <!-- Daily Challenge -->
             {% if daily_challenge %}
@@ -283,57 +470,60 @@
             </div>
             {% endif %}
             
-        </div>
-    </div>
-    {% endif %}
+                    </div>
+                </div>
+                {% endif %}
 
-    <!-- Outfits Grid -->
-    <div class="content-section">
-        {% if outfits %}
-        <div class="wardrobe-grid">
+                <!-- Outfits Grid -->
+                <div class="content-section">
+                    {% if outfits %}
+                    <div class="wardrobe-grid">
             {% for outfit in outfits %}
-            <div class="wardrobe-item">
-                <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="item-link" style="text-decoration: none; color: inherit;">
-                    <div class="item-image">
+            <article class="wardrobe-item">
+                <a href="{% url 'outfits:outfit_detail' outfit.id %}" style="text-decoration: none; color: inherit; display: contents;">
+                    
+                    <div class="item-image-wrapper">
                         {% if outfit.outfit_image %}
                         <img src="{{ outfit.outfit_image.url }}" alt="{{ outfit.name }}">
                         {% else %}
-                        <!-- Placeholder: show first item or text -->
                         {% with outfit.items.first as first_item %}
                         {% if first_item and first_item.image %}
                         <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}">
                         {% else %}
-                        <div class="item-placeholder">No Image</div>
+                        <div class="item-placeholder" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999;">No Image</div>
                         {% endif %}
                         {% endwith %}
                         {% endif %}
+                        
+                        <!-- Favorite Icon Overlay -->
+                        {% if outfit.favorite %}
+                        <div class="fav-icon" title="Favorite">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        </div>
+                        {% endif %}
                     </div>
 
-                    <div class="item-info">
-                        <h3 class="item-name">{{ outfit.name }}</h3>
-                        <p class="item-category">{{ outfit.get_occasion_display }}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                            <span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase;">
-                                {{ outfit.items.count }} item{{ outfit.items.count|pluralize }}
-                            </span>
-                            {% if outfit.favorite %}
-                            <span style="color: #ffc107; font-size: 16px;">★</span>
-                            {% endif %}
-                        </div>
+                    <div class="card-content">
+                        <h3 class="item-title">{{ outfit.name }}</h3>
+                        <p class="item-subtitle">{{ outfit.get_occasion_display }} • {{ outfit.items.count }} item{{ outfit.items.count|pluralize }}</p>
                     </div>
                 </a>
 
-                <div class="item-actions">
-                    <form method="post" action="{% url 'outfits:outfit_toggle_favorite' outfit.id %}" style="display: inline;">
+                <!-- Card Actions -->
+                <div class="card-actions">
+                    <form method="post" action="{% url 'outfits:outfit_toggle_favorite' outfit.id %}" style="flex: 1; display: flex;">
                         {% csrf_token %}
-                        <button type="submit" class="btn-icon"
-                            title="{% if outfit.favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">
-                            {% if outfit.favorite %}★ Favorite{% else %}☆ Favorite{% endif %}
+                        <button type="submit" class="action-btn btn-fav {% if outfit.favorite %}active{% endif %}" title="Toggle Favorite">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="{% if outfit.favorite %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
                         </button>
                     </form>
-                    <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn-icon" title="View">View Details →</a>
+                    <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="action-btn" title="View Details">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    </a>
                 </div>
-            </div>
+            </article>
             {% endfor %}
         </div>
 
@@ -379,8 +569,29 @@
             {% else %}
             <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary" style="border-radius: 0;">Reset Filters</a>
             {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if outfits.has_other_pages %}
+                    <div class="pagination" style="display: flex; justify-content: center; gap: 12px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
+                        {% if outfits.has_previous %}
+                        <a href="?page={{ outfits.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}"
+                            class="btn btn-secondary" style="border-radius: 0;">← Previous</a>
+                        {% endif %}
+
+                        <span style="display: flex; align-items: center; font-family: 'Inter', sans-serif; font-size: 14px; color: #757575;">
+                            Page {{ outfits.number }} of {{ outfits.paginator.num_pages }}
+                        </span>
+
+                        {% if outfits.has_next %}
+                        <a href="?page={{ outfits.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_occasion %}&occasion={{ selected_occasion }}{% endif %}{% if show_favorites %}&favorites=true{% endif %}"
+                            class="btn btn-secondary" style="border-radius: 0;">Next →</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-        {% endif %}
     </div>
 </div>
 

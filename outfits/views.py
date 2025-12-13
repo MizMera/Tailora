@@ -44,9 +44,12 @@ def outfit_gallery_view(request):
     total_outfits = outfits.count()
     favorite_count = outfits.filter(favorite=True).count()
     
-    # Get today's daily challenge only
+    # Get today's daily and weekly challenges
     from django.utils import timezone
+    from datetime import timedelta
     today = timezone.now().date()
+    
+    # Daily challenge (today only)
     daily_challenge = StyleChallenge.objects.filter(
         start_date=today,
         end_date=today,
@@ -54,12 +57,26 @@ def outfit_gallery_view(request):
         is_public=True
     ).first()
     
-    # Get user's participation for the daily challenge if it exists
+    # Weekly challenge (active this week)
+    weekly_challenge = StyleChallenge.objects.filter(
+        start_date__lte=today,
+        end_date__gte=today,
+        challenge_type='weekly',
+        is_public=True
+    ).first()
+    
+    # Get user's participation
     daily_participation = None
+    weekly_participation = None
     if daily_challenge:
         daily_participation = ChallengeParticipation.objects.filter(
             user=user, 
             challenge=daily_challenge
+        ).first()
+    if weekly_challenge:
+        weekly_participation = ChallengeParticipation.objects.filter(
+            user=user,
+            challenge=weekly_challenge
         ).first()
     
     context = {
@@ -72,6 +89,8 @@ def outfit_gallery_view(request):
         'occasions': Outfit.OCCASION_CHOICES,
         'daily_challenge': daily_challenge,
         'daily_participation': daily_participation,
+        'weekly_challenge': weekly_challenge,
+        'weekly_participation': weekly_participation,
     }
     
     return render(request, 'outfit_gallery.html', context)
@@ -750,7 +769,7 @@ def challenges_list_view(request):
         # Check if challenge is active (current date is between start and end)
         is_active = challenge.start_date <= today <= challenge.end_date if challenge.end_date else challenge.start_date <= today
         
-        # Categorize by challenge type
+        # Categorize by challenge type - always append as (challenge, participation) tuple for consistency
         if challenge.challenge_type == 'daily' and is_active:
             if participation:
                 if participation.completed:
@@ -758,7 +777,7 @@ def challenges_list_view(request):
                 else:
                     daily_challenges.append((challenge, participation))
             else:
-                daily_challenges.append(challenge)
+                daily_challenges.append((challenge, None))
         elif challenge.challenge_type == 'weekly' and is_active:
             if participation:
                 if participation.completed:
@@ -766,7 +785,7 @@ def challenges_list_view(request):
                 else:
                     weekly_challenges.append((challenge, participation))
             else:
-                weekly_challenges.append(challenge)
+                weekly_challenges.append((challenge, None))
         else:
             # Regular challenges
             if participation:
@@ -776,7 +795,7 @@ def challenges_list_view(request):
                     active_challenges.append((challenge, participation))
             else:
                 if is_active:
-                    available_challenges.append(challenge)
+                    available_challenges.append((challenge, None))
     
     context = {
         'daily_challenges': daily_challenges,
