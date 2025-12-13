@@ -295,12 +295,21 @@ class FashionImageAnalyzer:
 
                     if blip2_type:
                         print(f"✅ BLIP-2 detected: '{blip2_type}' ({overall_confidence:.0%} confidence) from: '{blip2_caption}'")
+                        
+                        # Extract attributes from BLIP-2 analysis
+                        attributes = enhanced_desc.get('attributes', {})
+                        detected_colors = attributes.get('colors', [])
+                        
+                        if detected_colors:
+                            print(f"   BLIP-2 detected colors: {detected_colors}")
+
                         return {
                             'item_type': blip2_type,
                             'category': blip2_category,
                             'confidence': overall_confidence,
                             'description': blip2_caption,
                             'description_source': 'blip2',
+                            'detected_colors': detected_colors,  # Pass this through
                             'raw_predictions': [],
                         }
                     else:
@@ -1237,7 +1246,8 @@ class FashionImageAnalyzer:
         return {
             'item_type': ai.get('item_type', 'clothing item'),
             'category': category,
-            'color': colors.get('primary_color', ''),
+            'category': category,
+            'color': ai.get('detected_colors')[0] if ai.get('detected_colors') else colors.get('primary_color', ''),
             'color_hex': colors.get('primary_hex', ''),
             'secondary_colors': colors.get('secondary_colors', []),
             'pattern': colors.get('pattern', 'solid'),
@@ -1581,7 +1591,7 @@ class QwenImageAnalyzer:
             return {}
 
 
-def get_image_analyzer() -> FashionImageAnalyzer:
+def get_image_analyzer(use_blip2: bool = True) -> FashionImageAnalyzer:
     """
     Get singleton instance of the fashion image analyzer
     """
@@ -1608,200 +1618,7 @@ def get_image_analyzer() -> FashionImageAnalyzer:
                 print("QwenImageAnalyzer activated (via QWEN_API_* env)")
             except Exception as e:
                 print(f"Qwen initialization failed ({e}); falling back to heuristics.")
-                _analyzer_instance = FashionImageAnalyzer()
+                _analyzer_instance = FashionImageAnalyzer(use_blip2=use_blip2)
         else:
-            _analyzer_instance = FashionImageAnalyzer()
-    return _analyzer_instance
-
-
-class HuggingFaceQwenImageAnalyzer:
-    """Analyzer using Hugging Face Inference API for Qwen vision models.
-
-    Env vars:
-      HF_API_TOKEN   - required (Hugging Face personal access token)
-      HF_QWEN_MODEL  - optional (default: Qwen/Qwen2-VL-7B-Instruct)
-
-    Uses the standard HF Inference API with image-to-text/visual-question-answering.
-    """
-
-    def __init__(self, api_token: str, model: str):
-        self.api_token = api_token
-        self.model = model
-        # Use direct model endpoint for inference API
-        self.endpoint = f"https://api-inference.huggingface.co/models/{model}"
-        import requests  # local import
-        self._requests = requests
-
-    def _load_image(self, image_file) -> Image.Image:
-        if hasattr(image_file, 'read'):
-            image_data = image_file.read()
-            image = Image.open(io.BytesIO(image_data))
-        else:
-            image = Image.open(image_file)
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-        return image
-
-    def _image_to_base64(self, image: Image.Image) -> str:
-        """Convert image to base64 string"""
-        buf = io.BytesIO()
-        image.save(buf, format='JPEG', quality=90)
-        b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-        return b64
-
-    def analyze_image(self, image_file) -> Dict:
-        try:
-            image = self._load_image(image_file)
-            width, height = image.size
-            aspect_ratio = (width / height) if height else 1.0
-            
-            # Convert image to bytes for API
-            img_bytes = io.BytesIO()
-            image.save(img_bytes, format='JPEG', quality=90)
-            img_bytes.seek(0)
-
-            # Prepare the question/prompt for visual QA
-            prompt = (
-                "Analyze this clothing item and provide ONLY a JSON response with these exact fields: "
-                "{\"item_type\": \"shirt/pants/dress/etc\", \"category\": \"tops/bottoms/dresses/outerwear/shoes/accessories\", "
-                "\"color\": \"primary color name\", \"color_hex\": \"#RRGGBB\", \"secondary_colors\": [\"color1\", \"color2\"], "
-                "\"pattern\": \"solid/striped/plaid/etc\", \"material\": \"cotton/denim/etc\", \"style\": \"casual/formal/etc\", "
-                "\"occasions\": [\"casual\", \"work\"], \"seasons\": [\"spring\", \"summer\"], \"gender\": \"men/women/unisex\", "
-                "\"brand_guess\": null, \"condition\": \"good\", \"description\": \"brief description\", "
-                "\"tags\": [\"tag1\", \"tag2\"], \"confidence\": 0.8}"
-            )
-
-            headers = {
-                "Authorization": f"Bearer {self.api_token}",
-            }
-            
-            # Try visual question answering endpoint
-            payload = {
-                "inputs": {
-                    "question": prompt,
-                    "image": self._image_to_base64(image)
-                }
-            }
-            
-            resp = self._requests.post(
-                self.endpoint, 
-                headers=headers, 
-                files={"file": img_bytes.getvalue()},
-                data={"inputs": prompt},
-                timeout=60
-            )
-            
-            if resp.status_code != 200:
-                # Try to get fallback with just the image
-                resp = self._requests.post(
-                    self.endpoint, 
-                    headers=headers, 
-                    data=img_bytes.getvalue(),
-                    timeout=60
-                )
-                
-            if resp.status_code != 200:
-                raise RuntimeError(f"HF API error {resp.status_code}: {resp.text[:200]}")
-
-            # Parse response
-            result = resp.json()
-            
-            # HF Inference API might return different formats
-            if isinstance(result, list) and len(result) > 0:
-                content = result[0].get('generated_text', '{}')
-            elif isinstance(result, dict):
-                content = result.get('generated_text', result.get('answer', '{}'))
-            else:
-                content = str(result)
-            
-            parsed = self._parse_json_safe(content)
-            if not isinstance(parsed, dict):
-                parsed = {}
-
-            features = parsed.get('features', {}) or {}
-            features.setdefault('aspect_ratio', round(aspect_ratio, 3))
-            features.setdefault('estimated_single_item', True)
-            
-            analysis = {
-                'item_type': parsed.get('item_type', 'clothing item'),
-                'category': parsed.get('category', 'tops'),
-                'color': parsed.get('color', ''),
-                'color_hex': parsed.get('color_hex', ''),
-                'secondary_colors': parsed.get('secondary_colors', []) or [],
-                'pattern': parsed.get('pattern', 'solid'),
-                'material': parsed.get('material', 'cotton'),
-                'style': parsed.get('style', 'casual'),
-                'occasions': parsed.get('occasions', []) or ['casual'],
-                'seasons': parsed.get('seasons', []) or ['spring','summer','fall'],
-                'gender': parsed.get('gender', 'unisex'),
-                'brand_guess': parsed.get('brand_guess'),
-                'condition': parsed.get('condition', 'good'),
-                'description': parsed.get('description', 'A clothing item'),
-                'tags': parsed.get('tags', [])[:5] if isinstance(parsed.get('tags'), list) else [],
-                'confidence': float(parsed.get('confidence', 0.7) or 0.7),
-                'features': features,
-            }
-            return analysis
-        except Exception as e:
-            print(f"HuggingFace Qwen analysis failed: {e}")
-            return {
-                'item_type': 'clothing item',
-                'category': 'tops',
-                'color': '',
-                'color_hex': '',
-                'secondary_colors': [],
-                'pattern': 'solid',
-                'material': 'cotton',
-                'style': 'casual',
-                'occasions': ['casual'],
-                'seasons': ['spring','summer','fall'],
-                'gender': 'unisex',
-                'brand_guess': None,
-                'condition': 'good',
-                'description': 'A clothing item',
-                'tags': [],
-                'confidence': 0.5,
-                'features': {},
-            }
-
-    def _parse_json_safe(self, s: str) -> Dict:
-        txt = s.strip()
-        if txt.startswith('```'):
-            parts = txt.split('```')
-            if len(parts) >= 3:
-                body = parts[1]
-                if body.lower().startswith('json'):
-                    body = body.split('\n', 1)[1] if '\n' in body else ''
-                txt = body.strip()
-        try:
-            return json.loads(txt)
-        except Exception:
-            start = txt.find('{'); end = txt.rfind('}')
-            if start != -1 and end != -1 and end > start:
-                inner = txt[start:end+1]
-                try:
-                    return json.loads(inner)
-                except Exception:
-                    return {}
-            return {}
-
-
-# Global analyzer instance
-_analyzer_instance = None
-
-def get_image_analyzer(use_blip2: bool = True) -> FashionImageAnalyzer:
-    """
-    Get or create a global FashionImageAnalyzer instance.
-
-    Args:
-        use_blip2: Whether to enable BLIP-2 captioning
-
-    Returns:
-        FashionImageAnalyzer instance
-    """
-    global _analyzer_instance
-
-    if _analyzer_instance is None:
-        _analyzer_instance = FashionImageAnalyzer(use_blip2=use_blip2)
-
+            _analyzer_instance = FashionImageAnalyzer(use_blip2=use_blip2)
     return _analyzer_instance

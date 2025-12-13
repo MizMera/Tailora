@@ -3,7 +3,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Count, Exists, OuterRef
 from django.http import JsonResponse
-from .models import LookbookPost, PostLike, PostComment, PostSave, UserFollow, StyleChallenge
+from django.utils import timezone
+from django.urls import reverse
+from datetime import datetime, timedelta
+import json
+from django.db import transaction
+from django.core.cache import cache
+
+from .models import LookbookPost, PostLike, PostComment, PostSave, UserFollow, StyleChallenge, PostDraft, AIEngagementData
+from .services import AIEngagementOptimizer
 from outfits.models import Outfit
 
 
@@ -32,12 +40,32 @@ def feed_view(request):
     following_count = UserFollow.objects.filter(follower=request.user).count()
     posts_count = LookbookPost.objects.filter(user=request.user).count()
     
+    # Get drafts data - exclude published
+    drafts = PostDraft.objects.filter(
+        user=request.user,
+        status__in=['draft', 'scheduled']
+    )
+    draft_count = drafts.count()
+    
+    # Get recent drafts (max 3)
+    recent_drafts = drafts.filter(status='draft').order_by('-updated_at')[:3]
+    
+    # Get scheduled posts
+    scheduled_posts = drafts.filter(
+        status='scheduled', 
+        scheduled_for__gt=timezone.now()
+    ).order_by('scheduled_for')[:3]
+    
     context = {
         'posts': posts,
         'active_challenges': active_challenges,
         'followers_count': followers_count,
         'following_count': following_count,
         'posts_count': posts_count,
+        'drafts': drafts.exists(),
+        'draft_count': draft_count,
+        'recent_drafts': recent_drafts,
+        'scheduled_posts': scheduled_posts,
     }
     
     return render(request, 'social/feed.html', context)
@@ -64,20 +92,30 @@ def discover_view(request):
 
 @login_required
 def create_post(request):
-    """Create a new lookbook post"""
+    """Create a new lookbook post with AI optimization and scheduling support"""
     if request.method == 'POST':
         outfit_id = request.POST.get('outfit')
         caption = request.POST.get('caption', '')
         visibility = request.POST.get('visibility', 'public')
-        hashtags = request.POST.get('hashtags', '').split()
+        hashtags_raw = request.POST.get('hashtags', '').split()
         
-        # Get enhanced images from hidden JSON field
-        import json
-        enhanced_images_json = request.POST.get('enhanced_images', '{}')
-        try:
-            enhanced_images = json.loads(enhanced_images_json)
-        except json.JSONDecodeError:
-            enhanced_images = {}
+        # New AI and draft features
+        use_ai = request.POST.get('use_ai') == 'true'
+        save_as_draft = request.POST.get('save_as_draft') == 'true'
+        schedule_post = request.POST.get('schedule_post') == 'true'
+        scheduled_time_str = request.POST.get('scheduled_time') or request.POST.get('scheduled_time_custom')
+        
+        # Detect if user selected an AI "Best Time to Post"
+        ai_time_selected = bool(request.POST.get('scheduled_time'))
+        
+        # Process hashtags
+        hashtags = []
+        for tag in hashtags_raw:
+            tag = tag.strip()
+            if tag and not tag.startswith('#'):
+                tag = f"#{tag}"
+            if tag:
+                hashtags.append(tag)
         
         if not outfit_id:
             messages.error(request, 'Please select an outfit.')
@@ -85,23 +123,162 @@ def create_post(request):
         
         outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
         
-        post = LookbookPost.objects.create(
-            user=request.user,
-            outfit=outfit,
-            caption=caption,
-            visibility=visibility,
-            hashtags=hashtags,
-            enhanced_images=enhanced_images
-        )
+        # Get enhanced images
+        enhanced_images_json = request.POST.get('enhanced_images', '{}')
+        try:
+            enhanced_images = json.loads(enhanced_images_json)
+        except json.JSONDecodeError:
+            enhanced_images = {}
         
-        messages.success(request, 'Post created successfully!')
-        return redirect('social:post_detail', post_id=post.id)
+        # Handle scheduling
+        scheduled_for = None
+        if schedule_post and scheduled_time_str:
+            try:
+                from django.utils.dateparse import parse_datetime
+                scheduled_for = parse_datetime(scheduled_time_str)
+                
+                if scheduled_for:
+                    if timezone.is_naive(scheduled_for):
+                        scheduled_for = timezone.make_aware(scheduled_for, timezone.get_current_timezone())
+                    
+                    if scheduled_for <= timezone.now():
+                        messages.error(request, 'Scheduled time must be in the future.')
+                        return redirect('social:create_post')
+                else:
+                    messages.error(request, 'Invalid scheduled time format.')
+                    return redirect('social:create_post')
+            except Exception as e:
+                messages.error(request, f'Error with scheduled time: {e}')
+                return redirect('social:create_post')
+        elif ai_time_selected and scheduled_time_str:
+            try:
+                from django.utils.dateparse import parse_datetime
+                scheduled_for = parse_datetime(scheduled_time_str)
+                
+                if scheduled_for:
+                    if timezone.is_naive(scheduled_for):
+                        scheduled_for = timezone.make_aware(scheduled_for, timezone.get_current_timezone())
+                    
+                    if scheduled_for <= timezone.now():
+                        messages.error(request, 'Scheduled time must be in the future.')
+                        return redirect('social:create_post')
+            except Exception as e:
+                pass  # Continue without scheduled time
+        
+        # Handle AI optimization if requested
+        ai_insights = None
+        if use_ai:
+            try:
+                ai_optimizer = AIEngagementOptimizer(request.user)
+                ai_hashtags = ai_optimizer.generate_hashtag_suggestions(caption)
+                ai_captions = ai_optimizer.generate_caption_suggestions(outfit.name)
+                best_time = ai_optimizer.analyze_best_time()
+                
+                ai_insights = {
+                    'hashtags': ai_hashtags,
+                    'captions': ai_captions,
+                    'best_time': best_time,
+                    'confidence': ai_optimizer.calculate_confidence_score({
+                        'caption': caption,
+                        'hashtags': hashtags,
+                        'outfit': outfit.name,
+                        'suggested_time': best_time
+                    })
+                }
+            except Exception as e:
+                ai_insights = None
+        
+        # Handle draft/schedule
+        if save_as_draft:
+            draft = PostDraft.objects.create(
+                user=request.user,
+                outfit=outfit,
+                caption=caption,
+                hashtags=hashtags,
+                enhanced_images=enhanced_images,
+                visibility=visibility,
+                scheduled_for=scheduled_for,
+                status='scheduled' if schedule_post and scheduled_for else 'draft'
+            )
+            
+            # Add AI data to draft if available
+            if ai_insights:
+                draft.ai_optimized_hashtags = ai_insights['hashtags']
+                draft.ai_suggested_captions = ai_insights['captions']
+                draft.ai_best_time = ai_insights['best_time']
+                draft.save()
+            
+            if schedule_post and scheduled_for:
+                from django.utils.formats import date_format
+                formatted_time = date_format(scheduled_for, "F j, Y g:i A")
+                messages.success(request, f'✅ Post scheduled for {formatted_time}')
+            else:
+                messages.success(request, '✅ Saved as draft!')
+            
+            return redirect('social:draft_list')
+        
+        else:
+            # If AI time is selected, create a scheduled draft
+            if ai_time_selected and scheduled_for:
+                draft = PostDraft.objects.create(
+                    user=request.user,
+                    outfit=outfit,
+                    caption=caption,
+                    hashtags=hashtags,
+                    enhanced_images=enhanced_images,
+                    visibility=visibility,
+                    scheduled_for=scheduled_for,
+                    status='scheduled'
+                )
+                
+                if ai_insights:
+                    draft.ai_optimized_hashtags = ai_insights['hashtags']
+                    draft.ai_suggested_captions = ai_insights['captions']
+                    draft.ai_best_time = ai_insights['best_time']
+                    draft.save()
+                
+                from django.utils.formats import date_format
+                formatted_time = date_format(scheduled_for, "F j, Y g:i A")
+                messages.success(request, f'✅ Post scheduled for {formatted_time}')
+                return redirect('social:draft_list')
+            
+            # Create immediate post
+            post = LookbookPost.objects.create(
+                user=request.user,
+                outfit=outfit,
+                caption=caption,
+                hashtags=hashtags,
+                enhanced_images=enhanced_images,
+                visibility=visibility
+            )
+            
+            messages.success(request, '✅ Post published successfully!')
+            return redirect('social:post_detail', post_id=post.id)
     
     # GET: Show form
     outfits = Outfit.objects.filter(user=request.user).order_by('-created_at')
+    now = timezone.now()
+    now_formatted = now.strftime('%Y-%m-%dT%H:%M')
+    
+    # Generate initial AI suggestions
+    try:
+        ai_optimizer = AIEngagementOptimizer(request.user)
+        default_hashtags = ai_optimizer.generate_hashtag_suggestions()
+        default_captions = ai_optimizer.generate_caption_suggestions()
+    except:
+        default_hashtags = ['#fashion', '#style', '#ootd', '#outfit', '#look']
+        default_captions = [
+            "Loving this look for today! ✨",
+            "New outfit alert! What do you think? 👀",
+            "Feeling good in this outfit! 💕"
+        ]
     
     context = {
         'outfits': outfits,
+        'default_hashtags': default_hashtags,
+        'default_captions': default_captions,
+        'now': timezone.now(),
+        'now_formatted': now_formatted,
     }
     
     return render(request, 'social/create_post.html', context)
@@ -478,6 +655,412 @@ def ai_preview(request, outfit_id):
         'previews': previews,
         'style': style
     })
+
+
+# ==================== Draft & Scheduling Views ====================
+
+@login_required
+def draft_list(request):
+    """List all drafts and scheduled posts"""
+    now = timezone.now()
+    
+    # Check and publish overdue scheduled posts
+    check_time = now + timedelta(seconds=30)
+    overdue_drafts = PostDraft.objects.filter(
+        user=request.user,
+        status='scheduled',
+        scheduled_for__isnull=False,
+        scheduled_for__lte=check_time
+    )
+    
+    for draft in overdue_drafts:
+        try:
+            post = LookbookPost.objects.create(
+                user=draft.user,
+                outfit=draft.outfit,
+                caption=draft.caption,
+                hashtags=draft.hashtags,
+                enhanced_images=draft.enhanced_images,
+                visibility=draft.visibility
+            )
+            draft.status = 'published'
+            draft.save()
+        except Exception as e:
+            pass
+    
+    # Get active drafts only
+    drafts = PostDraft.objects.filter(
+        user=request.user,
+        status__in=['draft', 'scheduled']
+    ).select_related('outfit').order_by('-created_at')
+    
+    # Separate drafts and scheduled posts
+    draft_list = [d for d in drafts if d.status == 'draft']
+    scheduled_list = [d for d in drafts if d.status == 'scheduled']
+    
+    context = {
+        'drafts': draft_list,
+        'scheduled_posts': scheduled_list,
+        'now': now,
+    }
+    
+    return render(request, 'social/draft_list.html', context)
+
+
+@login_required
+def draft_detail(request, draft_id):
+    """View and edit a draft"""
+    draft = get_object_or_404(PostDraft, id=draft_id, user=request.user)
+    
+    # If published, redirect to the post
+    if draft.status == 'published':
+        posts = LookbookPost.objects.filter(
+            user=request.user,
+            outfit=draft.outfit,
+            caption=draft.caption
+        ).order_by('-created_at')
+        
+        if posts.exists():
+            return redirect('social:post_detail', post_id=posts.first().id)
+        else:
+            return redirect('social:draft_list')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'update':
+            draft.caption = request.POST.get('caption', '')
+            
+            # Process hashtags
+            hashtags_raw = request.POST.get('hashtags', '')
+            hashtags = []
+            for tag in hashtags_raw.split():
+                tag = tag.strip()
+                if tag and not tag.startswith('#'):
+                    tag = f"#{tag}"
+                if tag:
+                    hashtags.append(tag)
+            draft.hashtags = hashtags
+            draft.visibility = request.POST.get('visibility', 'public')
+            
+            # Handle scheduling
+            schedule_post = request.POST.get('schedule_post') == 'true'
+            scheduled_time = request.POST.get('scheduled_time')
+            
+            if schedule_post and scheduled_time:
+                try:
+                    from django.utils.dateparse import parse_datetime
+                    scheduled_dt = parse_datetime(scheduled_time)
+                    
+                    if scheduled_dt:
+                        if timezone.is_naive(scheduled_dt):
+                            scheduled_dt = timezone.make_aware(scheduled_dt, timezone.get_current_timezone())
+                        
+                        if scheduled_dt <= timezone.now():
+                            messages.warning(request, 'Scheduled time must be in the future. Draft saved but not scheduled.')
+                            draft.status = 'draft'
+                            draft.scheduled_for = None
+                        else:
+                            draft.scheduled_for = scheduled_dt
+                            draft.status = 'scheduled'
+                            messages.success(request, f'Post scheduled for {scheduled_dt.strftime("%Y-%m-%d %H:%M")}')
+                    else:
+                        draft.status = 'draft'
+                        draft.scheduled_for = None
+                except Exception as e:
+                    draft.status = 'draft'
+                    draft.scheduled_for = None
+                    messages.error(request, 'Invalid date/time format. Draft saved but not scheduled.')
+            else:
+                draft.status = 'draft'
+                draft.scheduled_for = None
+            
+            draft.save()
+            messages.success(request, 'Draft updated!')
+        
+        elif action == 'delete':
+            draft.delete()
+            messages.success(request, 'Draft deleted!')
+            return redirect('social:draft_list')
+        
+        elif action == 'publish':
+            post = draft.publish()
+            messages.success(request, 'Post published!')
+            return redirect('social:post_detail', post_id=post.id)
+        
+        return redirect('social:draft_detail', draft_id=draft.id)
+    
+    # GET: Show draft
+    ai_optimizer = AIEngagementOptimizer(request.user)
+    now = timezone.now()
+    
+    # Format scheduled time for input
+    scheduled_time_formatted = None
+    if draft.scheduled_for:
+        if timezone.is_naive(draft.scheduled_for):
+            scheduled_dt = timezone.make_aware(draft.scheduled_for, timezone.get_current_timezone())
+            scheduled_time_formatted = scheduled_dt.strftime('%Y-%m-%dT%H:%M')
+        else:
+            scheduled_time_formatted = draft.scheduled_for.astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%dT%H:%M')
+    
+    context = {
+        'draft': draft,
+        'ai_hashtags': ai_optimizer.generate_hashtag_suggestions(draft.caption),
+        'ai_captions': ai_optimizer.generate_caption_suggestions(draft.outfit.name if draft.outfit else ""),
+        'best_time': ai_optimizer.analyze_best_time(),
+        'suggested_times': [
+            (now + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M'),
+            (now + timedelta(days=1)).replace(hour=9, minute=0, second=0).strftime('%Y-%m-%dT%H:%M'),
+            (now + timedelta(days=1)).replace(hour=18, minute=0, second=0).strftime('%Y-%m-%dT%H:%M'),
+        ],
+        'visibility_choices': LookbookPost.VISIBILITY_CHOICES,
+        'now': now,
+        'scheduled_time_formatted': scheduled_time_formatted,
+        'is_scheduled': draft.status == 'scheduled' and draft.scheduled_for,
+    }
+    
+    return render(request, 'social/draft_detail.html', context)
+
+
+@login_required
+def quick_publish_draft(request, draft_id):
+    """Quick publish draft from feed (AJAX)"""
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        draft = get_object_or_404(PostDraft, id=draft_id, user=request.user)
+        
+        if draft.status == 'scheduled':
+            draft.scheduled_for = None
+        
+        post = draft.publish()
+        
+        return JsonResponse({
+            'status': 'success',
+            'post_id': str(post.id),
+            'message': 'Post published successfully!'
+        })
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+
+@login_required
+def toggle_draft_save(request, post_id=None):
+    """Save current post as draft from feed or create page"""
+    if request.method == 'POST':
+        if post_id:
+            post = get_object_or_404(LookbookPost, id=post_id, user=request.user)
+            draft = PostDraft.objects.create(
+                user=request.user,
+                outfit=post.outfit,
+                caption=post.caption,
+                hashtags=post.hashtags,
+                enhanced_images=post.enhanced_images,
+                visibility=post.visibility,
+                status='draft'
+            )
+            messages.success(request, 'Post saved as draft!')
+            return redirect('social:draft_detail', draft_id=draft.id)
+        else:
+            outfit_id = request.POST.get('outfit')
+            caption = request.POST.get('caption', '')
+            visibility = request.POST.get('visibility', 'public')
+            hashtags_raw = request.POST.get('hashtags', '').split()
+            
+            hashtags = []
+            for tag in hashtags_raw:
+                tag = tag.strip()
+                if tag and not tag.startswith('#'):
+                    tag = f"#{tag}"
+                if tag:
+                    hashtags.append(tag)
+            
+            if not outfit_id:
+                messages.error(request, 'Please select an outfit to save as draft.')
+                return redirect('social:create_post')
+            
+            outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
+            
+            enhanced_images_json = request.POST.get('enhanced_images', '{}')
+            try:
+                enhanced_images = json.loads(enhanced_images_json)
+            except:
+                enhanced_images = {}
+            
+            draft = PostDraft.objects.create(
+                user=request.user,
+                outfit=outfit,
+                caption=caption,
+                hashtags=hashtags,
+                enhanced_images=enhanced_images,
+                visibility=visibility,
+                status='draft'
+            )
+            
+            messages.success(request, 'Draft saved!')
+            return redirect('social:draft_detail', draft_id=draft.id)
+    
+    return redirect('social:create_post')
+
+
+@login_required
+def ai_get_suggestions(request):
+    """AJAX endpoint to get AI suggestions"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        caption = data.get('caption', '')
+        outfit_id = data.get('outfit_id')
+        
+        ai_optimizer = AIEngagementOptimizer(request.user)
+        
+        outfit_name = ""
+        if outfit_id:
+            try:
+                outfit = Outfit.objects.get(id=outfit_id, user=request.user)
+                outfit_name = outfit.name
+            except:
+                pass
+        
+        hashtags = ai_optimizer.generate_hashtag_suggestions(caption)
+        captions = ai_optimizer.generate_caption_suggestions(outfit_name)
+        best_time = ai_optimizer.analyze_best_time()
+        
+        return JsonResponse({
+            'hashtags': hashtags,
+            'captions': captions,
+            'best_time': best_time.isoformat(),
+            'best_time_formatted': best_time.strftime('%A, %B %d at %I:%M %p'),
+            'confidence_score': ai_optimizer.calculate_confidence_score({
+                'caption': caption,
+                'hashtags': [],
+                'outfit': outfit_name,
+                'suggested_time': best_time
+            })
+        })
+    
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+
+@login_required
+def post_insights(request, post_id):
+    """View AI insights for a post"""
+    post = get_object_or_404(LookbookPost, id=post_id, user=request.user)
+    
+    try:
+        insights = AIEngagementData.objects.get(post=post)
+    except AIEngagementData.DoesNotExist:
+        ai_optimizer = AIEngagementOptimizer(request.user)
+        
+        insights = AIEngagementData.objects.create(
+            post=post,
+            optimal_post_time=ai_optimizer.analyze_best_time(),
+            hashtag_suggestions=ai_optimizer.generate_hashtag_suggestions(post.caption),
+            caption_suggestions=ai_optimizer.generate_caption_suggestions(post.outfit.name),
+            predicted_likes=post.likes_count,
+            predicted_comments=post.comments_count,
+            predicted_saves=post.saves_count,
+            confidence_score=0.7
+        )
+    
+    performance_data = {
+        'actual_likes': post.likes_count,
+        'actual_comments': post.comments_count,
+        'actual_saves': post.saves_count,
+        'predicted_likes': insights.predicted_likes,
+        'predicted_comments': insights.predicted_comments,
+        'predicted_saves': insights.predicted_saves,
+    }
+    
+    context = {
+        'post': post,
+        'insights': insights,
+        'performance_data': performance_data,
+    }
+    
+    return render(request, 'social/post_insights.html', context)
+
+
+@login_required
+def check_scheduled_posts_ajax(request):
+    """Check and publish scheduled posts (AJAX)"""
+    now_utc = timezone.now()
+    
+    drafts_to_publish = PostDraft.objects.filter(
+        user=request.user,
+        status='scheduled',
+        scheduled_for__isnull=False,
+        scheduled_for__lte=now_utc
+    ).select_related('outfit')
+    
+    published = []
+    for draft in drafts_to_publish:
+        try:
+            post = LookbookPost.objects.create(
+                user=draft.user,
+                outfit=draft.outfit,
+                caption=draft.caption,
+                hashtags=draft.hashtags,
+                enhanced_images=draft.enhanced_images,
+                visibility=draft.visibility
+            )
+            draft.status = 'published'
+            draft.save()
+            published.append({
+                'draft_id': str(draft.id),
+                'post_id': str(post.id),
+            })
+        except Exception as e:
+            pass
+    
+    return JsonResponse({
+        'status': 'success',
+        'published': published,
+        'count': len(published),
+        'server_time_utc': now_utc.isoformat(),
+    })
+
+
+@login_required
+def manual_check_scheduled(request):
+    """Manually check and publish scheduled posts"""
+    if request.method == 'POST':
+        now = timezone.now()
+        scheduled_drafts = PostDraft.objects.filter(
+            status='scheduled',
+            scheduled_for__lte=now
+        ).select_related('user', 'outfit')
+        
+        published = []
+        for draft in scheduled_drafts:
+            post = LookbookPost.objects.create(
+                user=draft.user,
+                outfit=draft.outfit,
+                caption=draft.caption,
+                hashtags=draft.hashtags,
+                enhanced_images=draft.enhanced_images,
+                visibility=draft.visibility
+            )
+            draft.status = 'published'
+            draft.save()
+            published.append({
+                'draft': draft,
+                'post': post
+            })
+        
+        context = {
+            'published': published,
+            'count': len(published),
+            'now': now
+        }
+        return render(request, 'social/manual_check.html', context)
+    
+    scheduled_drafts = PostDraft.objects.filter(
+        status='scheduled'
+    ).select_related('user', 'outfit').order_by('scheduled_for')
+    
+    context = {
+        'scheduled_drafts': scheduled_drafts,
+        'now': timezone.now()
+    }
+    return render(request, 'social/manual_check.html', context)
 
 
 # ==================== REST API Views ====================

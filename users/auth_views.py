@@ -883,13 +883,37 @@ def ai_style_analyze_view(request):
                 elif top_styles:
                      detected_persona = top_styles[0].title()
 
+                # Prepare color objects for display with nicer hex codes
+                display_color_map = {
+                    'black': '#000000',
+                    'white': '#FFFFFF',
+                    'gray': '#808080', 'dark gray': '#404040', 'light gray': '#D3D3D3',
+                    'blue': '#0000FF', 'navy': '#000080', 'cyan': '#00FFFF', 'teal': '#008080',
+                    'red': '#FF0000', 'burgundy': '#800020', 'maroon': '#800000',
+                    'green': '#008000', 'lime': '#00FF00', 'olive': '#808000',
+                    'yellow': '#FFFF00', 'gold': '#FFD700',
+                    'orange': '#FFA500', 
+                    'purple': '#800080', 'lavender': '#E6E6FA', 'magenta': '#FF00FF',
+                    'pink': '#FFC0CB',
+                    'brown': '#8B4513', 'beige': '#F5F5DC', 'tan': '#D2B48C', 'saddle brown': '#8B4513', 'cream': '#FFFDD0',
+                }
+                
+                final_display_colors = []
+                for color_name in top_colors:
+                    c_lower = color_name.lower()
+                    hex_val = display_color_map.get(c_lower, c_lower) # Fallback to name if not in map
+                    final_display_colors.append({
+                        'name': color_name,
+                        'hex': hex_val
+                    })
+
                 # Prepare Context for Results Step
                 context = {
                     'analyzed': True,
                     'results': results,
                     'detected_persona': detected_persona,
                     'detected_styles': mapped_styles,  # Codes for checkbox pre-selection
-                    'detected_colors': top_colors,     # Raw color names
+                    'detected_colors': final_display_colors,     # List of {name, hex} objects
                 }
                 return render(request, 'ai_style_analyze.html', context)
                 
@@ -911,13 +935,42 @@ def ai_style_analyze_view(request):
             if selected_styles:
                 style_profile.preferred_styles = selected_styles
             
-            # Update Colors
-            # We receive raw text names from the form or analysis
-            # We might want to map them to hex or just save as custom if model allows
-            # Model expects hex list.
-            # Simplified: We won't overwrite colors completely, maybe append or just rely on user manual selection in settings
-            # For now, let's just save styles primarily as that's the "Persona"
-            
+            # Update Colors - Save to AI Palette
+            detected_colors = request.POST.getlist('detected_colors')
+            if detected_colors:
+                # We want to save the EXACT extracted colors to the dedicated AI Palette section
+                # But we still need the Hex codes for display.
+                # Re-using the display map:
+                profile_color_map = {
+                    'black': '#000000', 'charcoal': '#404040', 'onyx': '#000000',
+                    'white': '#FFFFFF', 'ivory': '#FFFFFF', 'snow': '#FFFAFA',
+                    'gray': '#808080', 'grey': '#808080', 'silver': '#C0C0C0', 'dark gray': '#404040', 'light gray': '#D3D3D3',
+                    'blue': '#0000FF', 'navy': '#000080', 'teal': '#008080', 'cyan': '#00FFFF', 'azure': '#007FFF',
+                    'red': '#FF0000', 'burgundy': '#800020', 'crimson': '#DC143C', 'maroon': '#800000',
+                    'green': '#008000', 'olive': '#808000', 'lime': '#00FF00', 'emerald': '#50C878',
+                    'yellow': '#FFFF00', 'gold': '#FFD700',
+                    'pink': '#FFC0CB', 'magenta': '#FF00FF', 'rose': '#FF007F',
+                    'brown': '#8B4513', 'saddle brown': '#8B4513', 'chocolate': '#D2691E',
+                    'beige': '#F5F5DC', 'tan': '#D2B48C', 'taupe': '#483C32', 'cream': '#FFFDD0', 'khaki': '#F0E68C',
+                    'orange': '#FFA500', 'rust': '#B7410E',
+                    'purple': '#800080', 'violet': '#EE82EE', 'lavender': '#E6E6FA'
+                }
+                
+                ai_palette_data = []
+                for color_name in detected_colors:
+                    c_lower = color_name.lower()
+                    # Try exact match or fallback to name (though for hex display we need hex)
+                    # Use a default grey if unknown
+                    hex_val = profile_color_map.get(c_lower, '#CCCCCC') 
+                    
+                    ai_palette_data.append({
+                        'name': color_name, # Keep original name (e.g. "Saddle Brown")
+                        'hex': hex_val
+                    })
+                
+                # Update the AI palette field
+                style_profile.ai_palette = ai_palette_data
+
             style_profile.save()
             messages.success(request, 'Style Profile updated with AI insights!')
             return redirect('profile_settings')

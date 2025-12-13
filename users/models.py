@@ -220,7 +220,12 @@ class StyleProfile(models.Model):
     # Style preferences
     favorite_colors = models.JSONField(default=list, blank=True)  # List of color hex codes
     preferred_styles = models.JSONField(default=list, blank=True)  # List of style choices
+    favorite_colors = models.JSONField(default=list, blank=True)  # List of color hex codes
+    preferred_styles = models.JSONField(default=list, blank=True)  # List of style choices
     favorite_brands = models.JSONField(default=list, blank=True)  # List of brand names
+    
+    # AI Analysis Data
+    ai_palette = models.JSONField(default=list, blank=True)  # List of {name, hex} from AI extraction
     
     # Body information
     body_type = models.CharField(max_length=20, choices=BODY_TYPE_CHOICES, blank=True)

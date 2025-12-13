@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Check Scheduled Posts - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/social.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Scheduled Posts Check</h1>
+    <p class="page-subtitle">Server time: {{ now|date:"F j, Y g:i:s A" }}</p>
+</div>
+
+<div style="max-width: 800px; margin: 0 auto;">
+    {% if published %}
+    <div class="alert alert-success" style="margin-bottom: 24px;">
+        ✅ Published {{ count }} posts successfully!
+    </div>
+    
+    {% for item in published %}
+    <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+        <h4>{{ item.draft.outfit.name }}</h4>
+        <p style="color: #666; font-size: 14px;">{{ item.draft.caption|truncatechars:100 }}</p>
+        <a href="{% url 'social:post_detail' item.post.id %}" class="btn btn-primary btn-sm">View Post</a>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if scheduled_drafts %}
+    <h3 style="margin-bottom: 20px;">📅 Pending Scheduled Posts ({{ scheduled_drafts|length }})</h3>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary" style="margin-bottom: 24px;">
+            🚀 Publish All Due Posts
+        </button>
+    </form>
+    
+    {% for draft in scheduled_drafts %}
+    <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+                <h4 style="margin-bottom: 8px;">{{ draft.outfit.name }}</h4>
+                <p style="color: #666; font-size: 14px; margin-bottom: 8px;">{{ draft.caption|truncatechars:100 }}</p>
+                <p style="font-size: 12px; color: {% if draft.scheduled_for <= now %}#4caf50{% else %}#757575{% endif %};">
+                    Scheduled for: {{ draft.scheduled_for|date:"F j, Y g:i A" }}
+                    {% if draft.scheduled_for <= now %}
+                    <span style="color: #4caf50; font-weight: 600;">✓ Ready to publish</span>
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{% url 'social:draft_detail' draft.id %}" class="btn btn-secondary btn-sm">Edit</a>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align: center; padding: 60px 20px; background: #fafafa; border-radius: 12px;">
+        <h3>No Scheduled Posts</h3>
+        <p style="color: #666;">All posts have been published or there are no scheduled posts.</p>
+        <a href="{% url 'social:create_post' %}" class="btn btn-primary" style="margin-top: 16px;">Create New Post</a>
+    </div>
+    {% endif %}
+    
+    <div style="margin-top: 32px;">
+        <a href="{% url 'social:draft_list' %}" class="btn btn-secondary">← Back to Drafts</a>
+    </div>
+</div>
+{% endblock %}

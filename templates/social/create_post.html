@@ -77,12 +77,36 @@
             <h3 class="section-title">POST DETAILS</h3>
             <div class="form-group">
                 <label class="form-label">Caption</label>
-                <textarea name="caption" class="input-control" rows="4" placeholder="Write a caption..."></textarea>
+                <textarea name="caption" class="input-control" rows="4" placeholder="Write a caption..." id="caption_input"></textarea>
+                {% if default_captions %}
+                <div style="margin-top: 8px;">
+                    <span style="font-size: 11px; color: #757575;">💡 AI Suggestions:</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+                        {% for caption in default_captions|slice:":3" %}
+                        <button type="button" class="caption-suggestion" data-caption="{{ caption }}" style="padding: 6px 12px; background: #f0f0f0; border: 1px solid #e0e0e0; font-size: 11px; cursor: pointer; border-radius: 4px;">
+                            {{ caption|truncatechars:40 }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
             <div class="form-group">
                 <label class="form-label">Hashtags (space-separated)</label>
-                <input type="text" name="hashtags" class="input-control" placeholder="#ootd #style #fashion">
+                <input type="text" name="hashtags" class="input-control" placeholder="#ootd #style #fashion" id="hashtags_input">
+                {% if default_hashtags %}
+                <div style="margin-top: 8px;">
+                    <span style="font-size: 11px; color: #757575;">💡 Suggested:</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;">
+                        {% for tag in default_hashtags|slice:":8" %}
+                        <span class="hashtag-suggestion" data-tag="{{ tag }}" style="padding: 4px 8px; background: #e3f2fd; color: #1976d2; font-size: 11px; cursor: pointer; border-radius: 12px;">
+                            {{ tag }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
             <div class="form-group">
@@ -95,9 +119,55 @@
             </div>
         </div>
 
-        <div class="form-actions">
+        <!-- Scheduling Section -->
+        <div class="form-section" style="background: #fafafa; border: 1px solid #e0e0e0; padding: 20px;">
+            <h3 class="section-title">📅 SCHEDULING OPTIONS</h3>
+            
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 16px;">
+                    <input type="checkbox" name="save_as_draft" id="save_as_draft" value="true">
+                    <span style="font-size: 14px;">Save as draft (don't publish yet)</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" name="schedule_post" id="schedule_post" value="true">
+                    <span style="font-size: 14px;">Schedule for later</span>
+                </label>
+            </div>
+
+            <div id="schedule_options" style="display: none; margin-top: 16px; padding: 16px; background: white; border: 1px solid #e0e0e0;">
+                <div class="form-group">
+                    <label class="form-label">Schedule Date & Time</label>
+                    <input type="datetime-local" name="scheduled_time_custom" class="input-control" id="scheduled_time" min="{{ now_formatted }}">
+                </div>
+                
+                <div style="margin-top: 12px;">
+                    <span style="font-size: 12px; color: #757575;">⏰ AI Suggested Best Times:</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                        <button type="button" class="time-slot-btn" data-hours="1" style="padding: 8px 16px; background: #e8f5e9; border: 1px solid #c8e6c9; font-size: 12px; cursor: pointer; border-radius: 4px;">
+                            In 1 hour
+                        </button>
+                        <button type="button" class="time-slot-btn" data-hours="3" style="padding: 8px 16px; background: #e8f5e9; border: 1px solid #c8e6c9; font-size: 12px; cursor: pointer; border-radius: 4px;">
+                            In 3 hours
+                        </button>
+                        <button type="button" class="time-slot-btn" data-day="1" data-hour="9" style="padding: 8px 16px; background: #fff3e0; border: 1px solid #ffe0b2; font-size: 12px; cursor: pointer; border-radius: 4px;">
+                            Tomorrow 9 AM
+                        </button>
+                        <button type="button" class="time-slot-btn" data-day="1" data-hour="18" style="padding: 8px 16px; background: #fff3e0; border: 1px solid #ffe0b2; font-size: 12px; cursor: pointer; border-radius: 4px;">
+                            Tomorrow 6 PM ⭐
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
             <button type="submit" class="btn btn-primary">Share Post</button>
-            <a href="{% url 'social:feed' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" name="save_as_draft" value="true" class="btn btn-secondary">Save as Draft</button>
+            <a href="{% url 'social:feed' %}" class="btn btn-outline">Cancel</a>
+            <a href="{% url 'social:draft_list' %}" class="btn btn-outline" style="margin-left: auto;">My Drafts</a>
         </div>
     </form>
 </div>
@@ -213,6 +283,76 @@
                     document.getElementById('preview_results').innerHTML =
                         `<p style="color: #c62828;">Error: ${error.message}</p>`;
                 });
+        });
+
+        // === NEW: Scheduling Features ===
+        const scheduleCheckbox = document.getElementById('schedule_post');
+        const scheduleOptions = document.getElementById('schedule_options');
+        const scheduledTime = document.getElementById('scheduled_time');
+        const saveAsDraftCheckbox = document.getElementById('save_as_draft');
+
+        // Show/hide schedule options
+        scheduleCheckbox.addEventListener('change', function() {
+            scheduleOptions.style.display = this.checked ? 'block' : 'none';
+            if (this.checked) {
+                saveAsDraftCheckbox.checked = true;
+            }
+        });
+
+        // Time slot buttons
+        document.querySelectorAll('.time-slot-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const hours = this.dataset.hours;
+                const day = this.dataset.day;
+                const hour = this.dataset.hour;
+                
+                const date = new Date();
+                
+                if (hours) {
+                    date.setHours(date.getHours() + parseInt(hours));
+                } else if (day && hour) {
+                    date.setDate(date.getDate() + parseInt(day));
+                    date.setHours(parseInt(hour), 0, 0, 0);
+                }
+                
+                // Format for datetime-local input
+                const offset = date.getTimezoneOffset() * 60000;
+                const localDate = new Date(date.getTime() - offset);
+                scheduledTime.value = localDate.toISOString().slice(0, 16);
+                
+                // Visual feedback
+                document.querySelectorAll('.time-slot-btn').forEach(b => {
+                    b.style.background = b === this ? '#4caf50' : '';
+                    b.style.color = b === this ? 'white' : '';
+                });
+            });
+        });
+
+        // === NEW: AI Suggestion Features ===
+        const captionInput = document.getElementById('caption_input');
+        const hashtagsInput = document.getElementById('hashtags_input');
+
+        // Caption suggestions
+        document.querySelectorAll('.caption-suggestion').forEach(btn => {
+            btn.addEventListener('click', function() {
+                captionInput.value = this.dataset.caption;
+            });
+        });
+
+        // Hashtag suggestions
+        document.querySelectorAll('.hashtag-suggestion').forEach(tag => {
+            tag.addEventListener('click', function() {
+                const currentHashtags = hashtagsInput.value.trim();
+                const newTag = this.dataset.tag;
+                
+                if (!currentHashtags.includes(newTag)) {
+                    hashtagsInput.value = currentHashtags ? `${currentHashtags} ${newTag}` : newTag;
+                }
+                
+                // Visual feedback
+                this.style.background = '#1976d2';
+                this.style.color = 'white';
+            });
         });
     });
 </script>

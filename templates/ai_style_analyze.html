@@ -320,7 +320,9 @@
                     <div class="persona-title">Dominant Palette</div>
                     <div class="palette-row">
                         {% for color in detected_colors %}
-                        <div class="palette-swatch" style="background-color: {{ color }};" title="{{ color }}"></div>
+                        <div class="palette-swatch" style="background-color: {{ color.hex }};" title="{{ color.name }}">
+                        </div>
+                        <input type="hidden" name="detected_colors" value="{{ color.name }}">
                         {% empty %}
                         <span style="color: #999;">No consistent colors detected.</span>
                         {% endfor %}

@@ -1,0 +1,387 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Drafts - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/social.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+    .draft-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .draft-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .draft-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-color: #d4b88c;
+    }
+    .draft-card.scheduled {
+        border-left: 4px solid #4caf50;
+    }
+    .draft-card.draft {
+        border-left: 4px solid #ff9800;
+    }
+    .draft-badge {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .badge-draft {
+        background: #ff9800;
+        color: white;
+    }
+    .badge-scheduled {
+        background: #4caf50;
+        color: white;
+    }
+    .draft-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+    }
+    .draft-preview {
+        font-size: 14px;
+        color: #666;
+        margin: 8px 0;
+        line-height: 1.4;
+    }
+    .draft-meta {
+        display: flex;
+        gap: 16px;
+        font-size: 12px;
+        color: #999;
+        margin-top: 12px;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 40px;
+        background: #fafafa;
+        border-radius: 12px;
+        margin: 40px 0;
+    }
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 24px;
+        background: #f4e9cf;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .ai-insight {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 12px;
+        font-size: 13px;
+    }
+    .ai-tag {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        margin-right: 4px;
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="draft-header">
+        <div>
+            <h1 class="page-title">My Drafts</h1>
+            <p class="page-subtitle">Manage your saved posts and scheduled publications</p>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <a href="{% url 'social:feed' %}" class="btn btn-secondary">Back to Feed</a>
+            <a href="{% url 'social:create_post' %}" class="btn btn-primary">+ New Draft</a>
+        </div>
+    </div>
+</div>
+
+<!-- Messages -->
+{% if messages %}
+<div style="margin-bottom: 24px;">
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div style="max-width: 1200px; margin: 0 auto;">
+<div class="content-section">
+
+    <!-- Scheduled Posts Section -->
+    {% if scheduled_posts %}
+    <div style="margin-bottom: 40px;">
+        <h3 class="section-title" style="margin-bottom: 20px;">
+            📅 Scheduled Posts
+            <span style="float: right; font-size: 14px; color: #757575; font-weight: normal;">
+                {{ scheduled_posts|length }} upcoming
+            </span>
+        </h3>
+
+        <div style="display: grid; gap: 16px;">
+            {% for draft in scheduled_posts %}
+            <div class="draft-card scheduled">
+                <span class="draft-badge badge-scheduled">Scheduled</span>
+
+                <div style="display: flex; gap: 20px; align-items: start;">
+                    {% if draft.outfit.image %}
+                    <div style="width: 100px; height: 100px; flex-shrink: 0;">
+                        <img src="{{ draft.outfit.image.url }}"
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                    </div>
+                    {% endif %}
+
+                    <div style="flex: 1;">
+                        <h4 style="font-size: 16px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">
+                            {{ draft.outfit.name }}
+                        </h4>
+
+                        {% if draft.caption %}
+                        <div class="draft-preview">
+                            {{ draft.caption|truncatechars:150 }}
+                        </div>
+                        {% endif %}
+
+                        <!-- AI Insights -->
+                        {% if draft.ai_suggested_captions or draft.ai_optimized_hashtags %}
+                        <div class="ai-insight">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+                                🤖 AI Suggestions
+                            </div>
+                            {% if draft.ai_optimized_hashtags %}
+                            <div style="margin-bottom: 4px;">
+                                {% for tag in draft.ai_optimized_hashtags|slice:":5" %}
+                                <span class="ai-tag">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if draft.ai_best_time %}
+                            <div style="font-size: 11px; color: #4caf50;">
+                                ⏰ Best time: {{ draft.ai_best_time|date:"F j, g:i A" }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="draft-meta">
+                            <span>Visibility: {{ draft.get_visibility_display }}</span>
+                            <span>Created: {{ draft.created_at|date:"M d, Y" }}</span>
+                            <span style="color: #4caf50; font-weight: 500;">
+                                📅 Scheduled for: {{ draft.scheduled_for|date:"F j, Y g:i A" }}
+                            </span>
+                        </div>
+
+                        <div class="draft-actions">
+                            <a href="{% url 'social:draft_detail' draft.id %}" class="btn btn-primary btn-sm">
+                                Edit
+                            </a>
+                            <button onclick="publishNow('{{ draft.id }}')" class="btn btn-secondary btn-sm">
+                                Publish Now
+                            </button>
+                            <button onclick="deleteDraft('{{ draft.id }}')" class="btn btn-error btn-sm">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Drafts Section -->
+    <div>
+        <h3 class="section-title" style="margin-bottom: 20px;">
+            📝 Drafts
+            <span style="float: right; font-size: 14px; color: #757575; font-weight: normal;">
+                {{ drafts|length }} saved
+            </span>
+        </h3>
+
+        {% if drafts %}
+        <div style="display: grid; gap: 16px;">
+            {% for draft in drafts %}
+            <div class="draft-card draft">
+                <span class="draft-badge badge-draft">Draft</span>
+
+                <div style="display: flex; gap: 20px; align-items: start;">
+                    {% if draft.outfit.image %}
+                    <div style="width: 100px; height: 100px; flex-shrink: 0;">
+                        <img src="{{ draft.outfit.image.url }}"
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                    </div>
+                    {% endif %}
+
+                    <div style="flex: 1;">
+                        <h4 style="font-size: 16px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">
+                            {{ draft.outfit.name }}
+                        </h4>
+
+                        {% if draft.caption %}
+                        <div class="draft-preview">
+                            {{ draft.caption|truncatechars:150 }}
+                        </div>
+                        {% else %}
+                        <div class="draft-preview" style="color: #999; font-style: italic;">
+                            No caption yet...
+                        </div>
+                        {% endif %}
+
+                        <!-- Hashtags Preview -->
+                        {% if draft.hashtags %}
+                        <div style="margin: 8px 0;">
+                            {% for tag in draft.hashtags|slice:":8" %}
+                            <span style="font-size: 12px; color: #666; margin-right: 6px;">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- AI Insights -->
+                        {% if draft.ai_suggested_captions or draft.ai_optimized_hashtags %}
+                        <div class="ai-insight">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+                                🤖 AI Suggestions Available
+                            </div>
+                            {% if draft.ai_optimized_hashtags %}
+                            <div style="font-size: 11px;">
+                                {{ draft.ai_optimized_hashtags|length }} hashtag suggestions
+                            </div>
+                            {% endif %}
+                            {% if draft.ai_suggested_captions %}
+                            <div style="font-size: 11px;">
+                                {{ draft.ai_suggested_captions|length }} caption ideas
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="draft-meta">
+                            <span>Visibility: {{ draft.get_visibility_display }}</span>
+                            <span>Last updated: {{ draft.updated_at|date:"M d, Y" }}</span>
+                            <span>Items: {{ draft.outfit.items.count }}</span>
+                        </div>
+
+                        <div class="draft-actions">
+                            <a href="{% url 'social:draft_detail' draft.id %}" class="btn btn-primary btn-sm">
+                                Edit & Publish
+                            </a>
+
+                            <button onclick="deleteDraft('{{ draft.id }}')" class="btn btn-error btn-sm">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2c2c2c" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+            </div>
+            <h3 style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">
+                No Drafts Yet
+            </h3>
+            <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-bottom: 24px; max-width: 400px; margin: 0 auto 24px;">
+                Save posts as drafts while creating them, or save existing posts for later editing.
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <a href="{% url 'social:create_post' %}" class="btn btn-primary">Create New Draft</a>
+                <a href="{% url 'social:feed' %}" class="btn btn-secondary">Back to Feed</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+
+<script>
+function deleteDraft(draftId) {
+    if (confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/social/draft/${draftId}/`;
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = '{{ csrf_token }}';
+        form.appendChild(csrf);
+
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'delete';
+        form.appendChild(action);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function publishNow(draftId) {
+    if (confirm('Publish this draft now?')) {
+        fetch(`/social/draft/${draftId}/publish-quick/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Post published successfully!');
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred');
+        });
+    }
+}
+
+// Auto-refresh for scheduled posts
+setTimeout(function() {
+    window.location.reload();
+}, 60000); // Refresh every minute
+</script>
+{% endblock %}

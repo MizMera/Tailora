@@ -69,10 +69,11 @@ class BLIP2FashionCaptioner:
                 model_kwargs = {
                     "torch_dtype": torch_dtype,
                     "device_map": device_map,
+                    "load_in_8bit": True, # QUANTIZATION ENABLED
                     "low_cpu_mem_usage": True,
                 }
 
-                logger.info("Loading BLIP-2 with GPU optimizations (float16, forced GPU)")
+                logger.info("Loading BLIP-2 with GPU optimizations (8-bit quantization, forced GPU)")
 
             else:
                 # CPU loading
@@ -217,7 +218,8 @@ class BLIP2FashionCaptioner:
         }
 
         # Basic color detection
-        colors = ['red', 'blue', 'green', 'yellow', 'black', 'white', 'gray', 'pink', 'purple', 'orange', 'brown']
+        colors = ['red', 'blue', 'green', 'yellow', 'black', 'white', 'gray', 'pink', 'purple', 'orange', 'brown', 
+                 'beige', 'tan', 'burgundy', 'navy', 'cream', 'gold', 'silver']
         for color in colors:
             if color in caption_lower:
                 attributes['colors'].append(color)
