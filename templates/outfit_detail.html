@@ -129,6 +129,8 @@
                 </p>
             </div>
             <div style="display: flex; gap: 12px;">
+                <a href="{% url 'outfits:challenges_list' %}" class="btn btn-secondary"
+                    style="border-radius: 0;">Challenges</a>
                 <a href="{% url 'outfits:outfit_edit' outfit.id %}" class="btn btn-secondary"
                     style="border-radius: 0;">Edit</a>
                 <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary"
