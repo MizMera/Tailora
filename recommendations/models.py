@@ -222,6 +222,8 @@ class ShoppingRecommendation(models.Model):
             models.Index(fields=['user', 'is_purchased', 'is_dismissed']),
             models.Index(fields=['user', '-priority']),
         ]
-    
     def __str__(self):
         return f"{self.suggested_name} for {self.user.email} (Priority: {self.priority})"
+
+
+# NOTE: The Style Coach audit was moved to outfits/views.py to run AFTER items are added.

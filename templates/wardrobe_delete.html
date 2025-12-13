@@ -274,7 +274,7 @@
         <form method="post">
             {% csrf_token %}
             <div class="form-actions-danger">
-                <a href="{% url 'wardrobe_detail' item.id %}" class="btn-cancel">
+                <a href="{% url 'wardrobe:wardrobe_detail' item.id %}" class="btn-cancel">
                     Cancel
                 </a>
                 <button type="button" class="btn btn-danger btn-lg delete-trigger" data-form-id="deleteForm"

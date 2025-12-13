@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, StyleProfile, Notification
+from .models import User, StyleProfile, Notification, FashionIQ, StyleCritiqueSession
 
 
 @admin.register(User)
@@ -80,3 +80,19 @@ class NotificationAdmin(admin.ModelAdmin):
     search_fields = ['user__email', 'title', 'message']
     raw_id_fields = ['user']
     date_hierarchy = 'created_at'
+
+
+@admin.register(FashionIQ)
+class FashionIQAdmin(admin.ModelAdmin):
+    list_display = ['user', 'current_level', 'total_xp', 'color_score', 'lessons_completed']
+    list_filter = ['current_level']
+    search_fields = ['user__email', 'user__username']
+    readonly_fields = ['total_xp', 'lessons_completed']
+
+
+@admin.register(StyleCritiqueSession)
+class StyleCritiqueSessionAdmin(admin.ModelAdmin):
+    list_display = ['user', 'concept_taught', 'is_accepted', 'is_helpful', 'created_at']
+    list_filter = ['is_accepted', 'is_helpful', 'created_at']
+    search_fields = ['user__email', 'critique_text', 'suggestion_text']
+    raw_id_fields = ['user']

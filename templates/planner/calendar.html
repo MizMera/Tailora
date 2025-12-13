@@ -5,114 +5,202 @@
 {% block title %}Calendar - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/planner.css' %}">
-<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <style>
     /* =========================================
-       PREMIUM CALENDAR STYLES
+       CALENDAR - TAILORA DESIGN SYSTEM
        ========================================= */
+    
+    /* Theme Variables */
     :root {
-        --cal-bg: #fff;
-        --cal-border: #e0e0e0;
-        --text-main: #2c2c2c;
-        --text-light: #757575;
-        --accent: #2c2c2c;
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1a1a1a;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
     }
 
     /* Page Layout */
-    .planner-layout {
+    .calendar-wrapper {
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        padding: 40px 24px;
+    }
+
+    .calendar-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .calendar-layout {
         display: grid;
-        grid-template-columns: 1fr 340px;
+        grid-template-columns: 2.5fr 1fr;
         gap: 32px;
         align-items: start;
     }
 
-    /* Calendar Card */
+    /* Calendar Section */
     .calendar-section {
-        background: var(--cal-bg);
-        border: 1px solid var(--cal-border);
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         padding: 32px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
 
     .calendar-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 24px;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
     }
 
-    .section-title {
+    .calendar-title {
         font-family: 'Istok Web', sans-serif;
-        font-size: 24px;
+        font-size: 32px;
         font-weight: 700;
         color: var(--text-main);
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        margin: 0 0 4px 0;
+    }
+
+    .calendar-subtitle {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: var(--text-muted);
         margin: 0;
     }
 
     .calendar-nav {
         display: flex;
+        gap: 0;
+    }
+
+    .btn-cal-nav {
+        padding: 10px 20px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-main);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-cal-nav:first-child {
+        border-right: none;
+    }
+
+    .btn-cal-nav:last-child {
+        border-left: none;
+    }
+
+    .btn-cal-nav:hover {
+        background: #f5f5f5;
+    }
+
+    .btn-cal-nav.active {
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
+    }
+
+    /* Quick Actions */
+    .quick-actions-bar {
+        display: flex;
+        gap: 0;
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .quick-action-link {
+        display: inline-flex;
+        align-items: center;
         gap: 8px;
+        padding: 12px 20px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        color: var(--text-muted);
+        transition: all 0.2s ease;
+    }
+
+    .quick-action-link:hover {
+        color: var(--text-main);
+    }
+
+    .quick-action-link.active {
+        color: var(--text-main);
+        border-bottom-color: var(--text-main);
     }
 
     /* Calendar Grid */
     .calendar-grid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 1px;
-        background: #f0f0f0;
-        /* Grid lines color */
-        border: 1px solid #f0f0f0;
+        gap: 0;
+        border: 1px solid var(--border-color);
+        background: var(--border-color);
     }
 
     .calendar-weekday {
         background: #fafafa;
-        color: var(--text-light);
+        color: var(--text-muted);
         font-family: 'Inter', sans-serif;
-        font-size: 12px;
-        font-weight: 600;
+        font-size: 11px;
+        font-weight: 700;
         text-transform: uppercase;
-        padding: 12px;
+        padding: 14px 12px;
         text-align: center;
-        letter-spacing: 0.5px;
+        letter-spacing: 1px;
+        border-bottom: 1px solid var(--border-color);
     }
 
     .calendar-day {
-        background: #fff;
+        background: var(--card-bg);
         min-height: 120px;
-        padding: 8px;
+        padding: 10px;
         position: relative;
-        transition: background 0.2s;
+        transition: background 0.2s ease;
+        border: 1px solid var(--border-color);
+        border-top: none;
+        border-left: none;
+    }
+
+    .calendar-day:nth-child(7n) {
+        border-right: none;
     }
 
     .calendar-day:hover {
-        background: #fdfdfd;
+        background: #fafafa;
     }
 
     .calendar-day.today {
-        background: #fffdf5;
-        /* Subtle yellow tint for today */
+        background: #fef7ed;
     }
 
-    .calendar-day.today::after {
+    .calendar-day.today::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         height: 3px;
-        background: var(--accent);
+        background: #2c2c2c;
     }
 
     .day-number {
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        font-weight: 500;
+        font-weight: 600;
         color: var(--text-main);
         display: block;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
 
     .calendar-day.today .day-number {
@@ -127,69 +215,120 @@
     .calendar-day-events {
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 4px;
     }
 
     .calendar-event-chip {
         display: block;
-        padding: 4px 6px;
+        padding: 4px 8px;
+        font-family: 'Inter', sans-serif;
         font-size: 11px;
-        font-weight: 500;
-        color: #fff;
+        font-weight: 600;
+        color: #ffffff;
         text-decoration: none;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        border-radius: 2px;
-        /* Slight rounded only */
-        transition: transform 0.1s, box-shadow 0.1s;
+        transition: transform 0.1s ease;
     }
 
     .calendar-event-chip:hover {
         transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        z-index: 2;
     }
 
     /* Event Colors */
-    .calendar-event-chip.work {
-        background: #555;
-    }
-
-    .calendar-event-chip.casual {
-        background: #88c;
-    }
-
-    .calendar-event-chip.formal {
-        background: #2c2c2c;
-    }
-
-    .calendar-event-chip.party {
-        background: #dda855;
-    }
-
-    .calendar-event-chip.date {
-        background: #c55;
-    }
-
-    .calendar-event-chip.sports {
-        background: #6b9;
-    }
-
-    .calendar-event-chip.travel {
-        background: #96c;
-    }
-
-    .calendar-event-chip.other {
-        background: #999;
-    }
+    .calendar-event-chip.work { background: #555555; }
+    .calendar-event-chip.casual { background: #7c8ab8; }
+    .calendar-event-chip.formal { background: #2c2c2c; }
+    .calendar-event-chip.party { background: #c9a55c; }
+    .calendar-event-chip.date { background: #b85c5c; }
+    .calendar-event-chip.sports { background: #6b9b7a; }
+    .calendar-event-chip.travel { background: #9678a8; }
+    .calendar-event-chip.other { background: #757575; }
 
     .more-events {
+        font-family: 'Inter', sans-serif;
         font-size: 10px;
-        color: var(--text-light);
+        color: #757575;
         text-align: center;
-        margin-top: 2px;
+        margin-top: 4px;
+        font-weight: 600;
+    }
+
+    /* Legend */
+    .calendar-legend {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #757575;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+    }
+
+    .legend-dot.work { background: #555555; }
+    .legend-dot.casual { background: #7c8ab8; }
+    .legend-dot.formal { background: #2c2c2c; }
+    .legend-dot.party { background: #c9a55c; }
+
+    /* Calendar Footer */
+    .calendar-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
         font-weight: 500;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 0;
+    }
+
+    .btn-primary {
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
+    }
+
+    .btn-primary:hover {
+        background: #000;
+    }
+
+    .btn-secondary {
+        background: var(--card-bg);
+        color: var(--text-main);
+        border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: #f5f5f5;
     }
 
     /* Sidebar */
@@ -199,94 +338,157 @@
         gap: 24px;
     }
 
-    /* Weather Widget (Premium) */
-    .weather-widget-enhanced {
-        background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
-        color: #fff;
-        padding: 24px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    /* Weather Widget */
+    .weather-widget {
+        background: #2c2c2c;
+        color: #ffffff;
+        padding: 28px;
     }
 
-    .weather-location {
+    .weather-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
         padding-bottom: 16px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .weather-location-name {
-        font-size: 15px;
+    .weather-location {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
         font-weight: 600;
-        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
-    .weather-curr-flex {
+    .weather-change-btn {
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 6px 12px;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: background 0.2s ease;
+    }
+
+    .weather-change-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .weather-main {
         display: flex;
         align-items: center;
         gap: 20px;
         margin-bottom: 24px;
     }
 
-    .weather-temp-main {
+    .weather-temp {
+        font-family: 'Istok Web', sans-serif;
         font-size: 56px;
-        font-weight: 300;
+        font-weight: 700;
         line-height: 1;
         letter-spacing: -2px;
     }
 
     .weather-condition {
+        font-family: 'Inter', sans-serif;
         font-size: 16px;
-        font-weight: 400;
-        opacity: 0.8;
+        opacity: 0.9;
+    }
+
+    .weather-feels {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        opacity: 0.6;
         margin-top: 4px;
     }
 
-    .weather-grid-details {
+    .weather-details {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 16px;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
     }
 
-    .w-detail {
+    .weather-detail {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
     }
 
-    .w-label {
+    .weather-detail-label {
+        font-family: 'Inter', sans-serif;
         font-size: 10px;
         text-transform: uppercase;
         opacity: 0.5;
         letter-spacing: 1px;
     }
 
-    .w-val {
+    .weather-detail-value {
+        font-family: 'Inter', sans-serif;
         font-size: 14px;
-        font-weight: 500;
+        font-weight: 600;
     }
 
-    .clothing-suggestion {
+    .weather-tip {
         background: rgba(255, 255, 255, 0.08);
-        /* Glassy */
         padding: 16px;
-        border-left: 2px solid #f5a623;
+        border-left: 3px solid #f4e9cf;
+    }
+
+    .weather-tip-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #f4e9cf;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+    }
+
+    .weather-tip-text {
+        font-family: 'Inter', sans-serif;
         font-size: 13px;
         line-height: 1.5;
         color: rgba(255, 255, 255, 0.9);
     }
 
-    /* Upcoming List */
+    /* Upcoming Events Widget */
+    .upcoming-widget {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+    }
+
+    .upcoming-header {
+        padding: 20px;
+        border-bottom: 1px solid var(--border-color);
+        background: #fafafa;
+    }
+
+    .upcoming-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-main);
+        letter-spacing: 1px;
+        margin: 0;
+    }
+
     .upcoming-item {
         display: flex;
         gap: 16px;
-        padding: 16px;
+        padding: 16px 20px;
         border-bottom: 1px solid #f0f0f0;
         text-decoration: none;
         color: inherit;
-        transition: background 0.2s;
+        transition: background 0.2s ease;
     }
 
     .upcoming-item:last-child {
@@ -304,71 +506,157 @@
         justify-content: center;
         width: 50px;
         height: 50px;
-        background: #f4e9cf;
-        color: #2c2c2c;
+        background: #fafafa;
+        color: var(--text-main);
+        flex-shrink: 0;
+        border: 1px solid var(--border-color);
     }
 
-    .db-day {
+    .date-box-day {
+        font-family: 'Istok Web', sans-serif;
         font-size: 20px;
         font-weight: 700;
         line-height: 1;
     }
 
-    .db-month {
+    .date-box-month {
+        font-family: 'Inter', sans-serif;
         font-size: 10px;
         text-transform: uppercase;
-        font-weight: 600;
+        font-weight: 700;
         margin-top: 2px;
     }
 
-    .u-info {
+    .upcoming-info {
         flex: 1;
+        min-width: 0;
     }
 
-    .u-title {
+    .upcoming-info-title {
+        font-family: 'Inter', sans-serif;
         font-weight: 600;
         font-size: 15px;
         margin-bottom: 4px;
         color: var(--text-main);
     }
 
-    .u-meta {
+    .upcoming-info-meta {
+        font-family: 'Inter', sans-serif;
         font-size: 12px;
-        color: var(--text-light);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    /* Buttons */
-    .btn-sm {
-        padding: 6px 12px;
-        font-size: 13px;
-    }
-
-    /* Legend */
-    .legend-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
-
-    .legend-item {
+        color: var(--text-muted);
         display: flex;
         align-items: center;
         gap: 8px;
+    }
+
+    .outfit-ready {
+        color: #4caf50;
+        font-weight: 600;
+    }
+
+    .upcoming-footer {
+        padding: 14px 20px;
+        text-align: center;
+        border-top: 1px solid #f0f0f0;
+        background: #fafafa;
+    }
+
+    .upcoming-footer a {
+        font-family: 'Inter', sans-serif;
         font-size: 12px;
-        color: var(--text-light);
+        font-weight: 700;
+        color: var(--text-main);
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    .legend-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
+    .upcoming-footer a:hover {
+        color: #000;
     }
 
-    @media (max-width: 900px) {
-        .planner-layout {
+    .upcoming-empty {
+        padding: 32px 20px;
+        text-align: center;
+        color: var(--text-muted);
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+    }
+
+    /* Location Modal */
+    .location-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .location-modal.active {
+        display: flex;
+    }
+
+    .location-modal-content {
+        background: var(--card-bg);
+        padding: 32px;
+        width: 90%;
+        max-width: 400px;
+    }
+
+    .location-modal-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0 0 24px 0;
+        color: var(--text-main);
+    }
+
+    .location-form-group {
+        margin-bottom: 24px;
+    }
+
+    .location-form-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .location-form-input {
+        width: 100%;
+        padding: 10px 12px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 0;
+        background: #fff;
+        color: var(--text-main);
+        box-sizing: border-box;
+    }
+
+    .location-form-input:focus {
+        outline: none;
+        border-color: var(--text-main);
+    }
+
+    .location-modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+        .calendar-layout {
             grid-template-columns: 1fr;
         }
 
@@ -376,49 +664,86 @@
             order: 2;
         }
     }
+
+    @media (max-width: 600px) {
+        .calendar-section {
+            padding: 20px;
+        }
+
+        .calendar-day {
+            min-height: 80px;
+            padding: 6px;
+        }
+
+        .day-number {
+            font-size: 12px;
+        }
+
+        .calendar-event-chip {
+            font-size: 9px;
+            padding: 2px 4px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="planner-layout">
+<div class="calendar-wrapper">
+    <div class="calendar-container">
+    <div class="calendar-layout">
 
-    <!-- Main Calendar Area -->
-    <div class="calendar-section">
-        <div class="calendar-header">
-            <div>
-                <h1 class="section-title">{{ month_name }} {{ year }}</h1>
-                <p style="margin: 4px 0 0; color: #757575; font-size: 14px;">Use the calendar to plan your outfits.</p>
+        <!-- Main Calendar Area -->
+        <div class="calendar-section">
+            <div class="calendar-header">
+                <div>
+                    <h1 class="calendar-title">{{ month_name }} {{ year }}</h1>
+                    <p class="calendar-subtitle">Plan your outfits for each day</p>
+                </div>
+                <div class="calendar-nav">
+                    <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn-cal-nav">← Prev</a>
+                    <a href="?year={{ today.year }}&month={{ today.month }}" class="btn-cal-nav">Today</a>
+                    <a href="?year={{ next_year }}&month={{ next_month }}" class="btn-cal-nav">Next →</a>
+                </div>
             </div>
-            <div class="calendar-nav">
-                <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-secondary btn-sm">← Prev</a>
-                <a href="?year={{ today.year }}&month={{ today.month }}" class="btn btn-secondary btn-sm">Today</a>
-                <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-secondary btn-sm">Next →</a>
+
+            <!-- Quick Actions Bar -->
+            <div class="quick-actions-bar">
+                <a href="{% url 'planner:weekly_planner' %}" class="quick-action-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                    AI Weekly Planner
+                </a>
+                <a href="{% url 'wardrobe:laundry_dashboard' %}" class="quick-action-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18l-2 13H5L3 6z"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    Laundry Dashboard
+                </a>
+                <a href="{% url 'planner:event_list' %}" class="quick-action-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    All Events
+                </a>
             </div>
-        </div>
 
-        <div class="calendar-grid stagger-children">
-            <!-- Weekday headers -->
-            {% for day in weekday_names %}
-            <div class="calendar-weekday">{{ day|slice:":3" }}</div>
-            {% endfor %}
+            <div class="calendar-grid">
+                <!-- Weekday headers -->
+                {% for day in weekday_names %}
+                <div class="calendar-weekday">{{ day|slice:":3" }}</div>
+                {% endfor %}
 
-            <!-- Calendar days -->
-            {% for week in month_calendar %}
-            {% for day in week %}
-            {% if day == 0 %}
-            <div class="calendar-day empty"></div>
-            {% else %}
-            <div
-                class="calendar-day animate-fade-in-up {% if day == today.day and month == today.month and year == today.year %}today{% endif %}">
-                <span class="day-number">{{ day }}</span>
+                <!-- Calendar days -->
+                {% for week in month_calendar %}
+                {% for day in week %}
+                {% if day == 0 %}
+                <div class="calendar-day empty"></div>
+                {% else %}
+                <div class="calendar-day {% if day == today.day and month == today.month and year == today.year %}today{% endif %}">
+                    <span class="day-number">{{ day }}</span>
 
-                {% if day in events_by_date %}
-                <div class="calendar-day-events">
                     {% with events_for_day=events_by_date|get_item:day %}
-                    {% for event in events_for_day %}
-                    {% if forloop.counter <= 3 %} <a href="{% url 'planner:event_detail' event.id %}"
-                        class="calendar-event-chip {{ event.occasion_type }}" title="{{ event.title }}">
-                        {{ event.title }}
+                    {% if events_for_day %}
+                    <div class="calendar-day-events">
+                        {% for event in events_for_day %}
+                        {% if forloop.counter <= 3 %}
+                        <a href="{% url 'planner:event_detail' event.id %}" class="calendar-event-chip {{ event.occasion_type|slugify }}" title="{{ event.title }}">
+                            {{ event.title }}
                         </a>
                         {% endif %}
                         {% endfor %}
@@ -426,149 +751,140 @@
                         {% if events_for_day|length > 3 %}
                         <span class="more-events">+{{ events_for_day|length|add:"-3" }} more</span>
                         {% endif %}
-                        {% endwith %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
                 </div>
                 {% endif %}
+                {% endfor %}
+                {% endfor %}
             </div>
-            {% endif %}
-            {% endfor %}
-            {% endfor %}
+
+            <!-- Calendar Footer -->
+            <div class="calendar-footer">
+                <div class="calendar-legend">
+                    <div class="legend-item"><span class="legend-dot work"></span> Work</div>
+                    <div class="legend-item"><span class="legend-dot casual"></span> Casual</div>
+                    <div class="legend-item"><span class="legend-dot formal"></span> Formal</div>
+                    <div class="legend-item"><span class="legend-dot party"></span> Party</div>
+                </div>
+                <a href="{% url 'planner:event_create' %}" class="btn btn-primary">+ Add Event</a>
+            </div>
         </div>
 
-        <div style="margin-top: 24px; display: flex; justify-content: space-between; align-items: center;">
-            <div class="legend-grid">
-                <div class="legend-item"><span class="legend-dot work"></span> Work</div>
-                <div class="legend-item"><span class="legend-dot casual"></span> Casual</div>
-                <div class="legend-item"><span class="legend-dot formal"></span> Formal</div>
-                <div class="legend-item"><span class="legend-dot party"></span> Party</div>
-            </div>
-            <a href="{% url 'planner:event_create' %}" class="btn btn-primary" style="border-radius:0;">+ Add Event</a>
-        </div>
-    </div>
+        <!-- Sidebar -->
+        <aside class="sidebar-section">
 
-    <!-- Sidebar -->
-    <aside class="sidebar-section">
-
-        <!-- Premium Weather Widget -->
-        <div class="weather-widget-enhanced">
-            <div class="weather-location">
-                <span class="weather-location-name">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        style="margin-right:6px;">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                    {{ weather_location|default:"Tunis" }}
-                </span>
-                <button onclick="document.getElementById('location-modal').style.display='flex'"
-                    style="background:rgba(255,255,255,0.15); border:none; color:#fff; font-size:10px; padding:4px 8px; cursor:pointer;">
-                    CHANGE
-                </button>
-            </div>
-
-            {% if current_weather %}
-            <div class="weather-curr-flex">
-                <span class="weather-temp-main">{{ current_weather.temperature }}°</span>
-                <div>
-                    <div class="weather-condition">{{ current_weather.condition|title }}</div>
-                    <div style="font-size:12px; opacity:0.6;">Feels like {{ current_weather.feels_like }}°</div>
+            <!-- Weather Widget -->
+            <div class="weather-widget">
+                <div class="weather-header">
+                    <span class="weather-location">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        {{ weather_location|default:"Tunis" }}
+                    </span>
+                    <button onclick="document.getElementById('location-modal').classList.add('active')" class="weather-change-btn">
+                        Change
+                    </button>
                 </div>
-            </div>
 
-            <div class="weather-grid-details">
-                <div class="w-detail">
-                    <span class="w-label">Wind</span>
-                    <span class="w-val">{{ current_weather.wind_speed }} km/h</span>
+                {% if current_weather %}
+                <div class="weather-main">
+                    <span class="weather-temp">{{ current_weather.temperature }}°</span>
+                    <div>
+                        <div class="weather-condition">{{ current_weather.condition|title }}</div>
+                        <div class="weather-feels">Feels like {{ current_weather.feels_like }}°</div>
+                    </div>
                 </div>
-                <div class="w-detail">
-                    <span class="w-label">Humidity</span>
-                    <span class="w-val">{{ current_weather.humidity }}%</span>
-                </div>
-            </div>
 
-            <div class="clothing-suggestion">
-                <div
-                    style="font-weight:700; font-size:10px; text-transform:uppercase; margin-bottom:4px; color:#f5a623;">
-                    Styling Tip
+                <div class="weather-details">
+                    <div class="weather-detail">
+                        <span class="weather-detail-label">Wind</span>
+                        <span class="weather-detail-value">{{ current_weather.wind_speed }} km/h</span>
+                    </div>
+                    <div class="weather-detail">
+                        <span class="weather-detail-label">Humidity</span>
+                        <span class="weather-detail-value">{{ current_weather.humidity }}%</span>
+                    </div>
                 </div>
-                {% if current_weather.temperature > 28 %}
-                Light fabrics and shorts recommended.
-                {% elif current_weather.temperature > 20 %}
-                Great weather for light layers.
-                {% elif current_weather.temperature > 12 %}
-                Bring a jacket or cardigan.
-                {% else %}
-                Bundle up with a warm coat.
-                {% endif %}
-            </div>
-            {% else %}
-            <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5);">
-                Weather data unavailable
-            </div>
-            {% endif %}
-        </div>
 
-        <!-- Upcoming Events List -->
-        <div class="content-section" style="padding: 0; overflow: hidden; border: 1px solid #e0e0e0;">
-            <div style="padding: 16px; border-bottom: 1px solid #f0f0f0; background: #fafafa;">
-                <h3 style="margin: 0; font-size: 14px; font-weight: 700; text-transform: uppercase; color: #2c2c2c;">
-                    Upcoming Events</h3>
-            </div>
-
-            {% if upcoming_events %}
-            {% for event in upcoming_events|slice:":5" %}
-            <a href="{% url 'planner:event_detail' event.id %}" class="upcoming-item">
-                <div class="date-box">
-                    <span class="db-day">{{ event.date.day }}</span>
-                    <span class="db-month">{{ event.date|date:"M" }}</span>
-                </div>
-                <div class="u-info">
-                    <div class="u-title">{{ event.title }}</div>
-                    <div class="u-meta">
-                        <span>{{ event.time|date:"g:i A" }}</span>
-                        {% if event.outfit %}
-                        <span style="width:4px; height:4px; background:#ccc; border-radius:50%;"></span>
-                        <span style="color:#2ecc71;">Outfit Ready</span>
+                <div class="weather-tip">
+                    <div class="weather-tip-label">Styling Tip</div>
+                    <div class="weather-tip-text">
+                        {% if current_weather.temperature > 28 %}
+                        Light fabrics and shorts recommended.
+                        {% elif current_weather.temperature > 20 %}
+                        Great weather for light layers.
+                        {% elif current_weather.temperature > 12 %}
+                        Bring a jacket or cardigan.
+                        {% else %}
+                        Bundle up with a warm coat.
                         {% endif %}
                     </div>
                 </div>
-            </a>
-            {% endfor %}
-            {% else %}
-            <div style="padding: 24px; text-align: center; color: #999; font-size: 13px;">
-                No upcoming events.
+                {% else %}
+                <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-family: 'Inter', sans-serif; font-size: 13px;">
+                    Weather data unavailable
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
 
-            <a href="{% url 'planner:event_list' %}"
-                style="display: block; padding: 12px; text-align: center; font-size: 12px; font-weight: 600; color: #2c2c2c; text-decoration: none; background: #fcfcfc; border-top: 1px solid #f0f0f0;">
-                VIEW ALL EVENTS →
-            </a>
-        </div>
+            <!-- Upcoming Events Widget -->
+            <div class="upcoming-widget">
+                <div class="upcoming-header">
+                    <h3 class="upcoming-title">Upcoming Events</h3>
+                </div>
 
-    </aside>
+                {% if upcoming_events %}
+                {% for event in upcoming_events|slice:":5" %}
+                <a href="{% url 'planner:event_detail' event.id %}" class="upcoming-item">
+                    <div class="date-box">
+                        <span class="date-box-day">{{ event.date.day }}</span>
+                        <span class="date-box-month">{{ event.date|date:"M" }}</span>
+                    </div>
+                    <div class="upcoming-info">
+                        <div class="upcoming-info-title">{{ event.title }}</div>
+                        <div class="upcoming-info-meta">
+                            <span>{{ event.time|date:"g:i A" }}</span>
+                            {% if event.outfit %}
+                            <span>•</span>
+                            <span class="outfit-ready">Outfit Ready</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+
+                <div class="upcoming-footer">
+                    <a href="{% url 'planner:event_list' %}">View All Events →</a>
+                </div>
+                {% else %}
+                <div class="upcoming-empty">
+                    No upcoming events scheduled.
+                </div>
+                {% endif %}
+            </div>
+
+        </aside>
+    </div>
+    </div>
 </div>
 
 <!-- Location Change Modal -->
-<div id="location-modal"
-    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div
-        style="background: #fff; padding: 32px; width: 90%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
-        <h3 style="margin: 0 0 20px; font-family: 'Istok Web', sans-serif; font-size: 20px;">Change Location</h3>
+<div id="location-modal" class="location-modal">
+    <div class="location-modal-content">
+        <h3 class="location-modal-title">Change Location</h3>
         <form method="get" action="">
             <input type="hidden" name="year" value="{{ year }}">
             <input type="hidden" name="month" value="{{ month }}">
-            <div style="margin-bottom: 24px;">
-                <label
-                    style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase;">City
-                    Name</label>
-                <input type="text" name="location" value="{{ weather_location|default:'Tunis' }}"
-                    placeholder="e.g., Paris"
-                    style="width: 100%; padding: 12px; border: 1px solid #ddd; font-family: 'Inter', sans-serif; border-radius: 0;">
+            <div class="location-form-group">
+                <label class="location-form-label">City Name</label>
+                <input type="text" name="location" value="{{ weather_location|default:'Tunis' }}" placeholder="e.g., Paris" class="location-form-input">
             </div>
-            <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                <button type="button" onclick="document.getElementById('location-modal').style.display='none'"
-                    class="btn btn-secondary">Cancel</button>
+            <div class="location-modal-actions">
+                <button type="button" onclick="document.getElementById('location-modal').classList.remove('active')" class="btn btn-secondary">Cancel</button>
                 <button type="submit" class="btn btn-primary">Update</button>
             </div>
         </form>
@@ -577,9 +893,9 @@
 
 <script>
     // Close modal when clicking outside
-    document.getElementById('location-modal').addEventListener('click', function (e) {
+    document.getElementById('location-modal').addEventListener('click', function(e) {
         if (e.target === this) {
-            this.style.display = 'none';
+            this.classList.remove('active');
         }
     });
 </script>

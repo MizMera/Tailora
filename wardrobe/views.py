@@ -121,7 +121,7 @@ def wardrobe_upload_view(request):
             request,
             f"You've reached your wardrobe limit of {max_items} items. Upgrade to Premium to add more!"
         )
-        return redirect('wardrobe_gallery')
+        return redirect('wardrobe:wardrobe_gallery')
     
     if request.method == 'POST':
         # Get form data
@@ -205,7 +205,7 @@ def wardrobe_upload_view(request):
             user.increment_wardrobe_count()
             
             messages.success(request, f"{name} has been added to your wardrobe!")
-            return redirect('wardrobe_detail', item_id=item.id)
+            return redirect('wardrobe:wardrobe_detail', item_id=item.id)
         
         except Exception as e:
             messages.error(request, f"Error adding item: {str(e)}")
@@ -287,7 +287,7 @@ def wardrobe_edit_view(request, item_id):
         
         item.save()
         messages.success(request, f"{item.name} has been updated!")
-        return redirect('wardrobe_detail', item_id=item.id)
+        return redirect('wardrobe:wardrobe_detail', item_id=item.id)
     
     # GET request
     categories = get_categories(request.user)
@@ -317,7 +317,7 @@ def wardrobe_delete_view(request, item_id):
             user.save()
         
         messages.success(request, f"{item_name} has been removed from your wardrobe.")
-        return redirect('wardrobe_gallery')
+        return redirect('wardrobe:wardrobe_gallery')
     
     context = {
         'item': item,
@@ -335,7 +335,7 @@ def wardrobe_toggle_favorite_view(request, item_id):
     item.favorite = not item.favorite
     item.save()
     
-    return redirect(request.META.get('HTTP_REFERER', 'wardrobe_gallery'))
+    return redirect(request.META.get('HTTP_REFERER', 'wardrobe:wardrobe_gallery'))
 
 
 @login_required
@@ -653,3 +653,197 @@ def api_analyze_image(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+
+# ==================== Laundry Scheduling Views ====================
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .laundry_scheduler import LaundrySchedulerAI
+import json
+
+
+@login_required
+def laundry_dashboard(request):
+    """
+    Display laundry management dashboard
+    Shows items needing wash, items at laundry, and upcoming conflicts
+    """
+    scheduler = LaundrySchedulerAI(request.user)
+    summary = scheduler.get_laundry_summary()
+    
+    # Get items grouped by urgency
+    needs_wash = summary['needs_wash_items']
+    approaching = summary['approaching_items']
+    at_laundry = summary['at_laundry']
+    
+    # Separate needs_wash into overdue and regular
+    overdue = [item for item in needs_wash if item.urgency_level() >= 3]
+    needs_wash_now = [item for item in needs_wash if item.urgency_level() == 2]
+    
+    context = {
+        'overdue_items': overdue,
+        'needs_wash_items': needs_wash_now,
+        'approaching_items': approaching,
+        'washing_items': at_laundry.get('washing', []),
+        'drying_items': at_laundry.get('drying', []),
+        'dry_cleaning_items': at_laundry.get('dry_cleaning', []),
+        'active_alerts': summary['active_alerts'],
+        'stats': {
+            'overdue_count': len(overdue),
+            'needs_wash_count': len(needs_wash_now),
+            'approaching_count': summary['approaching_count'],
+            'at_laundry_count': summary['at_laundry_count'],
+            'urgent_alerts': summary['urgent_alerts_count'],
+        },
+    }
+    
+    return render(request, 'wardrobe/laundry_dashboard.html', context)
+
+
+@login_required
+@require_POST
+def mark_item_washed(request, item_id):
+    """Mark a clothing item as washed"""
+    item = get_object_or_404(ClothingItem, id=item_id, user=request.user)
+    
+    scheduler = LaundrySchedulerAI(request.user)
+    scheduler.mark_item_washed(item)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'message': f'"{item.name}" marked as washed!',
+            'wears_since_wash': item.wears_since_wash,
+        })
+    
+    messages.success(request, f'"{item.name}" marked as washed!')
+    return redirect(request.META.get('HTTP_REFERER', 'wardrobe:laundry_dashboard'))
+
+
+@login_required
+@require_POST
+def update_item_laundry_settings(request, item_id):
+    """Update laundry settings for a specific item"""
+    item = get_object_or_404(ClothingItem, id=item_id, user=request.user)
+    
+    try:
+        data = json.loads(request.body) if request.body else {}
+    except json.JSONDecodeError:
+        data = request.POST.dict()
+    
+    # Update max wears before wash
+    if 'max_wears' in data:
+        try:
+            max_wears = int(data['max_wears'])
+            if 1 <= max_wears <= 50:
+                item.max_wears_before_wash = max_wears
+        except (ValueError, TypeError):
+            pass
+    
+    # Update care type
+    if 'care_type' in data:
+        if data['care_type'] in dict(ClothingItem.CARE_TYPE_CHOICES):
+            item.care_type = data['care_type']
+    
+    # Update drying time
+    if 'drying_time' in data:
+        try:
+            drying_time = int(data['drying_time'])
+            if 1 <= drying_time <= 168:  # 1 hour to 1 week
+                item.drying_time_hours = drying_time
+        except (ValueError, TypeError):
+            pass
+    
+    item.save()
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'message': 'Laundry settings updated!',
+            'max_wears_before_wash': item.max_wears_before_wash,
+            'care_type': item.care_type,
+            'drying_time_hours': item.drying_time_hours,
+        })
+    
+    messages.success(request, 'Laundry settings updated!')
+    return redirect('wardrobe:wardrobe_detail', item_id=item.id)
+
+
+@login_required
+@require_POST
+def change_item_status(request, item_id):
+    """Change item status (available, washing, drying, etc.)"""
+    item = get_object_or_404(ClothingItem, id=item_id, user=request.user)
+    
+    try:
+        data = json.loads(request.body) if request.body else {}
+    except json.JSONDecodeError:
+        data = request.POST.dict()
+    
+    new_status = data.get('status')
+    
+    if new_status in dict(ClothingItem.STATUS_CHOICES):
+        item.status = new_status
+        item.save()
+        
+        status_display = dict(ClothingItem.STATUS_CHOICES).get(new_status, new_status)
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': f'Status changed to "{status_display}"',
+                'status': new_status,
+                'status_display': status_display,
+            })
+        
+        messages.success(request, f'Status changed to "{status_display}"')
+    else:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid status',
+            }, status=400)
+        messages.error(request, 'Invalid status')
+    
+    return redirect(request.META.get('HTTP_REFERER', 'wardrobe:laundry_dashboard'))
+
+
+@login_required
+def resolve_laundry_alert(request, alert_id):
+    """Resolve a laundry alert"""
+    from .models import LaundryAlert
+    
+    alert = get_object_or_404(LaundryAlert, id=alert_id, user=request.user)
+    alert.resolve()
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'message': 'Alert resolved!',
+        })
+    
+    messages.success(request, 'Alert resolved!')
+    return redirect(request.META.get('HTTP_REFERER', 'wardrobe:laundry_dashboard'))
+
+
+@login_required
+def auto_set_all_thresholds(request):
+    """Auto-set wash thresholds for all items based on AI recommendations"""
+    scheduler = LaundrySchedulerAI(request.user)
+    items = ClothingItem.objects.filter(user=request.user)
+    
+    updated_count = 0
+    for item in items:
+        if item.max_wears_before_wash == 3:  # Only update defaults
+            scheduler.auto_set_wash_threshold(item)
+            updated_count += 1
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'message': f'Updated thresholds for {updated_count} items!',
+            'updated_count': updated_count,
+        })
+    
+    messages.success(request, f'Updated laundry thresholds for {updated_count} items!')
+    return redirect('wardrobe:laundry_dashboard')

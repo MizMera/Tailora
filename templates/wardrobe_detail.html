@@ -16,7 +16,7 @@
     .detail-grid {
         display: grid;
         /* FIXED WIDTH for image (350px), rest for info. Prevents giant images. */
-        grid-template-columns: 350px 1fr; 
+        grid-template-columns: 350px 1fr;
         gap: 40px;
         align-items: start;
     }
@@ -24,10 +24,13 @@
     /* 3. Make it responsive for mobile */
     @media (max-width: 800px) {
         .detail-grid {
-            grid-template-columns: 1fr; /* Stack vertically on small screens */
+            grid-template-columns: 1fr;
+            /* Stack vertically on small screens */
         }
+
         .item-image-wrapper {
-            max-width: 400px; /* Don't let image get too huge on mobile either */
+            max-width: 400px;
+            /* Don't let image get too huge on mobile either */
             margin: 0 auto;
         }
     }
@@ -35,7 +38,7 @@
     .settings-section {
         margin-bottom: 32px;
     }
-    
+
     .section-title {
         font-family: 'Inter', sans-serif;
         font-size: 18px;
@@ -83,32 +86,35 @@
     <div class="page-header" style="margin-bottom: 24px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
             <div>
-                <a href="{% url 'wardrobe_gallery' %}"
+                <a href="{% url 'wardrobe:wardrobe_gallery' %}"
                     style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-decoration: none; display: inline-block; margin-bottom: 8px;">&larr;
                     Back to Wardrobe</a>
                 <h1 class="page-title" style="margin: 0; font-size: 28px;">{{ item.name }}</h1>
             </div>
             <div style="display: flex; gap: 12px;">
-                <a href="{% url 'wardrobe_edit' item.id %}" class="btn btn-primary">Edit Item</a>
-                <a href="{% url 'wardrobe_gallery' %}" class="btn btn-secondary">Close</a>
+                <a href="{% url 'wardrobe:wardrobe_edit' item.id %}" class="btn btn-primary">Edit Item</a>
+                <a href="{% url 'wardrobe:wardrobe_gallery' %}" class="btn btn-secondary">Close</a>
             </div>
         </div>
     </div>
 
     <!-- Main Content Card -->
-    <div style="background: #ffffff; padding: 40px; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-        
+    <div
+        style="background: #ffffff; padding: 40px; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+
         <div class="detail-grid">
             <!-- Left: Image Column -->
             <div class="item-image-wrapper">
-                <div style="position: relative; background: #fafafa; border: 1px solid #e0e0e0; overflow: hidden; border-radius: 4px;">
+                <div
+                    style="position: relative; background: #fafafa; border: 1px solid #e0e0e0; overflow: hidden; border-radius: 4px;">
                     <!-- Image Display -->
                     <img src="{{ item.image.url }}" alt="{{ item.name }}"
                         style="width: 100%; height: auto; display: block;">
-                    
+
                     <!-- Status Badge -->
                     {% if item.status != 'available' %}
-                    <div style="position: absolute; top: 16px; right: 16px; padding: 8px 16px; background: #2c2c2c; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                    <div
+                        style="position: absolute; top: 16px; right: 16px; padding: 8px 16px; background: #2c2c2c; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
                         {% if item.status == 'washing' %}Washing
                         {% elif item.status == 'dry_cleaning' %}Dry cleaning
                         {% elif item.status == 'loaned' %}Loaned
@@ -120,7 +126,7 @@
 
                 <!-- Action Buttons (Favorite / Delete) -->
                 <div style="display: flex; gap: 12px; margin-top: 24px;">
-                    <form method="post" action="{% url 'wardrobe_toggle_favorite' item.id %}" style="flex: 1;">
+                    <form method="post" action="{% url 'wardrobe:wardrobe_toggle_favorite' item.id %}" style="flex: 1;">
                         {% csrf_token %}
                         <button type="submit"
                             class="btn {% if item.favorite %}btn-primary{% else %}btn-secondary{% endif %}"
@@ -128,8 +134,8 @@
                             {% if item.favorite %}★ Favorite{% else %}☆ Add to favorites{% endif %}
                         </button>
                     </form>
-                    <form id="delete-form-{{ item.id }}" method="post" action="{% url 'wardrobe_delete' item.id %}"
-                        style="flex: 1;">
+                    <form id="delete-form-{{ item.id }}" method="post"
+                        action="{% url 'wardrobe:wardrobe_delete' item.id %}" style="flex: 1;">
                         {% csrf_token %}
                         <button type="button" class="btn btn-primary delete-trigger"
                             data-form-id="delete-form-{{ item.id }}" data-item-name="{{ item.name }}"
@@ -143,7 +149,7 @@
                 <!-- Basic Info -->
                 <div class="settings-section">
                     <h3 class="section-title">Information</h3>
-                    
+
                     <div class="info-row">
                         <span class="info-label">Category</span>
                         <span class="info-value">
@@ -158,7 +164,8 @@
                     <div class="info-row">
                         <span class="info-label">Color</span>
                         <span class="info-value" style="display: flex; align-items: center; gap: 8px;">
-                            <span style="display: inline-block; width: 16px; height: 16px; border: 1px solid #ddd; border-radius: 50%; background-color: {{ item.color_hex|default:item.color }};"></span>
+                            <span
+                                style="display: inline-block; width: 16px; height: 16px; border: 1px solid #ddd; border-radius: 50%; background-color: {{ item.color_hex|default:item.color }};"></span>
                             {{ item.color }}
                         </span>
                     </div>
@@ -182,7 +189,8 @@
                         <span class="info-label">Condition</span>
                         <span class="info-value">
                             {% if item.condition %}
-                            <span style="padding: 2px 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;">{{ item.condition|title }}</span>
+                            <span style="padding: 2px 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;">{{
+                                item.condition|title }}</span>
                             {% else %}-{% endif %}
                         </span>
                     </div>
@@ -190,7 +198,8 @@
                     <div class="info-row" style="border-bottom: none;">
                         <span class="info-label">Status</span>
                         <span class="info-value">
-                            <span style="padding: 2px 8px; background: #2c2c2c; color: #fff; border-radius: 4px; font-size: 12px;">
+                            <span
+                                style="padding: 2px 8px; background: #2c2c2c; color: #fff; border-radius: 4px; font-size: 12px;">
                                 {{ item.get_status_display|default:"Available" }}
                             </span>
                         </span>
@@ -201,13 +210,14 @@
                 {% if item.seasons or item.occasions %}
                 <div class="settings-section">
                     <h3 class="section-title">Usage</h3>
-                    
+
                     {% if item.seasons %}
                     <div style="margin-bottom: 16px;">
                         <span class="info-label" style="display: block; margin-bottom: 8px;">Seasons</span>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                             {% for season in item.seasons %}
-                            <span style="padding: 4px 12px; background: #f5f5f5; color: #333; font-size: 13px; border-radius: 4px;">
+                            <span
+                                style="padding: 4px 12px; background: #f5f5f5; color: #333; font-size: 13px; border-radius: 4px;">
                                 {{ season|title }}
                             </span>
                             {% endfor %}
@@ -220,7 +230,8 @@
                         <span class="info-label" style="display: block; margin-bottom: 8px;">Occasions</span>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                             {% for occasion in item.occasions %}
-                            <span style="padding: 4px 12px; background: #f5f5f5; color: #333; font-size: 13px; border-radius: 4px;">
+                            <span
+                                style="padding: 4px 12px; background: #f5f5f5; color: #333; font-size: 13px; border-radius: 4px;">
                                 {{ occasion|title }}
                             </span>
                             {% endfor %}
@@ -248,7 +259,8 @@
                     {% endif %}
                     {% if item.is_secondhand %}
                     <div style="margin-top: 8px;">
-                        <span style="padding: 4px 12px; background: #4caf50; color: #fff; font-size: 12px; border-radius: 4px;">Second-Hand</span>
+                        <span
+                            style="padding: 4px 12px; background: #4caf50; color: #fff; font-size: 12px; border-radius: 4px;">Second-Hand</span>
                     </div>
                     {% endif %}
                 </div>
@@ -275,19 +287,22 @@
                 {% if item.description %}
                 <div class="settings-section">
                     <h3 class="section-title">Description</h3>
-                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #555; line-height: 1.6; margin: 0;">
+                    <p
+                        style="font-family: 'Inter', sans-serif; font-size: 14px; color: #555; line-height: 1.6; margin: 0;">
                         {{ item.description }}
                     </p>
                 </div>
                 {% endif %}
-                
+
                 <!-- Tags -->
                 {% if item.tags %}
                 <div class="settings-section">
                     <h3 class="section-title">Tags</h3>
                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                         {% for tag in item.tags %}
-                        <span style="padding: 4px 10px; border: 1px solid #e0e0e0; color: #555; font-size: 12px; border-radius: 12px;">#{{ tag }}</span>
+                        <span
+                            style="padding: 4px 10px; border: 1px solid #e0e0e0; color: #555; font-size: 12px; border-radius: 12px;">#{{
+                            tag }}</span>
                         {% endfor %}
                     </div>
                 </div>

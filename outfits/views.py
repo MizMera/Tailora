@@ -5,6 +5,7 @@ from django.db.models import Q, Count, Max
 from django.core.paginator import Paginator
 from .models import Outfit, OutfitItem, StyleChallenge, ChallengeParticipation, ChallengeOutfit, UserBadge
 from .models import Outfit, OutfitItem
+from users.models import StyleCritiqueSession
 from wardrobe.models import ClothingItem
 
 
@@ -239,6 +240,14 @@ def outfit_create_view(request):
             # Update user's outfit count
             user.increment_outfits_count()
             
+            # Run AI Style Coach audit AFTER items are added
+            try:
+                from recommendations.ai_engine import StyleCoach
+                coach = StyleCoach(user)
+                coach.audit_outfit(outfit)
+            except Exception as e:
+                print(f"Style Coach error: {e}")
+            
             messages.success(request, f'{name} has been created successfully!')
             return redirect('outfits:outfit_detail', outfit_id=outfit.id)
         
@@ -273,9 +282,15 @@ def outfit_detail_view(request, outfit_id):
     outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
     outfit_items = outfit.outfit_items.select_related('clothing_item').order_by('position')
     
+    # Get latest critique
+    critique = StyleCritiqueSession.objects.filter(
+        related_outfit=outfit
+    ).order_by('-created_at').first()
+    
     context = {
         'outfit': outfit,
         'outfit_items': outfit_items,
+        'critique': critique,
     }
     
     return render(request, 'outfit_detail.html', context)
@@ -314,6 +329,16 @@ def outfit_edit_view(request, outfit_id):
                     pass
         
         outfit.save()
+        
+        # Re-run AI Style Coach audit after edit
+        if item_ids:  # Only re-audit if items were changed
+            try:
+                from recommendations.ai_engine import StyleCoach
+                coach = StyleCoach(request.user)
+                coach.audit_outfit(outfit)
+            except Exception as e:
+                print(f"Style Coach error on edit: {e}")
+        
         messages.success(request, f'{outfit.name} has been updated!')
         return redirect('outfits:outfit_detail', outfit_id=outfit.id)
     
