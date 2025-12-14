@@ -647,7 +647,12 @@
 
             <div class="pd-header">
                 <a href="{% url 'social:profile' post.user.id %}" class="pd-user-info">
+                    {% if post.user.profile_image and post.user.profile_image.name %}
+                    <img src="{{ post.user.profile_image.url }}" alt="{{ post.user.get_full_name }}" class="pd-avatar"
+                        style="object-fit: cover;">
+                    {% else %}
                     <div class="pd-avatar">{{ post.user.first_name|slice:":1"|upper }}</div>
+                    {% endif %}
                     <div class="pd-username">{{ post.user.get_full_name }}</div>
                 </a>
 
@@ -689,7 +694,12 @@
                 <div class="pd-caption-block">
                     <a href="{% url 'social:profile' post.user.id %}"
                         style="text-decoration:none; height: fit-content;">
+                        {% if post.user.profile_image and post.user.profile_image.name %}
+                        <img src="{{ post.user.profile_image.url }}" alt="{{ post.user.get_full_name }}"
+                            class="pd-avatar" style="object-fit: cover;">
+                        {% else %}
                         <div class="pd-avatar">{{ post.user.first_name|slice:":1"|upper }}</div>
+                        {% endif %}
                     </a>
                     <div>
                         <span class="pd-username" style="margin-right: 4px;">{{ post.user.get_full_name }}</span>
@@ -712,8 +722,13 @@
                 <div class="pd-comment">
                     <a href="{% url 'social:profile' comment.user.id %}"
                         style="text-decoration:none; height: fit-content;">
+                        {% if comment.user.profile_image and comment.user.profile_image.name %}
+                        <img src="{{ comment.user.profile_image.url }}" alt="{{ comment.user.get_full_name }}"
+                            class="pd-avatar" style="width: 24px; height: 24px; object-fit: cover;">
+                        {% else %}
                         <div class="pd-avatar" style="width: 24px; height: 24px; font-size: 10px;">{{
                             comment.user.first_name|slice:":1"|upper }}</div>
+                        {% endif %}
                     </a>
                     <div class="pd-comment-content">
                         <span class="pd-username" style="margin-right: 4px;">{{ comment.user.get_full_name }}</span>

@@ -65,15 +65,32 @@ class BLIP2FashionCaptioner:
                 # Force all model parts to GPU for maximum speed
                 device_map = {"": "cuda"}  # Force everything to GPU
 
-                # Enable memory optimizations for RTX 3050 (4GB)
-                model_kwargs = {
-                    "torch_dtype": torch_dtype,
-                    "device_map": device_map,
-                    "load_in_8bit": True, # QUANTIZATION ENABLED
-                    "low_cpu_mem_usage": True,
-                }
-
-                logger.info("Loading BLIP-2 with GPU optimizations (8-bit quantization, forced GPU)")
+                # Try to use 8-bit quantization if bitsandbytes is available and compatible
+                # Python 3.14+ doesn't support torch.compile which bitsandbytes requires
+                import sys
+                use_8bit = sys.version_info < (3, 14)
+                
+                if use_8bit:
+                    try:
+                        import bitsandbytes
+                        model_kwargs = {
+                            "torch_dtype": torch_dtype,
+                            "device_map": device_map,
+                            "load_in_8bit": True,
+                            "low_cpu_mem_usage": True,
+                        }
+                        logger.info("Loading BLIP-2 with GPU optimizations (8-bit quantization, forced GPU)")
+                    except ImportError:
+                        use_8bit = False
+                
+                if not use_8bit:
+                    # Fallback: no quantization, just float16
+                    model_kwargs = {
+                        "torch_dtype": torch_dtype,
+                        "device_map": device_map,
+                        "low_cpu_mem_usage": True,
+                    }
+                    logger.info("Loading BLIP-2 with GPU optimizations (float16, no quantization - Python 3.14+)")
 
             else:
                 # CPU loading

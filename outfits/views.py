@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Avg, Sum
 from django.core.paginator import Paginator
 from .models import Outfit, OutfitItem, StyleChallenge, ChallengeParticipation, ChallengeOutfit, UserBadge
 from users.models import StyleCritiqueSession
@@ -330,13 +330,18 @@ def outfit_stats_view(request):
     Display outfit statistics and insights
     """
     user = request.user
-    outfits = Outfit.objects.filter(user=user)
+    outfits = Outfit.objects.filter(user=user).prefetch_related('items')
     
     # Calculate statistics
+    avg_items = outfits.annotate(item_count=Count('items')).aggregate(avg=Avg('item_count'))
+    total_wears = outfits.aggregate(total=Sum('times_worn'))
+    
     stats = {
         'total_outfits': outfits.count(),
+        'favorite_outfits': outfits.filter(favorite=True).count(),
+        'avg_items_per_outfit': avg_items['avg'] or 0,
+        'total_wears': total_wears['total'] or 0,
         'by_occasion': {},
-        'favorite_count': outfits.filter(favorite=True).count(),
         'most_worn': [],
         'recent_outfits': [],
     }
@@ -347,17 +352,15 @@ def outfit_stats_view(request):
         occasion_name = dict(Outfit.OCCASION_CHOICES).get(item['occasion'], item['occasion'])
         stats['by_occasion'][occasion_name] = item['count']
     
-    # Most worn outfits
+    # Most worn outfits - return full objects with prefetched items
     stats['most_worn'] = list(
         outfits.filter(times_worn__gt=0)
         .order_by('-times_worn')[:5]
-        .values('name', 'times_worn', 'outfit_image', 'id')
     )
     
-    # Recent outfits
+    # Recent outfits - return full objects with prefetched items
     stats['recent_outfits'] = list(
         outfits.order_by('-created_at')[:5]
-        .values('name', 'created_at', 'outfit_image', 'id')
     )
     
     context = {

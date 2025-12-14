@@ -318,14 +318,15 @@
 <div class="content-section">
     <div class="settings-section">
         <h3 class="section-title">Outfits by Occasion</h3>
-        
+
         {% if stats.by_occasion %}
         <div style="margin-top: 20px;">
             {% for occasion, count in stats.by_occasion.items %}
             <div class="occasion-item">
                 <div class="occasion-label">{{ occasion }}</div>
                 <div class="occasion-bar">
-                    <div class="occasion-bar-fill" style="width: {% widthratio count stats.total_outfits 100 %}%;"></div>
+                    <div class="occasion-bar-fill" style="width: {% widthratio count stats.total_outfits 100 %}%;">
+                    </div>
                 </div>
                 <div class="occasion-count">{{ count }}</div>
             </div>
@@ -342,7 +343,7 @@
 <div class="content-section" style="margin-top: 24px;">
     <div class="settings-section">
         <h3 class="section-title">Most Worn Outfits</h3>
-        
+
         <div class="outfit-list" style="margin-top: 20px;">
             {% for outfit in stats.most_worn %}
             <div class="outfit-list-item">
@@ -359,10 +360,11 @@
                 </div>
                 <div class="outfit-info">
                     <h4 class="outfit-name">{{ outfit.name }}</h4>
-                    <p class="outfit-meta">{{ outfit.get_occasion_display }} - {{ outfit.items.count }} item{{ outfit.items.count|pluralize }}</p>
+                    <p class="outfit-meta">{{ outfit.get_occasion_display }} - {{ outfit.items.count }} item{{
+                        outfit.items.count|pluralize }}</p>
                 </div>
                 <div class="outfit-stat">
-                    <div class="outfit-stat-value">{{ outfit.wear_count }}</div>
+                    <div class="outfit-stat-value">{{ outfit.times_worn }}</div>
                     <div class="outfit-stat-label">times</div>
                 </div>
                 <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary">View</a>
@@ -378,7 +380,7 @@
 <div class="content-section" style="margin-top: 24px;">
     <div class="settings-section">
         <h3 class="section-title">Recent Outfits</h3>
-        
+
         <div class="recent-grid" style="margin-top: 20px;">
             {% for outfit in stats.recent_outfits %}
             <div class="recent-card">
@@ -412,7 +414,8 @@
     <div class="empty-state">
         <div class="empty-icon">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M20.38 3.4a2 2 0 0 0-1.2-1.1 19.83 19.83 0 0 0-14.36 0 2 2 0 0 0-1.2 1.1L2 10l5 2V21a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V12l5-2-1.62-6.6z"/>
+                <path
+                    d="M20.38 3.4a2 2 0 0 0-1.2-1.1 19.83 19.83 0 0 0-14.36 0 2 2 0 0 0-1.2 1.1L2 10l5 2V21a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V12l5-2-1.62-6.6z" />
             </svg>
         </div>
         <h3 class="empty-title">No Statistics Available</h3>

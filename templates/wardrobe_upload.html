@@ -1290,7 +1290,7 @@
             const activewear = ['sportswear', 'activewear', 'yoga pants', 'sports bra',
                 'athletic wear', 'gym clothes', 'workout'];
 
-            // Check each category
+            // Check each category - returns names matching database categories
             for (const word of tops) {
                 if (itemTypeLower.includes(word)) return 'Top';
             }
@@ -1301,22 +1301,29 @@
                 if (itemTypeLower.includes(word)) return 'Dress';
             }
             for (const word of outerwear) {
-                if (itemTypeLower.includes(word)) return 'Outerwear';
+                if (itemTypeLower.includes(word)) return 'Jacket';
             }
             for (const word of shoes) {
-                if (itemTypeLower.includes(word)) return 'Shoes';
+                if (itemTypeLower.includes(word)) return 'Shoe';
             }
             for (const word of accessories) {
-                if (itemTypeLower.includes(word)) return 'Accessories';
+                // Check specific accessory types that have their own categories
+                if (itemTypeLower.includes('bag') || itemTypeLower.includes('purse') || 
+                    itemTypeLower.includes('handbag') || itemTypeLower.includes('backpack')) return 'Bag';
+                if (itemTypeLower.includes('hat') || itemTypeLower.includes('cap') || 
+                    itemTypeLower.includes('beanie')) return 'Hat';
+                if (itemTypeLower.includes('scarf')) return 'Scarf';
+                if (itemTypeLower.includes('belt')) return 'Belt';
+                return 'Bag'; // Default accessory category
             }
             for (const word of underwear) {
-                if (itemTypeLower.includes(word)) return 'Underwear';
+                if (itemTypeLower.includes(word)) return 'Bottom'; // Map to closest
             }
             for (const word of swimwear) {
-                if (itemTypeLower.includes(word)) return 'Swimwear';
+                if (itemTypeLower.includes(word)) return 'Sport';
             }
             for (const word of activewear) {
-                if (itemTypeLower.includes(word)) return 'Activewear';
+                if (itemTypeLower.includes(word)) return 'Sport';
             }
 
             return null; // No match found
@@ -1326,12 +1333,37 @@
         aiApplyBasic.addEventListener('click', () => applyAISuggestions('basic'));
         aiApplyColor.addEventListener('click', () => applyAISuggestions('color'));
 
+        // Extract color from AI description (more reliable than pixel analysis for product photos)
+        function extractColorFromDescription(description) {
+            if (!description) return null;
+            const descLower = description.toLowerCase();
+            
+            // Common colors to look for in description
+            const colors = ['black', 'white', 'grey', 'gray', 'navy', 'blue', 'red', 'green', 
+                           'yellow', 'orange', 'purple', 'pink', 'brown', 'beige', 'tan', 
+                           'cream', 'burgundy', 'maroon', 'olive', 'teal', 'coral', 'gold',
+                           'silver', 'charcoal', 'khaki', 'denim', 'indigo'];
+            
+            for (const color of colors) {
+                if (descLower.includes(color)) {
+                    // Capitalize first letter
+                    return color.charAt(0).toUpperCase() + color.slice(1);
+                }
+            }
+            return null;
+        }
+
         function applyAISuggestions(type) {
             if (!currentAnalysis) return;
 
             if (type === 'all' || type === 'basic') {
-                if (currentAnalysis.item_type && currentAnalysis.color) {
-                    document.getElementById('name').value = `${currentAnalysis.color} ${currentAnalysis.item_type}`;
+                // Try to get color from description first (more accurate for product photos)
+                const descriptionColor = extractColorFromDescription(currentAnalysis.description);
+                const bestColor = descriptionColor || currentAnalysis.color || '';
+                
+                if (currentAnalysis.item_type) {
+                    const colorPart = bestColor ? `${bestColor} ` : '';
+                    document.getElementById('name').value = `${colorPart}${currentAnalysis.item_type}`;
                 }
                 if (currentAnalysis.description) document.getElementById('description').value = currentAnalysis.description;
                 if (currentAnalysis.material) document.getElementById('material').value = currentAnalysis.material;
@@ -1369,10 +1401,30 @@
             }
 
             if (type === 'all' || type === 'color') {
-                if (currentAnalysis.color) document.getElementById('color').value = currentAnalysis.color;
-                if (currentAnalysis.color_hex) {
+                // Use description-extracted color if available (more accurate for product photos)
+                const descriptionColor = extractColorFromDescription(currentAnalysis.description);
+                const bestColor = descriptionColor || currentAnalysis.color;
+                
+                if (bestColor) document.getElementById('color').value = bestColor;
+                
+                // For hex, use the analyzed hex or map common colors to hex
+                if (currentAnalysis.color_hex && !descriptionColor) {
                     document.getElementById('color_hex').value = currentAnalysis.color_hex;
                     document.getElementById('color_hex_display').value = currentAnalysis.color_hex.toUpperCase();
+                } else if (descriptionColor) {
+                    // Map description color to approximate hex
+                    const colorHexMap = {
+                        'Black': '#000000', 'White': '#FFFFFF', 'Grey': '#808080', 'Gray': '#808080',
+                        'Navy': '#000080', 'Blue': '#0000FF', 'Red': '#FF0000', 'Green': '#008000',
+                        'Yellow': '#FFFF00', 'Orange': '#FFA500', 'Purple': '#800080', 'Pink': '#FFC0CB',
+                        'Brown': '#8B4513', 'Beige': '#F5F5DC', 'Tan': '#D2B48C', 'Cream': '#FFFDD0',
+                        'Burgundy': '#800020', 'Maroon': '#800000', 'Olive': '#808000', 'Teal': '#008080',
+                        'Coral': '#FF7F50', 'Gold': '#FFD700', 'Silver': '#C0C0C0', 'Charcoal': '#36454F',
+                        'Khaki': '#F0E68C', 'Denim': '#1560BD', 'Indigo': '#4B0082'
+                    };
+                    const hex = colorHexMap[descriptionColor] || currentAnalysis.color_hex || '#808080';
+                    document.getElementById('color_hex').value = hex;
+                    document.getElementById('color_hex_display').value = hex.toUpperCase();
                 }
             }
 

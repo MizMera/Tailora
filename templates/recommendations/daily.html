@@ -55,7 +55,7 @@
         color: #ffffff;
         padding: 24px 32px;
         margin-bottom: 40px;
-        border-radius: 8px;
+        border-radius: 0px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -109,7 +109,7 @@
         border: 1px solid #e0e0e0;
         padding: 24px;
         margin-bottom: 32px;
-        border-radius: 8px;
+        border-radius: 0px;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
@@ -144,7 +144,7 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        border-radius: 4px;
+        border-radius: 0px;
     }
 
     .confidence-badge {
@@ -154,7 +154,7 @@
         font-size: 11px;
         font-weight: 700;
         padding: 4px 10px;
-        border-radius: 20px;
+        border-radius: 0px;
     }
 
     /* Items Grid */
@@ -168,7 +168,7 @@
     .item-box {
         text-align: center;
         background: #f9f9f9;
-        border-radius: 4px;
+        border-radius: 0px;
         overflow: hidden;
         border: 1px solid #eee;
     }
@@ -223,7 +223,7 @@
         font-weight: 600;
         cursor: pointer;
         border: none;
-        border-radius: 4px;
+        border-radius: 0px;
         transition: all 0.2s;
     }
 
@@ -255,7 +255,7 @@
         border: 1px solid #e0e0e0;
         padding: 24px;
         margin-bottom: 24px;
-        border-radius: 8px;
+        border-radius: 0px;
     }
 
     .widget-title {
@@ -276,7 +276,7 @@
         text-align: center;
         padding: 20px;
         background: #f8f9fa;
-        border-radius: 8px;
+        border-radius: 0px;
         margin-bottom: 20px;
     }
 
@@ -324,7 +324,7 @@
         border: 1px solid #eee;
         padding: 16px;
         margin-bottom: 12px;
-        border-radius: 4px;
+        border-radius: 0px;
     }
 
     .shop-name {
@@ -344,7 +344,7 @@
         font-size: 9px;
         font-weight: 700;
         text-transform: uppercase;
-        border-radius: 2px;
+        border-radius: 0px;
         margin-bottom: 6px;
     }
 
@@ -358,7 +358,7 @@
         padding: 60px 20px;
         background: #f9f9f9;
         border: 1px dashed #ccc;
-        border-radius: 8px;
+        border-radius: 0px;
         margin-top: 24px;
     }
 
@@ -521,11 +521,11 @@
                         </form>
                     </div>
                     {% elif rec.status == 'accepted' %}
-                    <div style="text-align: center; padding: 12px; background: #e8f5e9; color: #2e7d32; border-radius: 4px; font-weight: 600; font-size: 13px;">
+                    <div style="text-align: center; padding: 12px; background: #e8f5e9; color: #2e7d32; border-radius: 0px; font-weight: 600; font-size: 13px;">
                         ✓ Saved to your outfits
                     </div>
                     {% else %}
-                    <div style="text-align: center; padding: 12px; background: #f0f0f0; color: #757575; border-radius: 4px; font-size: 13px;">
+                    <div style="text-align: center; padding: 12px; background: #f0f0f0; color: #757575; border-radius: 0px; font-size: 13px;">
                         Suggestion Rejected
                     </div>
                     {% endif %}
@@ -579,9 +579,9 @@
                     <!-- Overriding justify-content for this specific list to align image next to text -->
                     <li style="justify-content: flex-start; gap: 12px;">
                         {% if item.image %}
-                            <img src="{{ item.image.url }}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 4px; opacity: 0.8; border: 1px solid #eee;">
+                            <img src="{{ item.image.url }}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 0px; opacity: 0.8; border: 1px solid #eee;">
                         {% else %}
-                            <div style="width: 36px; height: 36px; background: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #999;">N/A</div>
+                            <div style="width: 36px; height: 36px; background: #eee; border-radius: 0px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #999;">N/A</div>
                         {% endif %}
                         <div style="flex: 1;">
                             <div style="font-weight: 500;">{{ item.name }}</div>

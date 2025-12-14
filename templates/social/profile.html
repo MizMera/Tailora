@@ -16,11 +16,11 @@
         border: 1px solid #e8e8e8;
         margin-bottom: 24px;
     }
-    
+
     .profile-avatar-wrapper {
         flex-shrink: 0;
     }
-    
+
     .profile-avatar-xl {
         width: 150px;
         height: 150px;
@@ -34,37 +34,37 @@
         font-weight: 700;
         text-transform: uppercase;
     }
-    
+
     .profile-details {
         flex: 1;
     }
-    
+
     .profile-name-row {
         display: flex;
         align-items: center;
         gap: 20px;
         margin-bottom: 16px;
     }
-    
+
     .profile-name-large {
         font-size: 28px;
         font-weight: 400;
         margin: 0;
         color: #2c2c2c;
     }
-    
+
     .profile-username {
         font-size: 14px;
         color: #888;
         margin-bottom: 20px;
     }
-    
+
     .profile-stats-row {
         display: flex;
         gap: 40px;
         margin-bottom: 24px;
     }
-    
+
     .profile-stat-item {
         display: flex;
         align-items: baseline;
@@ -73,32 +73,32 @@
         color: inherit;
         transition: color 0.2s;
     }
-    
+
     .profile-stat-item:hover {
         color: #4a90e2;
     }
-    
+
     .profile-stat-number {
         font-size: 18px;
         font-weight: 700;
         color: #2c2c2c;
     }
-    
+
     .profile-stat-item:hover .profile-stat-number {
         color: inherit;
     }
-    
+
     .profile-stat-label {
         font-size: 14px;
         color: #666;
     }
-    
+
     .profile-posts-section {
         background: #fff;
         border: 1px solid #e8e8e8;
         padding: 24px;
     }
-    
+
     .posts-section-header {
         display: flex;
         align-items: center;
@@ -107,7 +107,7 @@
         padding-bottom: 16px;
         border-bottom: 1px solid #e8e8e8;
     }
-    
+
     .posts-section-title {
         font-size: 14px;
         font-weight: 700;
@@ -115,13 +115,13 @@
         letter-spacing: 1px;
         color: #2c2c2c;
     }
-    
+
     .posts-grid-enhanced {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 16px;
     }
-    
+
     .post-grid-card {
         position: relative;
         aspect-ratio: 1;
@@ -130,22 +130,22 @@
         border: 1px solid #e8e8e8;
         transition: all 0.2s;
     }
-    
+
     .post-grid-card:hover {
         border-color: #2c2c2c;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
-    
+
     .post-grid-card img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
-    
+
     .post-grid-overlay {
         position: absolute;
         inset: 0;
-        background: rgba(0,0,0,0.4);
+        background: rgba(0, 0, 0, 0.4);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -154,11 +154,11 @@
         transition: opacity 0.2s;
         color: #fff;
     }
-    
+
     .post-grid-card:hover .post-grid-overlay {
         opacity: 1;
     }
-    
+
     .overlay-stat {
         display: flex;
         align-items: center;
@@ -166,18 +166,18 @@
         font-weight: 600;
         font-size: 14px;
     }
-    
+
     .empty-posts {
         text-align: center;
         padding: 60px 40px;
         color: #888;
     }
-    
+
     .empty-posts-icon {
         font-size: 48px;
         margin-bottom: 16px;
     }
-    
+
     @media (max-width: 768px) {
         .profile-page-header {
             flex-direction: column;
@@ -185,16 +185,16 @@
             text-align: center;
             padding: 24px;
         }
-        
+
         .profile-name-row {
             flex-direction: column;
             gap: 12px;
         }
-        
+
         .profile-stats-row {
             justify-content: center;
         }
-        
+
         .posts-grid-enhanced {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -205,7 +205,8 @@
 {% block content %}
 <div class="page-header">
     <div>
-        <h1 class="page-title">{% if is_own_profile %}My Profile{% else %}{{ profile_user.get_full_name }}{% endif %}</h1>
+        <h1 class="page-title">{% if is_own_profile %}My Profile{% else %}{{ profile_user.get_full_name }}{% endif %}
+        </h1>
         <p class="page-subtitle">{% if is_own_profile %}Your posts and style{% else %}Style collection{% endif %}</p>
     </div>
     <div style="display: flex; gap: 12px;">
@@ -218,7 +219,12 @@
 
 <div class="profile-page-header">
     <div class="profile-avatar-wrapper">
+        {% if profile_user.profile_image and profile_user.profile_image.name %}
+        <img src="{{ profile_user.profile_image.url }}" alt="{{ profile_user.get_full_name }}" class="profile-avatar-xl"
+            style="object-fit: cover;">
+        {% else %}
         <div class="profile-avatar-xl">{{ profile_user.first_name|slice:":1" }}</div>
+        {% endif %}
     </div>
     <div class="profile-details">
         <div class="profile-name-row">
@@ -235,7 +241,7 @@
             {% endif %}
         </div>
         <p class="profile-username">@{{ username }}</p>
-        
+
         <div class="profile-stats-row">
             <div class="profile-stat-item">
                 <span class="profile-stat-number">{{ posts_count }}</span>
@@ -258,7 +264,7 @@
         <h3 class="posts-section-title">Posts</h3>
         <span style="font-size: 13px; color: #757575;">{{ posts_count }} total</span>
     </div>
-    
+
     {% if posts %}
     <div class="posts-grid-enhanced">
         {% for post in posts %}
@@ -267,7 +273,8 @@
             {% if first_item.image %}
             <img src="{{ first_item.image.url }}" alt="{{ post.outfit.name }}">
             {% else %}
-            <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #f0f0f0, #e0e0e0); display: flex; align-items: center; justify-content: center; color: #888;">
+            <div
+                style="width: 100%; height: 100%; background: linear-gradient(135deg, #f0f0f0, #e0e0e0); display: flex; align-items: center; justify-content: center; color: #888;">
                 <span>No Image</span>
             </div>
             {% endif %}
@@ -287,9 +294,11 @@
     <div class="empty-posts">
         <div class="empty-posts-icon" style="font-size: 32px; color: #757575;">No posts</div>
         <h3>No Posts Yet</h3>
-        <p>{% if is_own_profile %}Share your first outfit to get started!{% else %}{{ profile_user.first_name }} hasn't posted anything yet.{% endif %}</p>
+        <p>{% if is_own_profile %}Share your first outfit to get started!{% else %}{{ profile_user.first_name }} hasn't
+            posted anything yet.{% endif %}</p>
         {% if is_own_profile %}
-        <a href="{% url 'social:create_post' %}" class="btn btn-primary" style="margin-top: 16px;">Share Your First Outfit</a>
+        <a href="{% url 'social:create_post' %}" class="btn btn-primary" style="margin-top: 16px;">Share Your First
+            Outfit</a>
         {% endif %}
     </div>
     {% endif %}
