@@ -4,31 +4,249 @@
 {% block title %}{{ challenge.title }} - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/social.css' %}">
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+    /* Hero Section */
+    .challenge-hero {
+        background: #f4e9cf;
+        padding: 48px;
+        margin-bottom: 32px;
+        text-align: center;
+    }
+
+    .challenge-theme {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 16px;
+    }
+
+    .challenge-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 36px;
+        font-weight: 700;
+        color: #2c2c2c;
+        margin: 0 0 16px 0;
+    }
+
+    .challenge-description {
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        color: #2c2c2c;
+        line-height: 1.6;
+        max-width: 600px;
+        margin: 0 auto 24px auto;
+    }
+
+    .challenge-dates {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #757575;
+        margin-bottom: 24px;
+    }
+
+    .challenge-hashtag {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #2c2c2c;
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 24px;
+    }
+
+    /* Entries Grid */
+    .entries-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+    }
+
+    .entry-card {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .entry-card:hover {
+        border-color: #2c2c2c;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .entry-image {
+        width: 100%;
+        padding-top: 100%;
+        background: #f4e9cf;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .entry-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .entry-card:hover .entry-image img {
+        transform: scale(1.03);
+    }
+
+    .entry-info {
+        padding: 16px;
+    }
+
+    .entry-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        background: #f4e9cf;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #2c2c2c;
+    }
+
+    .user-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c2c2c;
+    }
+
+    .entry-stats {
+        display: flex;
+        gap: 16px;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #757575;
+    }
+
+    .entry-stat {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 40px;
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="challenge-header content-section">
-    <div class="challenge-badge">{{ challenge.theme }}</div>
-    <h1>{{ challenge.title }}</h1>
+<!-- Hero Section -->
+<div class="challenge-hero">
+    <div class="challenge-theme">{{ challenge.theme }}</div>
+    
+    <h1 class="challenge-title">{{ challenge.title }}</h1>
     <p class="challenge-description">{{ challenge.description }}</p>
+    
     <div class="challenge-dates">
-        <span>{{ challenge.start_date|date:"F d, Y" }} - {{ challenge.end_date|date:"F d, Y" }}</span>
+        {{ challenge.start_date|date:"F d, Y" }} - {{ challenge.end_date|date:"F d, Y" }}
     </div>
-    <a href="{% url 'social:create_post' %}?challenge={{ challenge.id }}" class="btn btn-primary">Join Challenge</a>
+    
+    {% if challenge.hashtag %}
+    <span class="challenge-hashtag">{{ challenge.hashtag }}</span>
+    {% endif %}
+    
+    <div style="display: flex; justify-content: center; gap: 12px; margin-top: 16px;">
+        <a href="{% url 'social:create_post' %}?challenge={{ challenge.id }}" class="btn btn-primary">Join Challenge</a>
+        <a href="{% url 'social:challenges_list' %}" class="btn btn-secondary">All Challenges</a>
+    </div>
 </div>
 
-<div class="challenge-entries">
-    <h2>Entries ({{ posts.count }})</h2>
-    <div class="posts-container">
-        {% for post in posts %}
-            {% include 'social/_post_card.html' %}
-        {% empty %}
-        <div class="empty-state content-section">
-            <p>No entries yet. Be the first to join!</p>
+<!-- Messages -->
+{% if messages %}
+<div style="max-width: 1200px; margin: 0 auto 24px; padding: 0 24px;">
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Main Content -->
+<div style="max-width: 1200px; margin: 0 auto;">
+<div class="content-section">
+    <div class="settings-section">
+        <h3 class="section-title">Entries ({{ posts.count }})</h3>
+        
+        {% if posts %}
+        <div class="entries-grid">
+            {% for post in posts %}
+            <a href="{% url 'social:post_detail' post.id %}" class="entry-card">
+                <div class="entry-image">
+                    {% with post.outfit.items.all|first as first_item %}
+                    {% if first_item.image %}
+                    <img src="{{ first_item.image.url }}" alt="{{ post.outfit.name }}">
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="entry-info">
+                    <div class="entry-user">
+                        <div class="user-avatar">
+                            {{ post.user.first_name|slice:":1"|upper }}{{ post.user.last_name|slice:":1"|upper }}
+                        </div>
+                        <span class="user-name">{{ post.user.first_name }} {{ post.user.last_name }}</span>
+                    </div>
+                    <div class="entry-stats">
+                        <span class="entry-stat">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            {{ post.likes_count }}
+                        </span>
+                        <span class="entry-stat">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            {{ post.comments_count }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
         </div>
-        {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <div style="width: 64px; height: 64px; margin: 0 auto 20px; background: #f4e9cf; display: flex; align-items: center; justify-content: center;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2c2c2c" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+            </div>
+            <h3 style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">No Entries Yet</h3>
+            <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-bottom: 24px;">Be the first to join this challenge!</p>
+            <a href="{% url 'social:create_post' %}?challenge={{ challenge.id }}" class="btn btn-primary">Submit Your Entry</a>
+        </div>
+        {% endif %}
     </div>
 </div>
- 
+</div>
 {% endblock %}

@@ -4,17 +4,22 @@
 {% block title %}Edit {{ outfit.name }} - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/wardrobe.css' %}">
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 <style>
-    /* 1. LAYOUT CONTAINER */
-    .edit-outfit-container {
-        max-width: 960px;
-        margin: 40px auto;
-        padding: 0 20px;
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
     }
 
-    /* 2. ITEM SELECTOR GRID */
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Item Selector */
     .item-selector {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -22,63 +27,71 @@
         margin-top: 16px;
     }
 
-    /* 3. SELECTABLE ITEM CARD */
     .selectable-item {
         position: relative;
         cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-        border: 2px solid transparent;
-        background: #fff;
+        background: #ffffff;
+        border: 2px solid #e0e0e0;
+        transition: all 0.2s ease;
     }
 
     .selectable-item:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: #2c2c2c;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
     .selectable-item.selected {
         border-color: #2c2c2c;
     }
 
-    /* 4. IMAGE ASPECT RATIO (3:4) */
     .selectable-item .item-image {
-        padding-top: 133%; /* 3:4 Aspect Ratio */
         position: relative;
+        padding-top: 133.33%;
         background: #fafafa;
         overflow: hidden;
     }
 
     .selectable-item .item-image img {
         position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .selectable-item:hover .item-image img {
+        transform: scale(1.05);
     }
 
     .selectable-item .item-name {
         font-family: 'Inter', sans-serif;
-        font-size: 13px;
+        font-size: 12px;
         color: #2c2c2c;
-        margin: 8px;
+        padding: 8px;
         text-align: center;
         font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    /* Selection Badge (Checkmark) */
-    .selectable-item .selection-badge {
+    /* Selection Badge */
+    .selection-badge {
         position: absolute;
-        top: 8px; right: 8px;
-        width: 24px; height: 24px;
+        top: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
         background: #2c2c2c;
         color: #ffffff;
-        border-radius: 0; /* Squared */
         display: none;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
+        font-size: 12px;
         font-weight: bold;
         z-index: 2;
     }
@@ -87,183 +100,205 @@
         display: flex;
     }
 
-    /* 5. PREVIEW SECTION */
+    /* Selected Preview */
     .selected-preview {
         display: flex;
         gap: 12px;
         padding: 16px;
-        background: #f9f9f9;
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
         margin-top: 16px;
         flex-wrap: wrap;
-        border: 1px solid #eee;
+        min-height: 80px;
     }
 
-    .selected-preview .preview-item {
-        width: 80px;
-        height: 106px; /* 3:4 Aspect Ratio roughly */
-        border: 1px solid #ddd;
+    .selected-preview:empty::before {
+        content: 'No items selected';
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .preview-item {
+        width: 70px;
+        height: 93px;
+        border: 1px solid #e0e0e0;
         position: relative;
-        background: #fff;
+        background: #ffffff;
     }
 
-    .selected-preview .preview-item img {
+    .preview-item img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .selected-preview .remove-btn {
+    .preview-item .remove-btn {
         position: absolute;
-        top: -8px; right: -8px;
-        width: 20px; height: 20px;
+        top: -8px;
+        right: -8px;
+        width: 20px;
+        height: 20px;
         background: #c62828;
         color: #ffffff;
         border: none;
         cursor: pointer;
-        font-size: 16px;
-        line-height: 1;
+        font-size: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 0;
+    }
+
+    .preview-item .remove-btn:hover {
+        background: #b71c1c;
+    }
+
+    /* Checkbox */
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #2c2c2c;
+    }
+
+    .checkbox-item span {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #2c2c2c;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="edit-outfit-container">
-    
-    <!-- Page Header -->
-    <div class="page-header" style="margin-bottom: 32px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-            <div>
-                <h1 class="page-title" style="margin: 0; font-size: 28px;">Edit Outfit</h1>
-                <p class="page-subtitle" style="margin-top: 4px; color: #666;">{{ outfit.name }}</p>
-            </div>
-            <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary" style="border-radius: 0;">Cancel</a>
+<!-- Page Header -->
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h1 class="page-title">Edit Outfit</h1>
+            <p class="page-subtitle">{{ outfit.name }}</p>
         </div>
-    </div>
-
-    <!-- Messages -->
-    {% if messages %}
-    <div style="margin-bottom: 24px;">
-        {% for message in messages %}
-        <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}"
-             style="padding: 12px; border-radius: 0; margin-bottom: 8px; border: 1px solid transparent;
-                    {% if message.tags == 'error' %}background:#fde8e8; color:#9b1c1c; border-color:#f8b4b4;{% else %}background:#def7ec; color:#03543f; border-color:#84e1bc;{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- Edit Form -->
-    <div class="content-section" style="background: #fff; padding: 40px; border: 1px solid #e0e0e0;">
-        <form method="post" id="editForm">
-            {% csrf_token %}
-
-            <!-- Basic Info -->
-            <div class="settings-section">
-                <h3 class="section-title" style="margin-top: 0; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                    Basic Information
-                </h3>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                    <div class="input-field">
-                        <label for="name" class="input-label" style="display:block; margin-bottom: 8px; font-weight: 600; font-size: 13px; text-transform: uppercase;">Outfit Name *</label>
-                        <input type="text" id="name" name="name" class="input-control" required value="{{ outfit.name }}" 
-                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 0;">
-                    </div>
-                    <div class="input-field">
-                        <label for="occasion" class="input-label" style="display:block; margin-bottom: 8px; font-weight: 600; font-size: 13px; text-transform: uppercase;">Occasion</label>
-                        <select id="occasion" name="occasion" class="input-control"
-                                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 0;">
-                            {% for value, label in occasions %}
-                            <option value="{{ value }}" {% if outfit.occasion == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <div class="input-field" style="margin-bottom: 24px;">
-                    <label for="description" class="input-label" style="display:block; margin-bottom: 8px; font-weight: 600; font-size: 13px; text-transform: uppercase;">Description</label>
-                    <textarea id="description" name="description" class="input-control" rows="3"
-                              style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 0; resize: vertical;">{{ outfit.description }}</textarea>
-                </div>
-
-                <div class="form-grid-full">
-                    <label class="checkbox-item-inline" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" name="favorite" value="true" {% if outfit.favorite %}checked{% endif %}>
-                        <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; text-transform: uppercase;">★ Mark as Favorite</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Selected Items Preview -->
-            <div class="settings-section" style="margin-top: 40px;">
-                <h3 class="section-title" style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                    Selected Items <span id="selectedCount" style="color: #757575; font-weight: 400;">({{ outfit.items.count }})</span>
-                </h3>
-                
-                <div id="selectedPreview" class="selected-preview">
-                    {% for item in outfit.items.all %}
-                    <div class="preview-item" data-item-id="{{ item.id }}">
-                        <img src="{{ item.image.url }}" alt="{{ item.name }}">
-                        <button type="button" class="remove-btn"
-                            onclick="removeItem('{{ item.id }}', '{{ item.name|escapejs }}', '{{ item.image.url|escapejs }}')">×</button>
-                    </div>
-                    {% endfor %}
-                </div>
-                
-                <p id="selectionHint" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #757575; margin-top: 12px;">
-                    Click items in the categories below to add/remove them (Minimum 2 items required).
-                </p>
-            </div>
-
-            <!-- Item Selection by Category -->
-            {% if items_by_category %}
-                {% for category, items in items_by_category.items %}
-                <div class="settings-section" style="margin-top: 32px;">
-                    <h4 class="section-title" style="font-size: 16px; margin-bottom: 16px; color: #555; text-transform: uppercase; letter-spacing: 1px;">{{ category }}</h4>
-                    <div class="item-selector">
-                        {% for item in items %}
-                        <div class="selectable-item {% if item.id in selected_item_ids %}selected{% endif %}"
-                            data-item-id="{{ item.id }}" data-item-name="{{ item.name }}"
-                            data-item-image="{{ item.image.url }}">
-                            <div class="item-image">
-                                <img src="{{ item.image.url }}" alt="{{ item.name }}">
-                                <div class="selection-badge">✓</div>
-                            </div>
-                            <p class="item-name">{{ item.name }}</p>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endfor %}
-            {% endif %}
-
-            <!-- Hidden inputs for selected items -->
-            <div id="hiddenInputs">
-                {% for item in outfit.items.all %}
-                <input type="hidden" name="items" value="{{ item.id }}" data-item-id="{{ item.id }}">
-                {% endfor %}
-            </div>
-
-            <!-- Form Actions -->
-            <div class="form-actions" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 12px;">
-                <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary" style="border-radius: 0;">Cancel</a>
-                <button type="submit" class="btn btn-primary" id="submitBtn" style="border-radius: 0;">Save Changes</button>
-            </div>
-        </form>
+        <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary">Cancel</a>
     </div>
 </div>
 
-<script>
-    // Initialize the set with string IDs
-    const selectedItems = new Set([
-        {% for item in outfit.items.all %}
-            '{{ item.id }}'{% if not forloop.last %}, {% endif %}
+<!-- Messages -->
+{% if messages %}
+<div style="margin-bottom: 24px;">
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="content-section">
+    <form method="post" id="editForm">
+        {% csrf_token %}
+
+        <!-- Basic Information -->
+        <div class="settings-section">
+            <h3 class="section-title">Basic Information</h3>
+            
+            <div class="form-grid">
+                <div class="input-field">
+                    <label for="name" class="input-label">Outfit Name *</label>
+                    <input type="text" id="name" name="name" class="input-control" required value="{{ outfit.name }}">
+                </div>
+                <div class="input-field">
+                    <label for="occasion" class="input-label">Occasion</label>
+                    <select id="occasion" name="occasion" class="input-control">
+                        {% for value, label in occasions %}
+                        <option value="{{ value }}" {% if outfit.occasion == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-field" style="margin-top: 20px;">
+                <label for="description" class="input-label">Description</label>
+                <textarea id="description" name="description" class="input-control" rows="3">{{ outfit.description }}</textarea>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <label class="checkbox-item">
+                    <input type="checkbox" name="favorite" value="true" {% if outfit.favorite %}checked{% endif %}>
+                    <span>Mark as Favorite</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Selected Items Preview -->
+        <div class="settings-section" style="margin-top: 32px;">
+            <h3 class="section-title">Selected Items <span id="selectedCount" style="color: #757575; font-weight: 400;">({{ outfit.items.count }})</span></h3>
+            
+            <div id="selectedPreview" class="selected-preview">
+                {% for item in outfit.items.all %}
+                <div class="preview-item" data-item-id="{{ item.id }}">
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                    <button type="button" class="remove-btn" onclick="removeItem('{{ item.id }}')">x</button>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <p style="font-family: 'Inter', sans-serif; font-size: 13px; color: #757575; margin-top: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                Click items below to add or remove them (Minimum 2 items required)
+            </p>
+        </div>
+
+        <!-- Item Selection by Category -->
+        {% if items_by_category %}
+        {% for category, items in items_by_category.items %}
+        <div class="settings-section" style="margin-top: 32px;">
+            <h3 class="section-title">{{ category }}</h3>
+            <div class="item-selector">
+                {% for item in items %}
+                <div class="selectable-item {% if item.id in selected_item_ids %}selected{% endif %}"
+                     data-item-id="{{ item.id }}" 
+                     data-item-name="{{ item.name }}"
+                     data-item-image="{{ item.image.url }}">
+                    <div class="item-image">
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                        <div class="selection-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="item-name">{{ item.name }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
         {% endfor %}
+        {% endif %}
+
+        <!-- Hidden Inputs -->
+        <div id="hiddenInputs">
+            {% for item in outfit.items.all %}
+            <input type="hidden" name="items" value="{{ item.id }}" data-item-id="{{ item.id }}">
+            {% endfor %}
+        </div>
+
+        <!-- Form Actions -->
+        <div style="display: flex; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #e0e0e0;">
+            <button type="submit" class="btn btn-primary" id="submitBtn">Save Changes</button>
+            <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    const selectedItems = new Set([
+        {% for item in outfit.items.all %}'{{ item.id }}'{% if not forloop.last %}, {% endif %}{% endfor %}
     ]);
     
     const selectedPreview = document.getElementById('selectedPreview');
@@ -271,15 +306,15 @@
     const hiddenInputs = document.getElementById('hiddenInputs');
     const submitBtn = document.getElementById('submitBtn');
 
-    // Handle item selection click
+    // Handle item selection
     document.querySelectorAll('.selectable-item').forEach(item => {
-        item.addEventListener('click', function () {
+        item.addEventListener('click', function() {
             const itemId = this.getAttribute('data-item-id');
             const itemName = this.getAttribute('data-item-name');
             const itemImage = this.getAttribute('data-item-image');
 
             if (selectedItems.has(itemId)) {
-                removeItem(itemId, itemName, itemImage);
+                removeItem(itemId);
             } else {
                 addItem(itemId, itemName, itemImage);
             }
@@ -289,21 +324,21 @@
     function addItem(itemId, itemName, itemImage) {
         selectedItems.add(itemId);
 
-        // Update UI Card
+        // Update card
         const card = document.querySelector(`.selectable-item[data-item-id="${itemId}"]`);
         if (card) card.classList.add('selected');
 
-        // Add to Preview Bar
+        // Add to preview
         const previewItem = document.createElement('div');
         previewItem.className = 'preview-item';
         previewItem.setAttribute('data-item-id', itemId);
         previewItem.innerHTML = `
             <img src="${itemImage}" alt="${itemName}">
-            <button type="button" class="remove-btn" onclick="removeItem('${itemId}')">×</button>
+            <button type="button" class="remove-btn" onclick="removeItem('${itemId}')">x</button>
         `;
         selectedPreview.appendChild(previewItem);
 
-        // Add Hidden Input
+        // Add hidden input
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = 'items';
@@ -311,28 +346,28 @@
         input.setAttribute('data-item-id', itemId);
         hiddenInputs.appendChild(input);
 
-        updateSubmitButton();
+        updateUI();
     }
 
     function removeItem(itemId) {
         selectedItems.delete(itemId);
 
-        // Update UI Card
+        // Update card
         const card = document.querySelector(`.selectable-item[data-item-id="${itemId}"]`);
         if (card) card.classList.remove('selected');
 
-        // Remove from Preview Bar
+        // Remove from preview
         const previewItem = selectedPreview.querySelector(`.preview-item[data-item-id="${itemId}"]`);
         if (previewItem) previewItem.remove();
 
-        // Remove Hidden Input
+        // Remove hidden input
         const input = hiddenInputs.querySelector(`input[data-item-id="${itemId}"]`);
         if (input) input.remove();
 
-        updateSubmitButton();
+        updateUI();
     }
 
-    function updateSubmitButton() {
+    function updateUI() {
         selectedCount.textContent = `(${selectedItems.size})`;
 
         if (selectedItems.size < 2) {
@@ -346,7 +381,6 @@
         }
     }
 
-    // Run on load to set initial state
-    updateSubmitButton();
+    updateUI();
 </script>
 {% endblock %}

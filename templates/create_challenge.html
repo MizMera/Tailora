@@ -4,53 +4,177 @@
 {% block title %}Create Challenge - Tailora{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 <style>
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-.form-grid-full {
-    grid-column: 1 / -1;
-}
-.challenge-preview {
-    background: #fafafa;
-    padding: 24px;
-    border-radius: 8px;
-    margin-top: 24px;
-}
-.preview-title {
-    font-family: 'Istok Web', sans-serif;
-    font-size: 20px;
-    font-weight: 600;
-    color: #2c2c2c;
-    margin-bottom: 16px;
-}
-.rule-examples {
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 16px;
-    margin-top: 16px;
-}
-.rule-example {
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    color: #757575;
-    margin-bottom: 8px;
-    padding-left: 12px;
-    border-left: 2px solid #e0e0e0;
-}
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-grid-full {
+        grid-column: 1 / -1;
+    }
+
+    /* Preview Card */
+    .challenge-preview {
+        background: #f4e9cf;
+        padding: 24px;
+        margin-top: 32px;
+    }
+
+    .preview-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+    }
+
+    .preview-title {
+        font-family: 'Istok Web', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: #2c2c2c;
+        margin-bottom: 8px;
+    }
+
+    .preview-description {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #2c2c2c;
+        line-height: 1.5;
+    }
+
+    /* Rules Builder */
+    .rules-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .rule-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 8px;
+    }
+
+    .rule-number {
+        width: 24px;
+        height: 24px;
+        background: #2c2c2c;
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .rule-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #2c2c2c;
+        outline: none;
+    }
+
+    .rule-remove {
+        background: none;
+        border: none;
+        color: #757575;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.2s;
+    }
+
+    .rule-remove:hover {
+        color: #f44336;
+    }
+
+    .add-rule-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px;
+        background: #ffffff;
+        border: 1px dashed #e0e0e0;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #757575;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .add-rule-btn:hover {
+        border-color: #2c2c2c;
+        color: #2c2c2c;
+    }
+
+    /* Examples */
+    .rule-examples {
+        margin-top: 16px;
+        padding: 16px;
+        background: #fafafa;
+        border: 1px solid #e0e0e0;
+    }
+
+    .example-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    .example-item {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #757575;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .example-item:last-child {
+        border-bottom: none;
+    }
+
+    .example-item:hover {
+        color: #2c2c2c;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Page Header -->
 <div class="page-header">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
-            <h1 class="page-title">Create Style Challenge</h1>
-            <p class="page-subtitle">Design a new challenge for yourself and others</p>
+            <h1 class="page-title">Create Challenge</h1>
+            <p class="page-subtitle">Design a new style challenge for yourself and the community</p>
         </div>
         <a href="{% url 'outfits:challenges_list' %}" class="btn btn-secondary">Back to Challenges</a>
     </div>
@@ -67,19 +191,21 @@
 </div>
 {% endif %}
 
-<!-- Create Form -->
+<div style="max-width: 900px; margin: 0 auto;">
 <div class="content-section">
-    <form method="post">
+
+    <form method="post" id="challengeForm">
         {% csrf_token %}
-        
+
         <!-- Basic Information -->
         <div class="settings-section">
             <h3 class="section-title">Basic Information</h3>
+            
             <div class="form-grid">
                 <div class="input-field">
                     <label for="name" class="input-label">Challenge Name *</label>
-                    <input type="text" id="name" name="name" class="input-control" required 
-                           placeholder="e.g., 7-Day Capsule Wardrobe Challenge">
+                    <input type="text" id="name" name="name" class="input-control" required
+                           placeholder="e.g., 7-Day Capsule Wardrobe">
                 </div>
                 <div class="input-field">
                     <label for="challenge_type" class="input-label">Challenge Type</label>
@@ -90,173 +216,149 @@
                     </select>
                 </div>
             </div>
-            <div class="form-grid-full">
-                <div class="input-field">
-                    <label for="description" class="input-label">Description *</label>
-                    <textarea id="description" name="description" class="input-control" rows="4" required 
-                              placeholder="Describe what participants will do in this challenge..."></textarea>
-                </div>
+            
+            <div class="input-field" style="margin-top: 20px;">
+                <label for="description" class="input-label">Description *</label>
+                <textarea id="description" name="description" class="input-control" rows="4" required
+                          placeholder="Describe what participants need to do..."></textarea>
             </div>
         </div>
 
-        <!-- Challenge Settings -->
-        <div class="settings-section">
-            <h3 class="section-title">Challenge Settings</h3>
+        <!-- Schedule -->
+        <div class="settings-section" style="margin-top: 32px;">
+            <h3 class="section-title">Schedule</h3>
+            
             <div class="form-grid">
                 <div class="input-field">
-                    <label for="duration_days" class="input-label">Duration (Days) *</label>
-                    <input type="number" id="duration_days" name="duration_days" class="input-control" 
-                           value="7" min="1" max="30" required>
+                    <label for="start_date" class="input-label">Start Date *</label>
+                    <input type="date" id="start_date" name="start_date" class="input-control" required>
                 </div>
                 <div class="input-field">
-                    <label class="checkbox-item-inline" style="display: flex; align-items: center; gap: 8px; margin-top: 32px;">
-                        <input type="checkbox" name="is_public" value="true">
-                        <span style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c;">
-                            Make this challenge public
-                        </span>
-                    </label>
+                    <label for="end_date" class="input-label">End Date *</label>
+                    <input type="date" id="end_date" name="end_date" class="input-control" required>
                 </div>
             </div>
         </div>
 
-        <!-- Challenge Rules -->
-        <div class="settings-section">
+        <!-- Rules -->
+        <div class="settings-section" style="margin-top: 32px;">
             <h3 class="section-title">Challenge Rules</h3>
-            <div class="form-grid-full">
-                <div class="input-field">
-                    <label for="rules" class="input-label">Custom Rules (Optional)</label>
-                    <textarea id="rules" name="rules" class="input-control" rows="6" 
-                              placeholder="Define specific rules for this challenge. For example:
-• Create outfits using only 10 core items
-• Focus on monochromatic color schemes
-• Incorporate at least one sustainable item per outfit
-• etc..."></textarea>
-                    <p style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; margin-top: 8px;">
-                        If no custom rules are provided, the challenge will use default rules based on the challenge type.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Challenge Preview -->
-        <div class="challenge-preview">
-            <h3 class="preview-title">Challenge Preview</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                <div>
-                    <label style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
-                        Type
-                    </label>
-                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; margin: 4px 0 0 0;" id="previewType">
-                        Capsule Wardrobe
-                    </p>
-                </div>
-                <div>
-                    <label style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
-                        Duration
-                    </label>
-                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; margin: 4px 0 0 0;" id="previewDuration">
-                        7 days
-                    </p>
-                </div>
-                <div>
-                    <label style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
-                        Visibility
-                    </label>
-                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2c2c2c; margin: 4px 0 0 0;" id="previewVisibility">
-                        Private
-                    </p>
+            
+            <div id="rulesContainer">
+                <div class="rule-item">
+                    <span class="rule-number">1</span>
+                    <input type="text" class="rule-input" name="rules[]" placeholder="Add a rule...">
+                    <button type="button" class="rule-remove" onclick="removeRule(this)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                 </div>
             </div>
             
+            <button type="button" class="add-rule-btn" onclick="addRule()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add Rule
+            </button>
+            
             <div class="rule-examples">
-                <label style="font-family: 'Inter', sans-serif; font-size: 12px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px;">
-                    Example Rules
-                </label>
-                <div id="ruleExamples">
-                    <div class="rule-example">Create and submit 7 unique outfits</div>
-                    <div class="rule-example">Each outfit must follow the challenge theme</div>
-                    <div class="rule-example">Complete all outfits before the end date</div>
-                </div>
+                <div class="example-title">Example Rules (click to add)</div>
+                <div class="example-item" onclick="addExampleRule(this)">Create one outfit each day using only 10 items</div>
+                <div class="example-item" onclick="addExampleRule(this)">Each outfit must include at least 3 colors</div>
+                <div class="example-item" onclick="addExampleRule(this)">No repeating items within the challenge period</div>
+                <div class="example-item" onclick="addExampleRule(this)">Share your outfit with a description of the occasion</div>
             </div>
         </div>
 
-        <!-- Form Actions -->
-        <div class="form-actions">
-            <a href="{% url 'outfits:challenges_list' %}" class="btn btn-secondary">Cancel</a>
+        <!-- Preview -->
+        <div class="challenge-preview">
+            <div class="preview-label">Preview</div>
+            <h3 class="preview-title" id="previewTitle">Your Challenge Name</h3>
+            <p class="preview-description" id="previewDescription">Your challenge description will appear here...</p>
+        </div>
+
+        <!-- Submit -->
+        <div style="display: flex; gap: 12px; margin-top: 32px;">
             <button type="submit" class="btn btn-primary">Create Challenge</button>
+            <a href="{% url 'outfits:challenges_list' %}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
-</div>
 
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const challengeTypeSelect = document.getElementById('challenge_type');
-    const durationInput = document.getElementById('duration_days');
-    const publicCheckbox = document.querySelector('input[name="is_public"]');
+    // Update preview
+    document.getElementById('name').addEventListener('input', function() {
+        document.getElementById('previewTitle').textContent = this.value || 'Your Challenge Name';
+    });
     
-    const previewType = document.getElementById('previewType');
-    const previewDuration = document.getElementById('previewDuration');
-    const previewVisibility = document.getElementById('previewVisibility');
-    const ruleExamples = document.getElementById('ruleExamples');
+    document.getElementById('description').addEventListener('input', function() {
+        document.getElementById('previewDescription').textContent = this.value || 'Your challenge description will appear here...';
+    });
     
-    // Challenge type examples
-    const challengeExamples = {
-        'capsule': [
-            'Create outfits using a limited number of core items',
-            'Focus on versatility and mix-and-match potential',
-            'Show how few items can create many different looks'
-        ],
-        'color': [
-            'Create outfits based on a specific color palette',
-            'Experiment with monochromatic or complementary colors',
-            'Show your personal color style preferences'
-        ],
-        'item': [
-            'Create outfits featuring a specific type of item',
-            'Show different ways to style the same piece',
-            'Demonstrate item versatility across occasions'
-        ],
-        'style': [
-            'Explore and define your personal style',
-            'Try new style directions you haven\'t explored',
-            'Document your style evolution journey'
-        ],
-        'sustainability': [
-            'Focus on sustainable and ethical fashion choices',
-            'Incorporate second-hand or upcycled items',
-            'Demonstrate conscious consumption practices'
-        ]
-    };
+    // Add rule
+    function addRule() {
+        const container = document.getElementById('rulesContainer');
+        const ruleCount = container.children.length + 1;
+        
+        const ruleItem = document.createElement('div');
+        ruleItem.className = 'rule-item';
+        ruleItem.innerHTML = `
+            <span class="rule-number">${ruleCount}</span>
+            <input type="text" class="rule-input" name="rules[]" placeholder="Add a rule...">
+            <button type="button" class="rule-remove" onclick="removeRule(this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        `;
+        container.appendChild(ruleItem);
+    }
     
-    function updatePreview() {
-        // Update type
-        const selectedType = challengeTypeSelect.options[challengeTypeSelect.selectedIndex].text;
-        previewType.textContent = selectedType;
-        
-        // Update duration
-        previewDuration.textContent = durationInput.value + ' days';
-        
-        // Update visibility
-        previewVisibility.textContent = publicCheckbox.checked ? 'Public' : 'Private';
-        
-        // Update rule examples
-        const examples = challengeExamples[challengeTypeSelect.value] || challengeExamples['capsule'];
-        ruleExamples.innerHTML = '';
-        examples.forEach(example => {
-            const div = document.createElement('div');
-            div.className = 'rule-example';
-            div.textContent = example;
-            ruleExamples.appendChild(div);
+    // Remove rule
+    function removeRule(btn) {
+        const container = document.getElementById('rulesContainer');
+        if (container.children.length > 1) {
+            btn.closest('.rule-item').remove();
+            updateRuleNumbers();
+        }
+    }
+    
+    // Update rule numbers
+    function updateRuleNumbers() {
+        const rules = document.querySelectorAll('#rulesContainer .rule-item');
+        rules.forEach((rule, index) => {
+            rule.querySelector('.rule-number').textContent = index + 1;
         });
     }
     
-    // Add event listeners
-    challengeTypeSelect.addEventListener('change', updatePreview);
-    durationInput.addEventListener('input', updatePreview);
-    publicCheckbox.addEventListener('change', updatePreview);
+    // Add example rule
+    function addExampleRule(el) {
+        const emptyInput = document.querySelector('#rulesContainer .rule-input:placeholder-shown');
+        if (emptyInput) {
+            emptyInput.value = el.textContent;
+        } else {
+            addRule();
+            const inputs = document.querySelectorAll('#rulesContainer .rule-input');
+            inputs[inputs.length - 1].value = el.textContent;
+        }
+    }
     
-    // Initial update
-    updatePreview();
-});
+    // Set minimum dates
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('start_date').min = today;
+    document.getElementById('end_date').min = today;
+    
+    document.getElementById('start_date').addEventListener('change', function() {
+        document.getElementById('end_date').min = this.value;
+    });
 </script>
 {% endblock %}

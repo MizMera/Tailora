@@ -16,13 +16,26 @@
 <div class="page-header">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
-            <h1 class="page-title">Social Feed</h1>
+            <h1 class="page-title">Community</h1>
             <p class="page-subtitle">Discover and share your style with the community</p>
         </div>
         <div style="display: flex; gap: 12px;">
-            <a href="{% url 'social:discover' %}" class="btn btn-secondary">Discover</a>
             <a href="{% url 'social:create_post' %}" class="btn btn-primary">+ Share Outfit</a>
         </div>
+    </div>
+</div>
+
+<!-- Feed Tabs -->
+<div style="max-width: 1200px; margin: 0 auto 24px;">
+    <div style="display: flex; gap: 0; border-bottom: 2px solid #e0e0e0;">
+        <a href="{% url 'social:feed' %}?feed=community" 
+           style="padding: 12px 24px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: {% if feed_type == 'community' %}600{% else %}400{% endif %}; color: {% if feed_type == 'community' %}#2c2c2c{% else %}#757575{% endif %}; text-decoration: none; border-bottom: 2px solid {% if feed_type == 'community' %}#2c2c2c{% else %}transparent{% endif %}; margin-bottom: -2px; transition: all 0.2s;">
+            Community
+        </a>
+        <a href="{% url 'social:feed' %}?feed=following" 
+           style="padding: 12px 24px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: {% if feed_type == 'following' %}600{% else %}400{% endif %}; color: {% if feed_type == 'following' %}#2c2c2c{% else %}#757575{% endif %}; text-decoration: none; border-bottom: 2px solid {% if feed_type == 'following' %}#2c2c2c{% else %}transparent{% endif %}; margin-bottom: -2px; transition: all 0.2s;">
+            Following
+        </a>
     </div>
 </div>
 
@@ -51,7 +64,7 @@
                 </div>
             {% else %}
                 <div style="text-align: center; padding: 80px 40px;">
-                    <div style="width: 80px; height: 80px; margin: 0 auto 24px; background: #f4e9cf; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 24px; background: #f4e9cf; display: flex; align-items: center; justify-content: center;">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2c2c2c" stroke-width="2">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                             <circle cx="9" cy="7" r="4"></circle>
@@ -59,15 +72,64 @@
                             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                         </svg>
                     </div>
+                    {% if feed_type == 'following' %}
                     <h3 style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">Your Feed is Empty</h3>
                     <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-bottom: 24px;">Follow other users to see their posts here</p>
-                    <a href="{% url 'social:discover' %}" class="btn btn-primary">Discover Users</a>
+                    <a href="{% url 'social:feed' %}?feed=community" class="btn btn-primary">Explore Community</a>
+                    {% else %}
+                    <h3 style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">No Posts Yet</h3>
+                    <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-bottom: 24px;">Be the first to share your style with the community!</p>
+                    <a href="{% url 'social:create_post' %}" class="btn btn-primary">Share Your First Outfit</a>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>
         
         <!-- Sidebar -->
         <div>
+            <!-- Community Stats (shown on community tab) -->
+            {% if feed_type == 'community' %}
+            <div class="settings-section" style="margin-bottom: 32px;">
+                <h3 class="section-title">Community</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; text-align: center; padding: 16px 0; border-bottom: 1px solid #e0e0e0; margin-bottom: 16px;">
+                    <div>
+                        <div style="font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; color: #2c2c2c;">{{ total_members }}</div>
+                        <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Members</div>
+                    </div>
+                    <div>
+                        <div style="font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; color: #2c2c2c;">{{ total_community_posts }}</div>
+                        <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Posts</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Suggested Users -->
+            {% if suggested_users %}
+            <div class="settings-section" style="margin-bottom: 32px;">
+                <h3 class="section-title">People to Follow</h3>
+                <div style="display: grid; gap: 12px;">
+                    {% for suggested_user in suggested_users %}
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #fafafa; border: 1px solid #e0e0e0;">
+                        <a href="{% url 'social:profile' suggested_user.id %}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; flex: 1;">
+                            <div style="width: 40px; height: 40px; background: #f4e9cf; display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; font-weight: 600; color: #2c2c2c; font-size: 16px;">
+                                {{ suggested_user.first_name|slice:":1"|upper }}{{ suggested_user.last_name|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <div style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: #2c2c2c;">{{ suggested_user.first_name }} {{ suggested_user.last_name }}</div>
+                                <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #757575;">{{ suggested_user.num_posts }} posts</div>
+                            </div>
+                        </a>
+                        <form action="{% url 'social:toggle_follow' suggested_user.id %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary btn-sm" style="font-size: 11px; padding: 6px 12px;">Follow</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+            
             <!-- User Stats -->
             <div class="settings-section" style="margin-bottom: 32px;">
                 <h3 class="section-title">Your Profile</h3>

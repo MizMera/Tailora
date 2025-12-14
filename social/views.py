@@ -13,24 +13,40 @@ from django.core.cache import cache
 from .models import LookbookPost, PostLike, PostComment, PostSave, UserFollow, StyleChallenge, PostDraft, AIEngagementData
 from .services import AIEngagementOptimizer
 from outfits.models import Outfit
+from users.models import User
 
 
 @login_required
 def feed_view(request):
-    """Main social feed showing posts from followed users"""
+    """Main social feed with Following and Community tabs"""
+    # Get feed type from query param (default to 'community' for better discovery)
+    feed_type = request.GET.get('feed', 'community')
+    
     # Get users the current user follows
     following_ids = UserFollow.objects.filter(
         follower=request.user
     ).values_list('following_id', flat=True)
     
-    # Get posts from followed users + own posts
-    posts = LookbookPost.objects.filter(
-        Q(user_id__in=following_ids) | Q(user=request.user),
-        visibility__in=['public', 'followers']
-    ).select_related('user', 'outfit').prefetch_related('likes', 'comments').annotate(
-        is_liked=Exists(PostLike.objects.filter(post=OuterRef('pk'), user=request.user)),
-        is_saved=Exists(PostSave.objects.filter(post=OuterRef('pk'), user=request.user))
-    ).order_by('-created_at')[:20]
+    if feed_type == 'following':
+        # Show posts from followed users + own posts
+        posts = LookbookPost.objects.filter(
+            Q(user_id__in=following_ids) | Q(user=request.user),
+            visibility__in=['public', 'followers']
+        ).select_related('user', 'outfit').prefetch_related('likes', 'comments').annotate(
+            is_liked=Exists(PostLike.objects.filter(post=OuterRef('pk'), user=request.user)),
+            is_saved=Exists(PostSave.objects.filter(post=OuterRef('pk'), user=request.user))
+        ).order_by('-created_at')[:30]
+    else:
+        # Community feed - show all public posts from everyone
+        posts = LookbookPost.objects.filter(
+            visibility='public'
+        ).exclude(
+            user=request.user  # Optionally exclude own posts in community view
+        ).select_related('user', 'outfit').prefetch_related('likes', 'comments').annotate(
+            is_liked=Exists(PostLike.objects.filter(post=OuterRef('pk'), user=request.user)),
+            is_saved=Exists(PostSave.objects.filter(post=OuterRef('pk'), user=request.user)),
+            is_following=Exists(UserFollow.objects.filter(follower=request.user, following=OuterRef('user')))
+        ).order_by('-created_at')[:30]
     
     # Get active challenges
     active_challenges = StyleChallenge.objects.filter(status='active')[:3]
@@ -39,6 +55,10 @@ def feed_view(request):
     followers_count = UserFollow.objects.filter(following=request.user).count()
     following_count = UserFollow.objects.filter(follower=request.user).count()
     posts_count = LookbookPost.objects.filter(user=request.user).count()
+    
+    # Community stats
+    total_community_posts = LookbookPost.objects.filter(visibility='public').count()
+    total_members = User.objects.filter(is_active=True).count()
     
     # Get drafts data - exclude published
     drafts = PostDraft.objects.filter(
@@ -56,12 +76,30 @@ def feed_view(request):
         scheduled_for__gt=timezone.now()
     ).order_by('scheduled_for')[:3]
     
+    # Suggested users to follow (for community tab)
+    suggested_users = []
+    if feed_type == 'community':
+        suggested_users = User.objects.exclude(
+            id=request.user.id
+        ).exclude(
+            id__in=following_ids
+        ).annotate(
+            num_followers=Count('followers'),
+            num_posts=Count('lookbook_posts')
+        ).filter(
+            num_posts__gt=0  # Only suggest users with posts
+        ).order_by('-num_followers')[:5]
+    
     context = {
         'posts': posts,
+        'feed_type': feed_type,
         'active_challenges': active_challenges,
         'followers_count': followers_count,
         'following_count': following_count,
         'posts_count': posts_count,
+        'total_community_posts': total_community_posts,
+        'total_members': total_members,
+        'suggested_users': suggested_users,
         'drafts': drafts.exists(),
         'draft_count': draft_count,
         'recent_drafts': recent_drafts,

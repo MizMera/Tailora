@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
-from .models import Outfit, OutfitItem
+from .models import Outfit, OutfitItem, StyleChallenge, ChallengeParticipation, ChallengeOutfit, UserBadge
 from users.models import StyleCritiqueSession
 from wardrobe.models import ClothingItem
 
@@ -42,15 +42,65 @@ def outfit_gallery_view(request):
     # Get stats
     total_outfits = outfits.count()
     favorite_count = outfits.filter(favorite=True).count()
+    occasions_count = outfits.exclude(occasion__isnull=True).exclude(occasion='').values('occasion').distinct().count()
+    
+    # Get today's daily and weekly challenges
+    from django.utils import timezone
+    today = timezone.now().date()
+    
+    # Daily challenge (today only)
+    daily_challenge = StyleChallenge.objects.filter(
+        start_date=today,
+        end_date=today,
+        challenge_type='daily',
+        is_public=True
+    ).first()
+    
+    # Weekly challenge (active this week)
+    weekly_challenge = StyleChallenge.objects.filter(
+        start_date__lte=today,
+        end_date__gte=today,
+        challenge_type='weekly',
+        is_public=True
+    ).first()
+    
+    # Get user's participation
+    daily_participation = None
+    weekly_participation = None
+    if daily_challenge:
+        daily_participation = ChallengeParticipation.objects.filter(
+            user=user, 
+            challenge=daily_challenge
+        ).first()
+    if weekly_challenge:
+        weekly_participation = ChallengeParticipation.objects.filter(
+            user=user,
+            challenge=weekly_challenge
+        ).first()
+    
+    # Get all active challenges for display
+    active_challenges = StyleChallenge.objects.filter(
+        start_date__lte=today,
+        end_date__gte=today,
+        is_public=True
+    ).annotate(
+        submissions_count=Count('participations')
+    ).order_by('-start_date')[:3]
     
     context = {
         'outfits': page_obj,
         'total_outfits': total_outfits,
         'favorite_count': favorite_count,
+        'occasions_count': occasions_count,
         'selected_occasion': occasion_filter,
         'search_query': search_query,
         'show_favorites': show_favorites,
         'occasions': Outfit.OCCASION_CHOICES,
+        'daily_challenge': daily_challenge,
+        'daily_participation': daily_participation,
+        'weekly_challenge': weekly_challenge,
+        'weekly_participation': weekly_participation,
+        'active_challenges': active_challenges,
     }
     
     return render(request, 'outfit_gallery.html', context)
@@ -591,3 +641,296 @@ class OutfitViewSet(viewsets.ModelViewSet):
         stats['remaining_slots'] = max(0, stats['max_outfits'] - stats['total_outfits'])
         
         return Response(stats)
+
+
+# ==================== Challenge Views ====================
+
+from django.db.models import Max
+
+
+@login_required
+def challenges_list_view(request):
+    """
+    List all available challenges (active, upcoming, completed)
+    """
+    user = request.user
+    from django.utils import timezone
+    from django.db.models import Count
+    
+    today = timezone.now().date()
+    
+    # Get filter status from query params
+    status = request.GET.get('status', 'active')
+    
+    # Get user's participations
+    user_participations = {
+        p.challenge_id: p for p in ChallengeParticipation.objects.filter(user=user)
+    }
+    
+    # Base queryset with participant count
+    base_qs = StyleChallenge.objects.filter(
+        Q(is_public=True) | Q(created_by=user)
+    ).annotate(
+        participants_count=Count('participations', distinct=True)
+    )
+    
+    # Active challenges (currently running)
+    active_challenges = list(base_qs.filter(
+        start_date__lte=today,
+        end_date__gte=today
+    ).order_by('-start_date'))
+    
+    # Add user progress to active challenges
+    for challenge in active_challenges:
+        participation = user_participations.get(challenge.id)
+        if participation:
+            challenge.user_progress = participation.progress_percentage()
+        else:
+            challenge.user_progress = None
+    
+    # Upcoming challenges
+    upcoming_challenges = list(base_qs.filter(
+        start_date__gt=today
+    ).order_by('start_date'))
+    
+    # Completed challenges (user has completed or challenge ended)
+    completed_challenges = list(base_qs.filter(
+        end_date__lt=today
+    ).order_by('-end_date'))
+    
+    context = {
+        'active_challenges': active_challenges,
+        'upcoming_challenges': upcoming_challenges,
+        'completed_challenges': completed_challenges,
+        'status': status,
+        'today': today,
+    }
+    
+    return render(request, 'challenges_list.html', context)
+
+
+@login_required
+def challenge_detail_view(request, challenge_id):
+    """
+    View challenge details and participate
+    """
+    from django.utils import timezone
+    
+    challenge = get_object_or_404(StyleChallenge, id=challenge_id)
+    user = request.user
+    
+    # Check if user is participating
+    participation = ChallengeParticipation.objects.filter(
+        user=user, challenge=challenge
+    ).first()
+    
+    # Get submitted outfits for this challenge
+    submitted_outfits = []
+    if participation:
+        submitted_outfits = ChallengeOutfit.objects.filter(
+            participation=participation
+        ).select_related('outfit')
+    
+    # Check if user can join
+    can_join = not participation and challenge.is_active()
+    
+    # Check if challenge is locked (passed)
+    is_locked = not participation and challenge.end_date and timezone.now().date() > challenge.end_date
+    
+    # Calculate required outfits (from rules or default to duration_days)
+    required_outfits = challenge.duration_days
+    if challenge.rules and 'required_outfits' in challenge.rules:
+        required_outfits = challenge.rules['required_outfits']
+    
+    context = {
+        'challenge': challenge,
+        'participation': participation,
+        'submitted_outfits': submitted_outfits,
+        'can_join': can_join,
+        'is_locked': is_locked,
+        'progress': participation.progress_percentage() if participation else 0,
+        'required_outfits': required_outfits,
+    }
+    
+    return render(request, 'challenge_detail.html', context)
+
+
+@login_required
+def join_challenge_view(request, challenge_id):
+    """
+    Join a style challenge
+    """
+    challenge = get_object_or_404(StyleChallenge, id=challenge_id)
+    user = request.user
+    
+    # Check if already participating
+    if ChallengeParticipation.objects.filter(user=user, challenge=challenge).exists():
+        messages.warning(request, 'You are already participating in this challenge!')
+        return redirect('outfits:challenge_detail', challenge_id=challenge_id)
+    
+    # Check if challenge is active
+    if not challenge.is_active():
+        messages.error(request, 'This challenge is no longer active.')
+        return redirect('outfits:challenges_list')
+    
+    # Create participation
+    participation = ChallengeParticipation.objects.create(
+        user=user,
+        challenge=challenge
+    )
+    
+    messages.success(request, f'You have joined the "{challenge.name}" challenge!')
+    return redirect('outfits:challenge_detail', challenge_id=challenge_id)
+
+
+@login_required
+def submit_challenge_outfit_view(request, challenge_id):
+    """
+    Submit an outfit for a challenge
+    """
+    challenge = get_object_or_404(StyleChallenge, id=challenge_id)
+    user = request.user
+    
+    # Check if user is participating - if not, redirect to join first
+    participation = ChallengeParticipation.objects.filter(
+        user=user, 
+        challenge=challenge,
+        completed=False
+    ).first()
+    
+    if not participation:
+        messages.warning(request, 'You need to join this challenge before submitting outfits.')
+        return redirect('outfits:challenge_detail', challenge_id=challenge_id)
+    
+    if request.method == 'POST':
+        outfit_id = request.POST.get('outfit')
+        notes = request.POST.get('notes', '')
+        
+        if not outfit_id:
+            messages.error(request, 'Please select an outfit.')
+            return redirect('outfits:challenge_detail', challenge_id=challenge_id)
+        
+        try:
+            outfit = Outfit.objects.get(id=outfit_id, user=user)
+            
+            # Check if outfit already submitted
+            if ChallengeOutfit.objects.filter(participation=participation, outfit=outfit).exists():
+                messages.warning(request, 'This outfit has already been submitted for the challenge.')
+                return redirect('outfits:challenge_detail', challenge_id=challenge_id)
+            
+            # Create challenge outfit submission
+            ChallengeOutfit.objects.create(
+                participation=participation,
+                outfit=outfit,
+                notes=notes
+            )
+            
+            # Update streak and last activity
+            from django.utils import timezone
+            participation.last_activity = timezone.now().date()
+            
+            # Check if challenge is completed
+            required_outfits = challenge.rules.get('required_outfits', challenge.duration_days)
+            submitted_count = ChallengeOutfit.objects.filter(participation=participation).count()
+            
+            if submitted_count >= required_outfits:
+                participation.completed = True
+                participation.completed_at = timezone.now()
+                messages.success(request, f'Congratulations! You completed the "{challenge.name}" challenge!')
+                
+                # Award badge
+                UserBadge.objects.create(
+                    user=user,
+                    badge_type='challenge_complete',
+                    name=f'{challenge.name} Champion',
+                    description=f'Completed the {challenge.name} challenge'
+                )
+            else:
+                messages.success(request, f'Outfit submitted! {required_outfits - submitted_count} more to go.')
+            
+            participation.save()
+            
+        except Outfit.DoesNotExist:
+            messages.error(request, 'Invalid outfit selected.')
+        
+        return redirect('outfits:challenge_detail', challenge_id=challenge_id)
+    
+    # GET request - show outfit selection
+    user_outfits = Outfit.objects.filter(user=user)
+    already_submitted = ChallengeOutfit.objects.filter(
+        participation=participation
+    ).values_list('outfit_id', flat=True)
+    
+    available_outfits = user_outfits.exclude(id__in=already_submitted)
+    
+    context = {
+        'challenge': challenge,
+        'participation': participation,
+        'available_outfits': available_outfits,
+    }
+    
+    return render(request, 'submit_challenge_outfit.html', context)
+
+
+@login_required
+def create_challenge_view(request):
+    """
+    Create a new style challenge
+    """
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        challenge_type = request.POST.get('challenge_type', 'capsule')
+        duration_days = int(request.POST.get('duration_days', 7))
+        rules_text = request.POST.get('rules', '')
+        
+        if not name:
+            messages.error(request, 'Challenge name is required.')
+            return redirect('outfits:create_challenge')
+        
+        # Parse rules (simplified - in production you'd want a better rules system)
+        rules = {}
+        if rules_text:
+            rules = {'custom_rules': rules_text}
+        
+        # Create challenge
+        challenge = StyleChallenge.objects.create(
+            name=name,
+            description=description,
+            challenge_type=challenge_type,
+            duration_days=duration_days,
+            rules=rules,
+            created_by=request.user,
+            is_public=request.POST.get('is_public') == 'on'
+        )
+        
+        messages.success(request, f'Challenge "{name}" created successfully!')
+        return redirect('outfits:challenge_detail', challenge_id=challenge.id)
+    
+    context = {
+        'challenge_types': StyleChallenge.CHALLENGE_TYPES,
+    }
+    return render(request, 'create_challenge.html', context)
+
+
+@login_required
+def badges_view(request):
+    """
+    View user's earned badges
+    """
+    user = request.user
+    badges = UserBadge.objects.filter(user=user)
+    
+    # Calculate some stats
+    total_challenges = ChallengeParticipation.objects.filter(user=user, completed=True).count()
+    longest_streak = ChallengeParticipation.objects.filter(user=user).aggregate(
+        max_streak=Max('streak_days')
+    )['max_streak'] or 0
+    
+    context = {
+        'badges': badges,
+        'total_challenges': total_challenges,
+        'longest_streak': longest_streak,
+    }
+    
+    return render(request, 'badges.html', context)
