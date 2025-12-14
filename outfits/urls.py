@@ -20,6 +20,9 @@ urlpatterns = [
     # Stats
     path('stats/', views.outfit_stats_view, name='outfit_stats'),
     
+    # Advanced Search
+    path('advanced-search/', views.outfit_advanced_search_view, name='outfit_advanced_search'),
+    
     # Challenges
     path('challenges/', views.challenges_list_view, name='challenges_list'),
     path('challenges/create/', views.create_challenge_view, name='create_challenge'),

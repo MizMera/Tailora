@@ -806,8 +806,8 @@ def ai_style_analyze_view(request):
             # Handle Image Upload & Analysis
             images = request.FILES.getlist('style_images')
             
-            if not images:
-                messages.error(request, 'Please upload at least one image.')
+            if len(images) < 3:
+                messages.error(request, 'Minimum 3 photos requises')
                 return render(request, 'ai_style_analyze.html')
             
             if len(images) > 5:
@@ -862,12 +862,14 @@ def ai_style_analyze_view(request):
                 mapped_styles = []
                 style_map = {
                     'casual': 'casual', 'relax': 'casual', 'everyday': 'casual',
-                    'chic': 'chic', 'elegant': 'elegant', 'formal': 'elegant',
+                    'chic': 'chic', 'modern': 'chic', 'stylish': 'chic',
+                    'elegant': 'elegant', 'formal': 'elegant',
                     'bohemian': 'boheme', 'boho': 'boheme', 'hippie': 'boheme',
-                    'sport': 'sportif', 'athletic': 'sportif', 'gym': 'sportif',
-                    'street': 'streetwear', 'urban': 'streetwear', 'hipster': 'streetwear',
-                    'vintage': 'vintage', 'retro': 'vintage', 'classic': 'classique',
-                    'minimal': 'minimaliste', 'simple': 'minimaliste', 'clean': 'minimaliste'
+                    'sport': 'sportif', 'athletic': 'sportif', 'gym': 'sportif', 'sporty': 'sportif',
+                    'street': 'streetwear', 'urban': 'streetwear', 'hipster': 'streetwear', 'streetwear': 'streetwear',
+                    'vintage': 'vintage', 'retro': 'vintage', 'old school': 'vintage',
+                    'classic': 'classique', 'preppy': 'classique', 'traditional': 'classique',
+                    'minimal': 'minimaliste', 'simple': 'minimaliste', 'clean': 'minimaliste', 'minimalist': 'minimaliste'
                 }
                 
                 detected_persona = "Eclectic" # Default

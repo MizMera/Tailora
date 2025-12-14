@@ -4,313 +4,573 @@
 {% block title %}{{ item.name }} - Tailora{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
 <style>
-    /* 1. Constrain the total width of the content */
-    .detail-container {
-        max-width: 960px;
-        margin: 40px auto;
-        padding: 0 20px;
+    /* =========================================
+       THEME VARIABLES
+       ========================================= */
+    :root {
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1f1e1e;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
+        --success-bg: #def7ec;
+        --success-text: #03543f;
+        --error-bg: #fde8e8;
+        --error-text: #9b1c1c;
+
+        /* Fonts */
+        --font-heading: 'Istok Web', sans-serif;
+        --font-body: 'Inter', sans-serif;
     }
 
-    /* 2. Control the grid layout */
+    /* =========================================
+       LAYOUT
+       ========================================= */
+    .detail-wrapper {
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        padding: 40px 24px;
+    }
+
+    .detail-container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 32px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 24px;
+    }
+
+    .header-content {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .back-link {
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.2s;
+    }
+
+    .back-link:hover {
+        color: var(--text-main);
+    }
+
+    .page-title {
+        font-family: var(--font-heading);
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Buttons */
+    .btn {
+        border-radius: 0;
+        padding: 10px 24px;
+        font-family: var(--font-body);
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .btn-primary {
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
+    }
+
+    .btn-primary:hover {
+        background: #000;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: var(--card-bg);
+        color: var(--text-main);
+        border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--text-main);
+        background: #f9f9f9;
+    }
+
+    .btn-delete {
+        background: #fff !important;
+        color: var(--error-text) !important;
+        border-color: var(--error-text) !important;
+    }
+
+    .btn-delete:hover {
+        background: var(--error-bg) !important;
+    }
+
+    /* =========================================
+       CONTENT CARD & GRID
+       ========================================= */
+    .content-card {
+        background: var(--card-bg);
+        padding: 40px;
+        border: 1px solid var(--border-color);
+    }
+
     .detail-grid {
         display: grid;
-        /* FIXED WIDTH for image (350px), rest for info. Prevents giant images. */
-        grid-template-columns: 350px 1fr;
-        gap: 40px;
+        grid-template-columns: 400px 1fr;
+        gap: 48px;
         align-items: start;
     }
 
-    /* 3. Make it responsive for mobile */
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
         .detail-grid {
             grid-template-columns: 1fr;
-            /* Stack vertically on small screens */
         }
-
+        .content-card {
+            padding: 24px;
+        }
         .item-image-wrapper {
-            max-width: 400px;
-            /* Don't let image get too huge on mobile either */
-            margin: 0 auto;
+            max-width: 100%;
         }
     }
 
-    .settings-section {
+    /* Image Section */
+    .item-image-wrapper {
+        position: relative;
+    }
+
+    .image-container {
+        position: relative;
+        background: #f4e9cf;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        aspect-ratio: 1 / 1.25; /* Consistent portrait ratio */
+    }
+
+    .image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .status-badge {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        padding: 6px 12px;
+        background: var(--text-main);
+        color: #ffffff;
+        font-family: var(--font-body);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        z-index: 2;
+    }
+
+    /* Action Buttons (Below Image) */
+    .image-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .image-actions form {
+        flex: 1;
+    }
+
+    .image-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* =========================================
+       INFO SECTIONS
+       ========================================= */
+    .info-section {
         margin-bottom: 32px;
     }
 
+    .info-section:last-child {
+        margin-bottom: 0;
+    }
+
     .section-title {
-        font-family: 'Inter', sans-serif;
+        font-family: var(--font-heading);
         font-size: 18px;
-        font-weight: 600;
-        color: #252320;
-        margin-bottom: 16px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 16px 0;
         padding-bottom: 8px;
-        border-bottom: 1px solid #e0e0e0;
+        border-bottom: 1px solid var(--border-color);
     }
 
     .info-row {
         display: flex;
         justify-content: space-between;
-        padding-bottom: 12px;
+        align-items: center;
+        padding: 10px 0;
         border-bottom: 1px solid #f5f5f5;
-        margin-bottom: 12px;
+    }
+
+    .info-row:first-child {
+        padding-top: 0;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
     }
 
     .info-label {
-        font-family: 'Inter', sans-serif;
+        font-family: var(--font-body);
         font-size: 12px;
         font-weight: 600;
-        color: #757575;
+        color: var(--text-muted);
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
     }
 
     .info-value {
-        font-family: 'Inter', sans-serif;
+        font-family: var(--font-body);
         font-size: 14px;
-        color: #2c2c2c;
+        color: var(--text-main);
         text-align: right;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Color Dot */
+    .color-dot {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 50%; /* Optional: make circle or keep square */
+    }
+
+    /* Tags & Badges */
+    .tag {
+        display: inline-block;
+        padding: 6px 12px;
+        background: #f4f4f4;
+        color: var(--text-main);
+        font-family: var(--font-body);
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        font-family: var(--font-body);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-dark {
+        background: var(--text-main);
+        color: #fff;
+    }
+
+    .badge-light {
+        background: #f0f0f0;
+        color: var(--text-muted);
+    }
+
+    .badge-success {
+        background: var(--success-bg);
+        color: var(--success-text);
+        border: 1px solid var(--success-text);
+    }
+
+    .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .tag-outline {
+        display: inline-block;
+        padding: 4px 10px;
+        border: 1px solid var(--border-color);
+        color: var(--text-muted);
+        font-family: var(--font-body);
+        font-size: 12px;
+    }
+
+    .description-text {
+        font-family: var(--font-body);
+        font-size: 15px;
+        color: var(--text-main);
+        line-height: 1.6;
+        margin: 0;
     }
 </style>
 {% endblock %}
 
-{% block container_class %}page-reveal{% endblock %}
-
 {% block content %}
+<div class="detail-wrapper">
+    <div class="detail-container">
 
-<!-- Main Wrapper -->
-<div class="detail-container">
-
-    <!-- Page Header -->
-    <div class="page-header" style="margin-bottom: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-            <div>
-                <a href="{% url 'wardrobe:wardrobe_gallery' %}"
-                    style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; text-decoration: none; display: inline-block; margin-bottom: 8px;">&larr;
-                    Back to Wardrobe</a>
-                <h1 class="page-title" style="margin: 0; font-size: 28px;">{{ item.name }}</h1>
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <a href="{% url 'wardrobe:wardrobe_gallery' %}" class="back-link">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Wardrobe
+                </a>
+                <h1 class="page-title">{{ item.name }}</h1>
             </div>
-            <div style="display: flex; gap: 12px;">
+            <div class="header-actions">
                 <a href="{% url 'wardrobe:wardrobe_edit' item.id %}" class="btn btn-primary">Edit Item</a>
                 <a href="{% url 'wardrobe:wardrobe_gallery' %}" class="btn btn-secondary">Close</a>
             </div>
-        </div>
-    </div>
+        </header>
 
-    <!-- Main Content Card -->
-    <div
-        style="background: #ffffff; padding: 40px; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        <!-- Main Content Card -->
+        <div class="content-card">
+            <div class="detail-grid">
 
-        <div class="detail-grid">
-            <!-- Left: Image Column -->
-            <div class="item-image-wrapper">
-                <div
-                    style="position: relative; background: #fafafa; border: 1px solid #e0e0e0; overflow: hidden; border-radius: 4px;">
-                    <!-- Image Display -->
-                    <img src="{{ item.image.url }}" alt="{{ item.name }}"
-                        style="width: 100%; height: auto; display: block;">
+                <!-- Left Column: Image -->
+                <div class="item-image-wrapper">
+                    <div class="image-container">
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                        {% else %}
+                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f4e9cf; color: var(--text-muted);">
+                            No Image Available
+                        </div>
+                        {% endif %}
 
-                    <!-- Status Badge -->
-                    {% if item.status != 'available' %}
-                    <div
-                        style="position: absolute; top: 16px; right: 16px; padding: 8px 16px; background: #2c2c2c; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
-                        {% if item.status == 'washing' %}Washing
-                        {% elif item.status == 'dry_cleaning' %}Dry cleaning
-                        {% elif item.status == 'loaned' %}Loaned
-                        {% elif item.status == 'repair' %}Repair
+                        {% if item.status != 'available' %}
+                        <div class="status-badge">
+                            {{ item.get_status_display }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="image-actions">
+                        <form method="post" action="{% url 'wardrobe:wardrobe_toggle_favorite' item.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary">
+                                {% if item.favorite %}
+                                <span style="color: #ef4444; margin-right: 6px;">★</span> Favorited
+                                {% else %}
+                                <span style="margin-right: 6px;">☆</span> Add to Favorites
+                                {% endif %}
+                            </button>
+                        </form>
+                        
+                        <form id="delete-form-{{ item.id }}" method="post" action="{% url 'wardrobe:wardrobe_delete' item.id %}">
+                            {% csrf_token %}
+                            <button type="button" class="btn btn-delete delete-trigger" 
+                                    onclick="confirmDelete('{{ item.name|escapejs }}')">
+                                Delete Item
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Right Column: Information -->
+                <div>
+                    <!-- Basic Info -->
+                    <div class="info-section">
+                        <h3 class="section-title">Information</h3>
+
+                        <div class="info-row">
+                            <span class="info-label">Category</span>
+                            <span class="info-value">
+                                {% if item.category %}
+                                {{ item.category.name }}
+                                {% else %}
+                                <span style="color: var(--text-muted);">Uncategorized</span>
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Color</span>
+                            <span class="info-value">
+                                {% if item.color_hex or item.color %}
+                                <span class="color-dot" style="background-color: {{ item.color_hex|default:item.color }};"></span>
+                                {{ item.color|default:"—" }}
+                                {% else %}—{% endif %}
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Pattern</span>
+                            <span class="info-value">{{ item.pattern|default:"—" }}</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Brand</span>
+                            <span class="info-value">{{ item.brand|default:"—" }}</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Material</span>
+                            <span class="info-value">{{ item.material|default:"—" }}</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Condition</span>
+                            <span class="info-value">
+                                {% if item.condition %}
+                                <span class="badge badge-light">{{ item.condition|title }}</span>
+                                {% else %}—{% endif %}
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Status</span>
+                            <span class="info-value">
+                                <span class="badge badge-dark">{{ item.get_status_display|default:"Available" }}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Usage Section -->
+                    {% if item.seasons or item.occasions %}
+                    <div class="info-section">
+                        <h3 class="section-title">Usage</h3>
+
+                        {% if item.seasons %}
+                        <div style="margin-bottom: 16px;">
+                            <span class="info-label" style="display: block; margin-bottom: 8px;">Seasons</span>
+                            <div class="tags-container">
+                                {% for season in item.seasons %}
+                                <span class="tag">{{ season|title }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if item.occasions %}
+                        <div>
+                            <span class="info-label" style="display: block; margin-bottom: 8px;">Occasions</span>
+                            <div class="tags-container">
+                                {% for occasion in item.occasions %}
+                                <span class="tag">{{ occasion|title }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
                         {% endif %}
                     </div>
                     {% endif %}
-                </div>
 
-                <!-- Action Buttons (Favorite / Delete) -->
-                <div style="display: flex; gap: 12px; margin-top: 24px;">
-                    <form method="post" action="{% url 'wardrobe:wardrobe_toggle_favorite' item.id %}" style="flex: 1;">
-                        {% csrf_token %}
-                        <button type="submit"
-                            class="btn {% if item.favorite %}btn-primary{% else %}btn-secondary{% endif %}"
-                            style="width: 100%;">
-                            {% if item.favorite %}★ Favorite{% else %}☆ Add to favorites{% endif %}
-                        </button>
-                    </form>
-                    <form id="delete-form-{{ item.id }}" method="post"
-                        action="{% url 'wardrobe:wardrobe_delete' item.id %}" style="flex: 1;">
-                        {% csrf_token %}
-                        <button type="button" class="btn btn-primary delete-trigger"
-                            data-form-id="delete-form-{{ item.id }}" data-item-name="{{ item.name }}"
-                            style="background: #c62828; border-color: #c62828; width: 100%;">Delete</button>
-                    </form>
+                    <!-- Purchase Info -->
+                    {% if item.purchase_date or item.purchase_price or item.is_secondhand %}
+                    <div class="info-section">
+                        <h3 class="section-title">Purchase Details</h3>
+                        {% if item.purchase_date %}
+                        <div class="info-row">
+                            <span class="info-label">Date</span>
+                            <span class="info-value">{{ item.purchase_date|date:'d/m/Y' }}</span>
+                        </div>
+                        {% endif %}
+                        {% if item.purchase_price %}
+                        <div class="info-row">
+                            <span class="info-label">Price</span>
+                            <span class="info-value">{{ item.purchase_price }} EUR</span>
+                        </div>
+                        {% endif %}
+                        {% if item.is_secondhand %}
+                        <div style="margin-top: 12px; text-align: right;">
+                            <span class="badge badge-success">Second-Hand</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Stats -->
+                    <div class="info-section">
+                        <h3 class="section-title">Statistics</h3>
+                        <div class="info-row">
+                            <span class="info-label">Times Worn</span>
+                            <span class="info-value">{{ item.times_worn }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Last Worn</span>
+                            <span class="info-value">{{ item.last_worn|date:'d/m/Y'|default:"Never" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Date Added</span>
+                            <span class="info-value">{{ item.created_at|date:'d/m/Y' }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    {% if item.description %}
+                    <div class="info-section">
+                        <h3 class="section-title">Description</h3>
+                        <p class="description-text">{{ item.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Tags -->
+                    {% if item.tags %}
+                    <div class="info-section">
+                        <h3 class="section-title">Tags</h3>
+                        <div class="tags-container">
+                            {% for tag in item.tags %}
+                            <span class="tag-outline">#{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
-            <!-- Right: Information Column -->
-            <div>
-                <!-- Basic Info -->
-                <div class="settings-section">
-                    <h3 class="section-title">Information</h3>
-
-                    <div class="info-row">
-                        <span class="info-label">Category</span>
-                        <span class="info-value">
-                            {% if item.category %}
-                            {{ item.category.icon }} {{ item.category.name }}
-                            {% else %}
-                            <em style="color: #ccc;">Not specified</em>
-                            {% endif %}
-                        </span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="info-label">Color</span>
-                        <span class="info-value" style="display: flex; align-items: center; gap: 8px;">
-                            <span
-                                style="display: inline-block; width: 16px; height: 16px; border: 1px solid #ddd; border-radius: 50%; background-color: {{ item.color_hex|default:item.color }};"></span>
-                            {{ item.color }}
-                        </span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="info-label">Pattern</span>
-                        <span class="info-value">{% if item.pattern %}{{ item.pattern }}{% else %}-{% endif %}</span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="info-label">Brand</span>
-                        <span class="info-value">{% if item.brand %}{{ item.brand }}{% else %}-{% endif %}</span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="info-label">Material</span>
-                        <span class="info-value">{% if item.material %}{{ item.material }}{% else %}-{% endif %}</span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="info-label">Condition</span>
-                        <span class="info-value">
-                            {% if item.condition %}
-                            <span style="padding: 2px 8px; background: #f0f0f0; border-radius: 4px; font-size: 12px;">{{
-                                item.condition|title }}</span>
-                            {% else %}-{% endif %}
-                        </span>
-                    </div>
-
-                    <div class="info-row" style="border-bottom: none;">
-                        <span class="info-label">Status</span>
-                        <span class="info-value">
-                            <span
-                                style="padding: 2px 8px; background: #2c2c2c; color: #fff; border-radius: 4px; font-size: 12px;">
-                                {{ item.get_status_display|default:"Available" }}
-                            </span>
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Usage Section -->
-                {% if item.seasons or item.occasions %}
-                <div class="settings-section">
-                    <h3 class="section-title">Usage</h3>
-
-                    {% if item.seasons %}
-                    <div style="margin-bottom: 16px;">
-                        <span class="info-label" style="display: block; margin-bottom: 8px;">Seasons</span>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                            {% for season in item.seasons %}
-                            <span
-                                style="padding: 4px 12px; background: #f5f5f5; color: #333; font-size: 13px; border-radius: 4px;">
-                                {{ season|title }}
-                            </span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if item.occasions %}
-                    <div>
-                        <span class="info-label" style="display: block; margin-bottom: 8px;">Occasions</span>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                            {% for occasion in item.occasions %}
-                            <span
-                                style="padding: 4px 12px; background: #f5f5f5; color: #333; font-size: 13px; border-radius: 4px;">
-                                {{ occasion|title }}
-                            </span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- Purchase Info -->
-                {% if item.purchase_date or item.purchase_price %}
-                <div class="settings-section">
-                    <h3 class="section-title">Purchase Details</h3>
-                    {% if item.purchase_date %}
-                    <div class="info-row">
-                        <span class="info-label">Date</span>
-                        <span class="info-value">{{ item.purchase_date|date:'d/m/Y' }}</span>
-                    </div>
-                    {% endif %}
-                    {% if item.purchase_price %}
-                    <div class="info-row">
-                        <span class="info-label">Price</span>
-                        <span class="info-value">{{ item.purchase_price }} EUR</span>
-                    </div>
-                    {% endif %}
-                    {% if item.is_secondhand %}
-                    <div style="margin-top: 8px;">
-                        <span
-                            style="padding: 4px 12px; background: #4caf50; color: #fff; font-size: 12px; border-radius: 4px;">Second-Hand</span>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- Stats -->
-                <div class="settings-section">
-                    <h3 class="section-title">Statistics</h3>
-                    <div class="info-row">
-                        <span class="info-label">Times Worn</span>
-                        <span class="info-value">{{ item.times_worn }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Last Worn</span>
-                        <span class="info-value">{{ item.last_worn|date:'d/m/Y'|default:"Never" }}</span>
-                    </div>
-                    <div class="info-row" style="border-bottom: none;">
-                        <span class="info-label">Date Added</span>
-                        <span class="info-value">{{ item.created_at|date:'d/m/Y' }}</span>
-                    </div>
-                </div>
-
-                <!-- Description -->
-                {% if item.description %}
-                <div class="settings-section">
-                    <h3 class="section-title">Description</h3>
-                    <p
-                        style="font-family: 'Inter', sans-serif; font-size: 14px; color: #555; line-height: 1.6; margin: 0;">
-                        {{ item.description }}
-                    </p>
-                </div>
-                {% endif %}
-
-                <!-- Tags -->
-                {% if item.tags %}
-                <div class="settings-section">
-                    <h3 class="section-title">Tags</h3>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        {% for tag in item.tags %}
-                        <span
-                            style="padding: 4px 10px; border: 1px solid #e0e0e0; color: #555; font-size: 12px; border-radius: 12px;">#{{
-                            tag }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-            </div> <!-- End Right Column -->
-        </div> <!-- End Grid -->
-    </div> <!-- End Card -->
-</div> <!-- End Container -->
-
+{% block extra_js %}
+<script>
+    function confirmDelete(itemName) {
+        if (confirm(`Are you sure you want to delete "${itemName}"? This action cannot be undone.`)) {
+            const form = document.querySelector('form[action*="delete"]');
+            if (form) form.submit();
+        }
+    }
+</script>
 {% endblock %}

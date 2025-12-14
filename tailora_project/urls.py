@@ -68,6 +68,7 @@ urlpatterns = [
     path('planner/', include('planner.urls')),  # Module 4: Calendar & Events
     path('social/', include('social.urls')),  # Module 5: Social Features
     path('recommendations/', include('recommendations.urls')),  # Module 6: AI Recommendations
+    path('support/', include('support.urls')),  # Support & Help Center
     
     # API endpoints
     path('api/', include('users.urls')),

@@ -257,13 +257,19 @@ def event_detail(request, event_id):
         target_date=event.date
     )
     
+    # Calculate item count safely to avoid template tag issues
+    outfit_item_count = 0
+    if event.outfit:
+        outfit_item_count = event.outfit.items.count()
+
     context = {
         'event': event,
         'suggested_outfits': suggested_outfits,
         'weather': weather,
+        'outfit_item_count': outfit_item_count,
     }
     
-    return render(request, 'planner/event_detail.html', context)
+    return render(request, 'planner/event_detail_v2.html', context)
 
 
 @login_required

@@ -1,0 +1,879 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ event.title }} - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    /* =========================================
+       THEME VARIABLES
+       ========================================= */
+    :root {
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1f1e1e;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
+        --success-bg: #def7ec;
+        --success-text: #03543f;
+        --error-bg: #fde8e8;
+        --error-text: #9b1c1c;
+        --font-heading: 'Istok Web', sans-serif;
+        --font-body: 'Inter', sans-serif;
+    }
+
+    /* =========================================
+       LAYOUT
+       ========================================= */
+    .event-wrapper {
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        padding: 40px 24px;
+    }
+
+    .event-container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    /* =========================================
+       PAGE HEADER
+       ========================================= */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 32px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 24px;
+    }
+
+    .header-content {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .back-link {
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.2s;
+    }
+
+    .back-link:hover {
+        color: var(--text-main);
+    }
+
+    .page-title {
+        font-family: var(--font-heading);
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .event-date {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* =========================================
+       BUTTONS
+       ========================================= */
+    .btn {
+        padding: 12px 24px;
+        font-family: var(--font-body);
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .btn-primary {
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
+    }
+
+    .btn-primary:hover {
+        background: #000;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: var(--card-bg);
+        color: var(--text-main);
+        border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--text-main);
+        background: #f9f9f9;
+    }
+
+    .btn-danger {
+        background: var(--error-text);
+        color: #fff;
+        border-color: var(--error-text);
+    }
+
+    .btn-danger:hover {
+        background: #7f1d1d;
+    }
+
+    .btn-success {
+        background: var(--success-text);
+        color: #fff;
+        border-color: var(--success-text);
+    }
+
+    .btn-success:hover {
+        background: #014a32;
+    }
+
+    /* =========================================
+       CONTENT GRID
+       ========================================= */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 32px;
+    }
+
+    @media (max-width: 900px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* =========================================
+       CARDS
+       ========================================= */
+    .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        padding: 28px;
+        margin-bottom: 24px;
+    }
+
+    .card:last-child {
+        margin-bottom: 0;
+    }
+
+    .card-title {
+        font-family: var(--font-heading);
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-main);
+        margin: 0 0 20px 0;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--text-main);
+    }
+
+    /* =========================================
+       INFO ROWS
+       ========================================= */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+
+    .info-row:first-child {
+        padding-top: 0;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .info-label {
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+    }
+
+    .info-value {
+        font-family: var(--font-body);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    /* =========================================
+       BADGES
+       ========================================= */
+    .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        font-family: var(--font-body);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-dark {
+        background: var(--text-main);
+        color: #fff;
+    }
+
+    .badge-success {
+        background: var(--success-bg);
+        color: var(--success-text);
+    }
+
+    /* =========================================
+       NOTES
+       ========================================= */
+    .notes-text {
+        font-family: var(--font-body);
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--text-main);
+        white-space: pre-wrap;
+        margin: 0;
+    }
+
+    .empty-text {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-muted);
+        font-style: italic;
+        margin: 0;
+    }
+
+    /* =========================================
+       LOCATION MAP
+       ========================================= */
+    .location-address {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-main);
+        margin-bottom: 16px;
+    }
+
+    .location-map {
+        height: 200px;
+        border: 1px solid var(--border-color);
+    }
+
+    .no-location {
+        padding: 32px;
+        text-align: center;
+        background: #fafafa;
+        border: 1px solid var(--border-color);
+    }
+
+    .no-location p {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    /* =========================================
+       WEATHER WIDGET
+       ========================================= */
+    .weather-widget {
+        background: var(--text-main);
+        color: #fff;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .weather-location {
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .weather-main {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .weather-temp {
+        font-family: var(--font-heading);
+        font-size: 48px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .weather-condition {
+        font-family: var(--font-body);
+        font-size: 16px;
+    }
+
+    .weather-feels {
+        font-family: var(--font-body);
+        font-size: 12px;
+        opacity: 0.6;
+        margin-top: 4px;
+    }
+
+    .weather-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .weather-detail-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        opacity: 0.5;
+        letter-spacing: 1px;
+    }
+
+    .weather-detail-value {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .weather-tip {
+        background: rgba(255, 255, 255, 0.08);
+        padding: 16px;
+        border-left: 3px solid #f4e9cf;
+    }
+
+    .weather-tip-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #f4e9cf;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+    }
+
+    .weather-tip-text {
+        font-size: 13px;
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .weather-unavailable {
+        text-align: center;
+        padding: 20px;
+        color: rgba(255, 255, 255, 0.5);
+        font-family: var(--font-body);
+        font-size: 13px;
+    }
+
+    /* =========================================
+       OUTFIT CARD
+       ========================================= */
+    .outfit-card {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        background: #fafafa;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .outfit-card:hover {
+        background: #f5f5f5;
+        border-color: var(--text-main);
+        transform: translateY(-2px);
+    }
+
+    .outfit-preview {
+        width: 100px;
+        height: 100px;
+        background: #fff;
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .outfit-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .outfit-preview-placeholder {
+        font-family: var(--font-body);
+        font-size: 12px;
+        color: var(--text-muted);
+        text-align: center;
+    }
+
+    .outfit-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .outfit-name {
+        font-family: var(--font-heading);
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 8px 0;
+    }
+
+    .outfit-meta {
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-muted);
+        margin: 0 0 12px 0;
+    }
+
+    .view-outfit-link {
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .outfit-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .outfit-actions .btn {
+        flex: 1;
+    }
+
+    .no-outfit {
+        padding: 40px;
+        text-align: center;
+        background: #fafafa;
+        border: 1px solid var(--border-color);
+    }
+
+    .no-outfit-icon {
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .no-outfit p {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0 0 20px 0;
+    }
+
+    .no-outfit-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    /* =========================================
+       DELETE MODAL
+       ========================================= */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: var(--card-bg);
+        padding: 40px;
+        max-width: 480px;
+        width: 90%;
+        border: 1px solid var(--border-color);
+    }
+
+    .modal-title {
+        font-family: var(--font-heading);
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 16px 0;
+    }
+
+    .modal-text {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 1.7;
+        margin-bottom: 32px;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    /* =========================================
+       ALERTS
+       ========================================= */
+    .alert {
+        padding: 16px 24px;
+        margin-bottom: 24px;
+        font-family: var(--font-body);
+        font-size: 14px;
+        border: 1px solid;
+    }
+
+    .alert-success {
+        background: var(--success-bg);
+        color: var(--success-text);
+        border-color: var(--success-text);
+    }
+
+    .alert-error {
+        background: var(--error-bg);
+        color: var(--error-text);
+        border-color: var(--error-text);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="event-wrapper">
+    <div class="event-container">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <a href="{% url 'planner:event_list' %}" class="back-link">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Events
+                </a>
+                <h1 class="page-title">{{ event.title }}</h1>
+                <span class="event-date">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6" stroke-width="2"></line>
+                        <line x1="8" y1="2" x2="8" y2="6" stroke-width="2"></line>
+                        <line x1="3" y1="10" x2="21" y2="10" stroke-width="2"></line>
+                    </svg>
+                    {{ event.date|date:"l, F j, Y" }}{% if event.time %} at {{ event.time|time:"g:i A" }}{% endif %}
+                </span>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary">Edit</a>
+                <button id="delete-btn" class="btn btn-danger">Delete</button>
+            </div>
+        </header>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Main Content -->
+            <div class="main-column">
+                <!-- Event Information Card -->
+                <div class="card">
+                    <h3 class="card-title">Event Information</h3>
+
+                    <div class="info-row">
+                        <span class="info-label">Occasion</span>
+                        <span class="info-value">
+                            <span class="badge badge-dark">{{ event.get_occasion_type_display }}</span>
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Date</span>
+                        <span class="info-value">{{ event.date|date:"F j, Y" }}</span>
+                    </div>
+
+                    {% if event.time %}
+                    <div class="info-row">
+                        <span class="info-label">Time</span>
+                        <span class="info-value">{{ event.time|time:"g:i A" }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="info-row">
+                        <span class="info-label">Created</span>
+                        <span class="info-value">{{ event.created_at|date:"M j, Y" }}</span>
+                    </div>
+                </div>
+
+                <!-- Notes Card -->
+                <div class="card">
+                    <h3 class="card-title">Notes</h3>
+                    {% if event.notes %}
+                    <p class="notes-text">{{ event.notes }}</p>
+                    {% else %}
+                    <p class="empty-text">No notes for this event.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Location Card -->
+                <div class="card">
+                    <h3 class="card-title">Location</h3>
+                    {% if event.location %}
+                    <p class="location-address">{{ event.location }}</p>
+                    <div id="location-map" class="location-map"></div>
+                    {% else %}
+                    <div class="no-location">
+                        <p>No location specified for this event.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar-column">
+                <!-- Weather Widget -->
+                <div class="weather-widget">
+                    <div class="weather-location">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        {{ event.location|default:"Location not set" }}
+                    </div>
+
+                    {% if weather %}
+                    <div class="weather-main">
+                        <span class="weather-temp">{{ weather.temp_avg }}°</span>
+                        <div>
+                            <div class="weather-condition">{{ weather.condition|title }}</div>
+                            <div class="weather-feels">{{ weather.description|title }}</div>
+                        </div>
+                    </div>
+
+                    <div class="weather-details">
+                        <div>
+                            <div class="weather-detail-label">Wind</div>
+                            <div class="weather-detail-value">{{ weather.wind_speed }} km/h</div>
+                        </div>
+                        <div>
+                            <div class="weather-detail-label">Humidity</div>
+                            <div class="weather-detail-value">{{ weather.humidity }}%</div>
+                        </div>
+                    </div>
+
+                    <div class="weather-tip">
+                        <div class="weather-tip-label">Styling Tip</div>
+                        <div class="weather-tip-text">
+                            {% if weather.temp_avg > 28 %}
+                            Light fabrics and shorts recommended.
+                            {% elif weather.temp_avg > 20 %}
+                            Great weather for light layers.
+                            {% elif weather.temp_avg > 12 %}
+                            Bring a jacket or cardigan.
+                            {% else %}
+                            Bundle up with a warm coat.
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="weather-unavailable">Weather data unavailable</div>
+                    {% endif %}
+                </div>
+
+                <!-- Planned Outfit Card -->
+                <div class="card">
+                    <h3 class="card-title">Planned Outfit</h3>
+
+                    {% if event.outfit %}
+                    <a href="{% url 'outfits:outfit_detail' event.outfit.id %}" class="outfit-card">
+                        <div class="outfit-preview">
+                            {% if event.outfit.preview_image %}
+                            <img src="{{ event.outfit.preview_image.url }}" alt="{{ event.outfit.name }}">
+                            {% elif event.outfit.items.first and event.outfit.items.first.image %}
+                            <img src="{{ event.outfit.items.first.image.url }}" alt="{{ event.outfit.name }}">
+                            {% else %}
+                            <span class="outfit-preview-placeholder">No preview</span>
+                            {% endif %}
+                        </div>
+                        <div class="outfit-details">
+                            <h4 class="outfit-name">{{ event.outfit.name }}</h4>
+                            <p class="outfit-meta">{{ event.outfit.get_occasion_display }} • {{ outfit_item_count }}
+                                items</p>
+                            <span class="view-outfit-link">View outfit →</span>
+                        </div>
+                    </a>
+
+                    <div class="outfit-actions">
+                        {% if event.is_completed %}
+                        <button class="btn btn-secondary" disabled style="opacity: 0.7;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            Worn & Recorded
+                        </button>
+                        {% else %}
+                        <form method="post" action="{% url 'planner:event_mark_worn' event.id %}" style="flex: 1;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success" style="width: 100%;">Mark as Worn</button>
+                        </form>
+                        <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-secondary">Change</a>
+                        {% endif %}
+                    </div>
+
+                    {% else %}
+                    <div class="no-outfit">
+                        <div class="no-outfit-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#757575"
+                                stroke-width="1.5">
+                                <rect x="2" y="7" width="20" height="15"></rect>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                            </svg>
+                        </div>
+                        <p>No outfit planned for this event</p>
+                        <div class="no-outfit-actions">
+                            <a href="{% url 'planner:event_edit' event.id %}" class="btn btn-primary">Assign
+                                Manually</a>
+                            <form method="post" action="{% url 'planner:event_suggest_outfit' event.id %}"
+                                style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path
+                                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                                        </path>
+                                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                    </svg>
+                                    AI Suggest
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">Delete Event</h3>
+        <p class="modal-text">
+            Are you sure you want to delete "<strong>{{ event.title }}</strong>"? This action cannot be undone.
+        </p>
+        <div class="modal-actions">
+            <button id="cancel-delete" class="btn btn-secondary">Cancel</button>
+            <form method="post" action="{% url 'planner:event_delete' event.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Delete Event</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Delete modal functionality
+        const deleteBtn = document.getElementById('delete-btn');
+        const deleteModal = document.getElementById('delete-modal');
+        const cancelDelete = document.getElementById('cancel-delete');
+
+        deleteBtn.addEventListener('click', function () {
+            deleteModal.classList.add('active');
+        });
+
+        cancelDelete.addEventListener('click', function () {
+            deleteModal.classList.remove('active');
+        });
+
+        deleteModal.addEventListener('click', function (e) {
+            if (e.target === deleteModal) {
+                deleteModal.classList.remove('active');
+            }
+        });
+
+        // Location map (if location exists)
+        {% if event.location %}
+        const location = "{{ event.location|escapejs }}";
+        const mapElement = document.getElementById('location-map');
+
+        if (mapElement) {
+            const map = L.map('location-map').setView([36.8065, 10.1815], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            // Geocode the location
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lng = parseFloat(data[0].lon);
+                        map.setView([lat, lng], 15);
+                        L.marker([lat, lng]).addTo(map);
+                    }
+                })
+                .catch(err => console.error('Geocode error:', err));
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}

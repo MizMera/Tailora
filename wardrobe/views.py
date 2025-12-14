@@ -102,6 +102,9 @@ def wardrobe_gallery_view(request):
         'show_favorites': show_favorites,
     }
     
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'wardrobe/wardrobe_list_partial.html', context)
+    
     return render(request, 'wardrobe_gallery.html', context)
 
 
@@ -156,19 +159,19 @@ def wardrobe_upload_view(request):
             error_msg = f"Name, image, and color are required. (Received: name={name}, image={image}, color={color})"
             messages.error(request, error_msg)
             print(f"DEBUG: Validation failed - {error_msg}")
-            return render(request, 'wardrobe_upload.html', {'categories': get_categories(user)})
+            return render(request, 'wardrobe_upload.html', {'categories': get_categories(user), 'remaining_slots': max_items - current_count, 'max_items': max_items})
         
         # Validate image
         if image.size > 5 * 1024 * 1024:  # 5MB
             messages.error(request, "Image size must not exceed 5 MB.")
-            return render(request, 'wardrobe_upload.html', {'categories': get_categories(user)})
+            return render(request, 'wardrobe_upload.html', {'categories': get_categories(user), 'remaining_slots': max_items - current_count, 'max_items': max_items})
         
         # Process and optimize image
         try:
             processed_image = optimize_image(image)
         except Exception as e:
             messages.error(request, f"Error processing image: {str(e)}")
-            return render(request, 'wardrobe_upload.html', {'categories': get_categories(user)})
+            return render(request, 'wardrobe_upload.html', {'categories': get_categories(user), 'remaining_slots': max_items - current_count, 'max_items': max_items})
         
         # Get category
         category = None
@@ -209,7 +212,7 @@ def wardrobe_upload_view(request):
         
         except Exception as e:
             messages.error(request, f"Error adding item: {str(e)}")
-            return render(request, 'wardrobe_upload.html', {'categories': get_categories(user)})
+            return render(request, 'wardrobe_upload.html', {'categories': get_categories(user), 'remaining_slots': max_items - current_count, 'max_items': max_items})
     
     # GET request
     categories = get_categories(user)

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'planner',
     'social',
     'recommendations',
+    'support',
 ]
 
 MIDDLEWARE = [

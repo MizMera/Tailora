@@ -367,6 +367,141 @@ def outfit_stats_view(request):
     return render(request, 'outfit_stats.html', context)
 
 
+@login_required
+def outfit_advanced_search_view(request):
+    """
+    Advanced search for outfits with detailed filtering options:
+    - Must contain specific wardrobe items
+    - Must not contain specific items
+    - Color palette matching
+    - Category filters
+    - Last worn date
+    - Wear frequency
+    - Occasion
+    - Favorites only
+    """
+    from django.utils import timezone
+    from datetime import timedelta
+    from wardrobe.models import ClothingCategory
+    
+    user = request.user
+    outfits = Outfit.objects.filter(user=user).prefetch_related('items', 'items__category')
+    
+    # Get all wardrobe items for the item selector
+    wardrobe_items = ClothingItem.objects.filter(user=user).select_related('category')
+    
+    # Get available categories from user's wardrobe
+    available_categories = list(
+        ClothingCategory.objects.filter(
+            Q(is_custom=False) | Q(user=user)
+        ).values_list('name', flat=True).distinct()
+    )
+    
+    # Initialize filter params
+    filter_params = {
+        'contains': [],
+        'excludes': [],
+        'colors': '',
+        'categories': [],
+        'last_worn': '',
+        'wear_count': '',
+        'occasion': '',
+        'favorites': False,
+    }
+    
+    # Parse contains (must contain these items)
+    contains_str = request.GET.get('contains', '')
+    if contains_str:
+        filter_params['contains'] = [x.strip() for x in contains_str.split(',') if x.strip()]
+        for item_id in filter_params['contains']:
+            outfits = outfits.filter(items__id=item_id)
+    
+    # Parse excludes (must not contain these items)
+    excludes_str = request.GET.get('excludes', '')
+    if excludes_str:
+        filter_params['excludes'] = [x.strip() for x in excludes_str.split(',') if x.strip()]
+        for item_id in filter_params['excludes']:
+            outfits = outfits.exclude(items__id=item_id)
+    
+    # Color palette filter
+    colors = request.GET.get('colors', '').strip()
+    if colors:
+        filter_params['colors'] = colors
+        color_list = [c.strip().lower() for c in colors.split(',') if c.strip()]
+        for color in color_list:
+            outfits = outfits.filter(items__color__icontains=color)
+    
+    # Categories filter
+    categories = request.GET.getlist('categories')
+    if categories:
+        filter_params['categories'] = categories
+        outfits = outfits.filter(items__category__name__in=categories)
+    
+    # Last worn filter
+    last_worn = request.GET.get('last_worn', '')
+    if last_worn:
+        filter_params['last_worn'] = last_worn
+        today = timezone.now().date()
+        if last_worn == 'today':
+            outfits = outfits.filter(last_worn=today)
+        elif last_worn == 'this_week':
+            week_ago = today - timedelta(days=7)
+            outfits = outfits.filter(last_worn__gte=week_ago)
+        elif last_worn == 'this_month':
+            month_ago = today - timedelta(days=30)
+            outfits = outfits.filter(last_worn__gte=month_ago)
+        elif last_worn == 'never':
+            outfits = outfits.filter(last_worn__isnull=True)
+    
+    # Wear count filter
+    wear_count = request.GET.get('wear_count', '')
+    if wear_count:
+        filter_params['wear_count'] = wear_count
+        if wear_count == 'most_worn':
+            outfits = outfits.filter(times_worn__gte=5).order_by('-times_worn')
+        elif wear_count == 'least_worn':
+            outfits = outfits.filter(times_worn__gt=0, times_worn__lt=3).order_by('times_worn')
+        elif wear_count == 'never_worn':
+            outfits = outfits.filter(times_worn=0)
+    
+    # Occasion filter
+    occasion = request.GET.get('occasion', '')
+    if occasion:
+        filter_params['occasion'] = occasion
+        outfits = outfits.filter(occasion=occasion)
+    
+    # Favorites only
+    if request.GET.get('favorites') == 'true':
+        filter_params['favorites'] = True
+        outfits = outfits.filter(favorite=True)
+    
+    # Remove duplicates (from multiple joins)
+    outfits = outfits.distinct()
+    
+    # Pagination
+    paginator = Paginator(outfits, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Last worn choices for template
+    last_worn_choices = [
+        ('today', 'Today'),
+        ('this_week', 'This Week'),
+        ('this_month', 'This Month'),
+        ('never', 'Never Worn'),
+    ]
+    
+    context = {
+        'outfits': page_obj,
+        'wardrobe_items': wardrobe_items,
+        'available_categories': available_categories,
+        'filter_params': filter_params,
+        'occasions': Outfit.OCCASION_CHOICES,
+        'last_worn_choices': last_worn_choices,
+    }
+    
+    return render(request, 'outfit_advanced_search.html', context)
+
 # ==================== REST API Views ====================
 
 from rest_framework import viewsets, status, permissions

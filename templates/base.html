@@ -40,7 +40,8 @@
                     <a href="{% url 'recommendations:daily' %}"
                         class="nav-pill {% if 'recommendations' in request.resolver_match.namespace %}active{% endif %}">AI
                         Recommendations</a>
-                    <a href="#" class="nav-pill">Support</a>
+                    <a href="{% url 'support:support_page' %}"
+                        class="nav-pill {% if 'support' in request.resolver_match.namespace %}active{% endif %}">Support</a>
                 </div>
             </nav>
         </header>

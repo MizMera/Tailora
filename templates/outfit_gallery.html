@@ -8,11 +8,11 @@
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 <style>
     /* =========================================
-       THEME VARIABLES & GLOBAL STYLES
+       THEME VARIABLES
        ========================================= */
     :root {
         --bg-color: #f8f8f8;
-        --card-bg: #f3f0f0;
+        --card-bg: #ffffff;
         --text-main: #1f1e1e;
         --text-muted: #757575;
         --border-color: #e0e0e0;
@@ -41,7 +41,7 @@
         margin: 0 auto;
     }
 
-    /* Header */
+    /* Page Header */
     .page-header {
         display: flex;
         justify-content: space-between;
@@ -74,11 +74,7 @@
         gap: 12px;
     }
 
-    /* =========================================
-       COMPONENTS
-       ========================================= */
-
-    /* Buttons (Global Override) */
+    /* Buttons */
     .btn {
         border-radius: 0;
         padding: 10px 20px;
@@ -91,12 +87,13 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
+        border: 1px solid transparent;
     }
 
     .btn-primary {
         background: var(--text-main);
         color: #fff;
-        border: 1px solid var(--text-main);
+        border-color: var(--text-main);
     }
 
     .btn-primary:hover {
@@ -107,7 +104,7 @@
     .btn-secondary {
         background: var(--card-bg);
         color: var(--text-main);
-        border: 1px solid var(--border-color);
+        border-color: var(--border-color);
     }
 
     .btn-secondary:hover {
@@ -144,7 +141,9 @@
         margin-top: 4px;
     }
 
-    /* Filter Panel */
+    /* =========================================
+       FILTER PANEL (Horizontal)
+       ========================================= */
     .filter-panel {
         background: var(--card-bg);
         border: 1px solid var(--border-color);
@@ -159,7 +158,6 @@
         align-items: end;
     }
 
-    /* Form Inputs */
     .input-field {
         display: flex;
         flex-direction: column;
@@ -179,7 +177,7 @@
         border-radius: 0;
         font-family: var(--font-body);
         font-size: 14px;
-        background: var(--card-bg);
+        background: #fff;
         color: var(--text-main);
         width: 100%;
         box-sizing: border-box;
@@ -219,7 +217,7 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-    .outfit-card a.card-link {
+    .card-link {
         text-decoration: none;
         color: inherit;
         display: flex;
@@ -344,24 +342,6 @@
         padding: 8px 12px;
     }
 
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 80px 40px;
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-    }
-
-    .empty-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 24px;
-        background: #f4e9cf;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
     /* Challenges Section */
     .challenges-section {
         margin-bottom: 32px;
@@ -462,25 +442,41 @@
         background: var(--text-main);
     }
 
+    /* Empty State */
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 80px 40px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+    }
+
+    .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 24px;
+        color: var(--text-muted);
+    }
+
     /* Alerts */
     .alert {
         padding: 12px 16px;
         margin-bottom: 24px;
         font-family: var(--font-body);
         font-size: 14px;
-        border-radius: 0;
+        border: 1px solid transparent;
     }
 
     .alert-success {
         background-color: var(--success-bg);
         color: var(--success-text);
-        border: 1px solid var(--success-text);
+        border-color: var(--success-text);
     }
 
     .alert-error {
         background-color: var(--error-bg);
         color: var(--error-text);
-        border: 1px solid var(--error-text);
+        border-color: var(--error-text);
     }
 </style>
 {% endblock %}
@@ -496,6 +492,7 @@
                 <p class="page-subtitle">Manage and organize your outfit collection</p>
             </div>
             <div class="header-actions">
+                <a href="{% url 'outfits:outfit_advanced_search' %}" class="btn btn-secondary">Advanced Search</a>
                 <a href="{% url 'outfits:outfit_stats' %}" class="btn btn-secondary">View Stats</a>
                 <a href="{% url 'outfits:outfit_create' %}" class="btn btn-primary">+ Create Outfit</a>
             </div>
@@ -659,12 +656,13 @@
         {% else %}
         <div class="empty-state">
             <div class="empty-icon">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                     <path
                         d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z" />
                 </svg>
             </div>
-            <h3 style="font-family: var(--font-body); font-size: 20px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">
+            <h3
+                style="font-family: var(--font-body); font-size: 20px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">
                 No Outfits Yet
             </h3>
             <p style="font-family: var(--font-body); font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">

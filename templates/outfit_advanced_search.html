@@ -1,0 +1,797 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Advanced Outfit Search - Tailora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
+<link rel="stylesheet" href="{% static 'css/settings.css' %}">
+<style>
+    /* =========================================
+       THEME VARIABLES
+       ========================================= */
+    :root {
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1f1e1e;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
+        --success-bg: #def7ec;
+        --success-text: #03543f;
+        --error-bg: #fde8e8;
+        --error-text: #9b1c1c;
+
+        /* Fonts */
+        --font-heading: 'Istok Web', sans-serif;
+        --font-body: 'Inter', sans-serif;
+    }
+
+    /* =========================================
+       LAYOUT
+       ========================================= */
+    .outfit-wrapper {
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        padding: 40px 24px;
+    }
+
+    .outfit-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 32px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 24px;
+    }
+
+    .page-title {
+        font-family: var(--font-heading);
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Buttons */
+    .btn {
+        border-radius: 0;
+        padding: 10px 20px;
+        font-family: var(--font-body);
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .btn-secondary {
+        background: var(--card-bg);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--text-main);
+        background: #f9f9f9;
+    }
+
+    .btn-reset {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+        font-family: var(--font-body);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        border: 1px dashed var(--border-color);
+        text-decoration: none;
+        transition: all 0.2s;
+        box-sizing: border-box;
+        margin-top: 24px;
+    }
+
+    .btn-reset:hover {
+        color: var(--error-text);
+        border-color: var(--error-text);
+        background: var(--error-bg);
+    }
+
+    /* =========================================
+       SEARCH LAYOUT
+       ========================================= */
+    .search-layout {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 32px;
+        align-items: start;
+    }
+
+    /* Sidebar Styles */
+    .filter-sidebar {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        padding: 24px;
+        position: sticky;
+        top: 24px;
+    }
+
+    .filter-group {
+        margin-bottom: 24px;
+        border-bottom: 1px solid transparent;
+    }
+    
+    .filter-group:not(:last-child) {
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .filter-title {
+        font-family: var(--font-body);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    /* Inputs */
+    .input-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 0;
+        font-family: var(--font-body);
+        font-size: 14px;
+        background: #fff;
+        color: var(--text-main);
+        box-sizing: border-box;
+    }
+
+    .input-control:focus {
+        outline: none;
+        border-color: var(--text-main);
+    }
+
+    /* Mini Item Grid (for contains/excludes) */
+    .item-selector-mini {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        max-height: 240px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+
+    /* Custom Scrollbar for mini grid */
+    .item-selector-mini::-webkit-scrollbar {
+        width: 4px;
+    }
+    .item-selector-mini::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    .item-selector-mini::-webkit-scrollbar-thumb {
+        background: #ccc;
+    }
+
+    .mini-item {
+        aspect-ratio: 1;
+        cursor: pointer;
+        border: 1px solid var(--border-color);
+        position: relative;
+        transition: all 0.2s;
+        background: #f9f9f9;
+    }
+
+    .mini-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+
+    .mini-item:hover {
+        border-color: var(--text-main);
+    }
+
+    .mini-item:hover img {
+        opacity: 1;
+    }
+
+    .mini-item.selected {
+        border: 2px solid var(--text-main);
+    }
+
+    .mini-item.selected img {
+        opacity: 1;
+    }
+
+    .mini-item.selected::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border: 2px solid var(--text-main); /* Inner border visual */
+        pointer-events: none;
+    }
+
+    /* Filter Chips/Tags */
+    .filter-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .filter-chip {
+        display: inline-flex;
+        cursor: pointer;
+        font-family: var(--font-body);
+        font-size: 12px;
+    }
+
+    .filter-chip input {
+        display: none;
+    }
+
+    .chip-label {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        padding: 6px 12px;
+        transition: all 0.2s;
+        color: var(--text-main);
+    }
+
+    .filter-chip:hover .chip-label {
+        border-color: var(--text-main);
+    }
+
+    .filter-chip input:checked + .chip-label {
+        background: var(--text-main);
+        color: #ffffff;
+        border-color: var(--text-main);
+    }
+    
+    /* Checkbox Label */
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-main);
+        cursor: pointer;
+    }
+    
+    .checkbox-label input {
+        accent-color: var(--text-main);
+        width: 16px; 
+        height: 16px;
+    }
+
+    /* =========================================
+       OUTFIT GRID
+       ========================================= */
+    .outfit-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+    }
+
+    .outfit-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .outfit-card:hover {
+        border-color: var(--text-main);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .card-image-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 125%; /* Aspect Ratio */
+        background: #f4e9cf;
+        overflow: hidden;
+    }
+
+    .card-image-wrapper img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+
+    .outfit-card:hover .card-image-wrapper img {
+        transform: scale(1.03);
+    }
+
+    .icon-favorite {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        color: var(--text-main);
+        background: #f4e9cf;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+    
+    .item-placeholder {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        font-size: 12px;
+        background: #f0f0f0;
+    }
+
+    .card-body {
+        padding: 16px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-title {
+        font-family: var(--font-heading);
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 8px 0;
+        line-height: 1.3;
+    }
+
+    .card-meta {
+        font-family: var(--font-body);
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 8px;
+        padding: 12px 16px;
+        border-top: 1px solid var(--border-color);
+        background: #fafafa;
+    }
+    
+    .action-btn {
+        flex: 1;
+        border: 1px solid transparent;
+        background: transparent;
+        padding: 8px;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+        background: #fff;
+        color: var(--text-main);
+        border-color: var(--border-color);
+    }
+
+    /* Empty State */
+    .no-items-message {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 80px 40px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-muted);
+    }
+
+    /* Pagination */
+    .pagination {
+        margin-top: 32px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .page-info {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    @media (max-width: 900px) {
+        .search-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-sidebar {
+            position: static;
+            margin-bottom: 32px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="outfit-wrapper">
+    <div class="outfit-container">
+
+        <!-- Header -->
+        <header class="page-header">
+            <div>
+                <h1 class="page-title">Advanced Search</h1>
+                <p class="page-subtitle">Find outfits with detailed filters</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'outfits:outfit_gallery' %}" class="btn btn-secondary">Back to Gallery</a>
+            </div>
+        </header>
+
+        <!-- Layout -->
+        <div class="search-layout">
+            
+            <!-- Sidebar Filters -->
+            <aside class="filter-sidebar">
+                <form method="get" action="{% url 'outfits:outfit_advanced_search' %}" id="advancedSearchForm">
+
+                    <!-- Must Contain Items -->
+                    <div class="filter-group">
+                        <span class="filter-title">Must Contain Items</span>
+                        <div class="item-selector-mini" id="containsItemsGrid">
+                            {% for item in wardrobe_items %}
+                            <div class="mini-item {% if item.id|stringformat:'s' in filter_params.contains %}selected{% endif %}"
+                                data-item-id="{{ item.id }}" 
+                                data-filter-type="contains"
+                                title="{{ item.name }}">
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="contains" id="containsInput"
+                            value="{{ filter_params.contains|join:',' }}">
+                    </div>
+
+                    <!-- Must Not Contain Items -->
+                    <div class="filter-group">
+                        <span class="filter-title">Must Not Contain Items</span>
+                        <div class="item-selector-mini" id="excludesItemsGrid">
+                            {% for item in wardrobe_items %}
+                            <div class="mini-item {% if item.id|stringformat:'s' in filter_params.excludes %}selected{% endif %}"
+                                data-item-id="{{ item.id }}" 
+                                data-filter-type="excludes"
+                                title="{{ item.name }}">
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="excludes" id="excludesInput"
+                            value="{{ filter_params.excludes|join:',' }}">
+                    </div>
+
+                    <!-- Color Palette -->
+                    <div class="filter-group">
+                        <span class="filter-title">Color Palette</span>
+                        <input type="text" name="colors" value="{{ filter_params.colors }}"
+                            placeholder="e.g. Black, Navy, White" class="input-control" onchange="submitForm()">
+                    </div>
+
+                    <!-- Categories -->
+                    <div class="filter-group">
+                        <span class="filter-title">Item Categories</span>
+                        <div class="filter-options">
+                            {% for category in available_categories %}
+                            <label class="filter-chip">
+                                <input type="checkbox" name="categories" value="{{ category }}" 
+                                    {% if category in filter_params.categories %}checked{% endif %} 
+                                    onchange="submitForm()">
+                                <span class="chip-label">{{ category }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Last Worn -->
+                    <div class="filter-group">
+                        <span class="filter-title">Last Worn</span>
+                        <div class="filter-options">
+                            {% for value, label in last_worn_choices %}
+                            <label class="filter-chip">
+                                <input type="radio" name="last_worn" value="{{ value }}" 
+                                    {% if filter_params.last_worn == value %}checked{% endif %} 
+                                    onchange="submitForm()">
+                                <span class="chip-label">{{ label }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Wear Count -->
+                    <div class="filter-group">
+                        <span class="filter-title">Wear Frequency</span>
+                        <div class="filter-options">
+                            <label class="filter-chip">
+                                <input type="radio" name="wear_count" value="most_worn" {% if filter_params.wear_count == 'most_worn' %}checked{% endif %} onchange="submitForm()">
+                                <span class="chip-label">Most Worn</span>
+                            </label>
+                            <label class="filter-chip">
+                                <input type="radio" name="wear_count" value="least_worn" {% if filter_params.wear_count == 'least_worn' %}checked{% endif %} onchange="submitForm()">
+                                <span class="chip-label">Least Worn</span>
+                            </label>
+                            <label class="filter-chip">
+                                <input type="radio" name="wear_count" value="never_worn" {% if filter_params.wear_count == 'never_worn' %}checked{% endif %} onchange="submitForm()">
+                                <span class="chip-label">Never Worn</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Occasion -->
+                    <div class="filter-group">
+                        <span class="filter-title">Occasion</span>
+                        <select name="occasion" class="input-control" onchange="submitForm()">
+                            <option value="">All Occasions</option>
+                            {% for value, label in occasions %}
+                            <option value="{{ value }}" {% if filter_params.occasion == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Favorites -->
+                    <div class="filter-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="favorites" value="true" {% if filter_params.favorites %}checked{% endif %} onchange="submitForm()">
+                            <span>Show Favorites Only</span>
+                        </label>
+                    </div>
+
+                    <!-- Reset Button -->
+                    {% if filter_params.contains or filter_params.excludes or filter_params.colors or filter_params.categories or filter_params.last_worn or filter_params.wear_count or filter_params.occasion or filter_params.favorites %}
+                    <a href="{% url 'outfits:outfit_advanced_search' %}" class="btn-reset">Clear All Filters</a>
+                    {% endif %}
+                </form>
+            </aside>
+
+            <!-- Main Results -->
+            <main>
+                <!-- Result Count -->
+                {% if outfits %}
+                <h3 style="font-family: var(--font-body); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 24px;">
+                    Found {{ outfits.paginator.count }} outfit{{ outfits.paginator.count|pluralize }}
+                </h3>
+
+                <div class="outfit-grid">
+                    {% for outfit in outfits %}
+                    <div class="outfit-card">
+                        <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="card-link">
+                            <div class="card-image-wrapper">
+                                {% if outfit.outfit_image %}
+                                <img src="{{ outfit.outfit_image.url }}" alt="{{ outfit.name }}">
+                                {% else %}
+                                    {% with outfit.items.first as first_item %}
+                                        {% if first_item %}
+                                        <img src="{{ first_item.image.url }}" alt="{{ outfit.name }}">
+                                        {% else %}
+                                        <div class="item-placeholder">No Image</div>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                                
+                                {% if outfit.favorite %}
+                                <span class="icon-favorite">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                    </svg>
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="card-body">
+                                <h3 class="card-title">{{ outfit.name }}</h3>
+                                <div class="card-meta">
+                                    {{ outfit.get_occasion_display }} &bull; {{ outfit.items.count }} items
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <div class="card-actions">
+                            <form method="post" action="{% url 'outfits:outfit_toggle_favorite' outfit.id %}" style="flex: 1; display:flex;">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn" title="{% if outfit.favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">
+                                    {% if outfit.favorite %}
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                    </svg>
+                                    {% else %}
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                    </svg>
+                                    {% endif %}
+                                </button>
+                            </form>
+                            <a href="{% url 'outfits:outfit_detail' outfit.id %}" class="action-btn" title="View Details">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 6l6 6m0 0l6 6m-6-6l-6 6m6-6l6-6" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if outfits.has_other_pages %}
+                <div class="pagination">
+                    {% if outfits.has_previous %}
+                    <a href="?page={{ outfits.previous_page_number }}{% for key, value in filter_params.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                        class="btn btn-secondary">Previous</a>
+                    {% endif %}
+
+                    <span class="page-info">
+                        Page {{ outfits.number }} of {{ outfits.paginator.num_pages }}
+                    </span>
+
+                    {% if outfits.has_next %}
+                    <a href="?page={{ outfits.next_page_number }}{% for key, value in filter_params.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                        class="btn btn-secondary">Next</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <div class="no-items-message">
+                    <div class="empty-icon" style="margin: 0 auto 16px;">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <h3>No matching outfits found</h3>
+                    <p>Try adjusting your filters to find what you're looking for.</p>
+                </div>
+                {% endif %}
+            </main>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global state
+    let containsItems = [];
+    let excludesItems = [];
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize from existing selections
+        const containsInput = document.getElementById('containsInput');
+        const excludesInput = document.getElementById('excludesInput');
+
+        containsItems = containsInput.value ? containsInput.value.split(',').filter(id => id.trim() !== '') : [];
+        excludesItems = excludesInput.value ? excludesInput.value.split(',').filter(id => id.trim() !== '') : [];
+
+        // Item click handlers
+        document.querySelectorAll('.mini-item[data-item-id]').forEach(item => {
+            item.addEventListener('click', function () {
+                const itemId = this.getAttribute('data-item-id');
+                const filterType = this.getAttribute('data-filter-type');
+
+                toggleItemSelection(itemId, filterType, this);
+            });
+        });
+    });
+
+    function toggleItemSelection(itemId, filterType, element = null) {
+        if (!element) {
+            element = document.querySelector(`.mini-item[data-item-id="${itemId}"][data-filter-type="${filterType}"]`);
+        }
+
+        if (filterType === 'contains') {
+            const index = containsItems.indexOf(itemId);
+            if (index > -1) {
+                // Remove from contains
+                containsItems.splice(index, 1);
+                element.classList.remove('selected');
+            } else {
+                // Add to contains
+                containsItems.push(itemId);
+                element.classList.add('selected');
+                // Remove from excludes if present
+                const excludeIndex = excludesItems.indexOf(itemId);
+                if (excludeIndex > -1) {
+                    excludesItems.splice(excludeIndex, 1);
+                    updateExcludesVisual();
+                }
+            }
+            document.getElementById('containsInput').value = containsItems.join(',');
+        } else if (filterType === 'excludes') {
+            const index = excludesItems.indexOf(itemId);
+            if (index > -1) {
+                // Remove from excludes
+                excludesItems.splice(index, 1);
+                element.classList.remove('selected');
+            } else {
+                // Add to excludes
+                excludesItems.push(itemId);
+                element.classList.add('selected');
+                // Remove from contains if present
+                const containIndex = containsItems.indexOf(itemId);
+                if (containIndex > -1) {
+                    containsItems.splice(containIndex, 1);
+                    updateContainsVisual();
+                }
+            }
+            document.getElementById('excludesInput').value = excludesItems.join(',');
+        }
+
+        // Submit form after a short delay
+        setTimeout(submitForm, 300);
+    }
+
+    function updateContainsVisual() {
+        document.querySelectorAll('.mini-item[data-filter-type="contains"]').forEach(item => {
+            const itemId = item.getAttribute('data-item-id');
+            item.classList.toggle('selected', containsItems.includes(itemId));
+        });
+        document.getElementById('containsInput').value = containsItems.join(',');
+    }
+
+    function updateExcludesVisual() {
+        document.querySelectorAll('.mini-item[data-filter-type="excludes"]').forEach(item => {
+            const itemId = item.getAttribute('data-item-id');
+            item.classList.toggle('selected', excludesItems.includes(itemId));
+        });
+        document.getElementById('excludesInput').value = excludesItems.join(',');
+    }
+
+    function submitForm() {
+        document.getElementById('advancedSearchForm').submit();
+    }
+</script>
+{% endblock %}

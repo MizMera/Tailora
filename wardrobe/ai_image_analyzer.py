@@ -299,9 +299,12 @@ class FashionImageAnalyzer:
                         # Extract attributes from BLIP-2 analysis
                         attributes = enhanced_desc.get('attributes', {})
                         detected_colors = attributes.get('colors', [])
+                        detected_styles = attributes.get('styles', [])
                         
                         if detected_colors:
                             print(f"   BLIP-2 detected colors: {detected_colors}")
+                        if detected_styles:
+                            print(f"   BLIP-2 detected styles: {detected_styles}")
 
                         return {
                             'item_type': blip2_type,
@@ -310,6 +313,7 @@ class FashionImageAnalyzer:
                             'description': blip2_caption,
                             'description_source': 'blip2',
                             'detected_colors': detected_colors,  # Pass this through
+                            'detected_styles': detected_styles,  # Pass this through
                             'raw_predictions': [],
                         }
                     else:
@@ -1133,14 +1137,29 @@ class FashionImageAnalyzer:
         # High saturation = vibrant colors
         if r > g and r > b:
             # Red dominant
-            if r > 200 and g < 100 and b < 100:
-                return "red"
-            elif r > g * 1.3 and b > g * 0.8:
+            
+            # Pink detection (High brightness, significant Blue)
+            if r > 200 and g > 180 and b > 180:
                 return "pink"
-            elif r > 150 and g > 80 and b < 80:
-                return "orange" if g > 100 else "burgundy"
-            else:
+            elif r > g * 1.2 and b > g * 1.2:
+                return "pink"
+            
+            # Bright Red
+            if r > 200 and g < 80 and b < 80:
                 return "red"
+            
+            # Orange/Brown/Burgundy
+            if r > 150 and g > 80 and b < 80:
+                return "orange" if g > 100 else "burgundy"
+            
+            # Brown vs Burgundy (Darker shades)
+            if r < 180 and g < 150 and b < 100:
+                if g > 40 and g >= b:
+                    return "brown"
+                else:
+                    return "burgundy"
+            
+            return "red"
         elif g > r and g > b:
             # Green dominant
             if g > 180 and r < 120 and b < 120:
@@ -1166,7 +1185,9 @@ class FashionImageAnalyzer:
                 return "blue"
         else:
             # Mixed colors
-            if r > 150 and g > 100 and b < 100:
+            if r > 200 and g > 200 and b < 100:
+                return "yellow"
+            elif r > 150 and g > 100 and b < 100:
                 return "orange"
             elif r > 100 and g > 100 and b > 150:
                 return "lavender"
@@ -1243,11 +1264,20 @@ class FashionImageAnalyzer:
         # Determine style and occasions
         style_info = self._infer_style_and_occasions(ai, colors)
 
+        # Determine color
+        detected_colors = ai.get('detected_colors', [])
+        heuristic_color = colors.get('primary_color', '')
+        
+        final_color = ''
+        if detected_colors and len(detected_colors) > 0 and detected_colors[0]:
+            final_color = detected_colors[0]
+        elif heuristic_color:
+            final_color = heuristic_color
+
         return {
             'item_type': ai.get('item_type', 'clothing item'),
             'category': category,
-            'category': category,
-            'color': ai.get('detected_colors')[0] if ai.get('detected_colors') else colors.get('primary_color', ''),
+            'color': final_color,
             'color_hex': colors.get('primary_hex', ''),
             'secondary_colors': colors.get('secondary_colors', []),
             'pattern': colors.get('pattern', 'solid'),
@@ -1267,11 +1297,14 @@ class FashionImageAnalyzer:
     def _generate_description(self, ai: Dict, colors: Dict, basic: Dict, image: Image.Image) -> str:
         """Generate a human-readable description, preferring the already-captured BLIP-2 text."""
         existing_desc = ai.get('description')
-        if existing_desc and len(existing_desc) > 5:
+        if existing_desc and isinstance(existing_desc, str) and len(existing_desc) > 5:
             return existing_desc
 
         print("Using heuristic description generation...")
         item_type = ai.get('item_type', 'clothing item')
+        if not item_type:
+            item_type = 'clothing item'
+            
         color = colors.get('primary_color', 'colored')
         pattern = colors.get('pattern', 'solid')
 
@@ -1305,22 +1338,89 @@ class FashionImageAnalyzer:
 
     def _infer_style_and_occasions(self, ai: Dict, colors: Dict) -> Dict:
         """Infer style and suitable occasions"""
-        item_type = ai.get('item_type', '').lower()
-        color = colors.get('primary_color', '')
-
-        # Basic style inference
-        if any(word in item_type for word in ['jean', 'sneaker', 't-shirt']):
-            style = 'casual'
-            occasions = ['casual', 'everyday']
-        elif any(word in item_type for word in ['dress', 'blouse', 'heel']):
-            style = 'formal'
-            occasions = ['work', 'formal', 'party']
-        elif any(word in item_type for word in ['jacket', 'coat']):
-            style = 'business'
-            occasions = ['work', 'business']
+        item_type = ai.get('item_type', '')
+        if item_type:
+            item_type = item_type.lower()
         else:
-            style = 'casual'
-            occasions = ['casual']
+            item_type = ''
+            
+        description = ai.get('description', '')
+        if description:
+            description = description.lower()
+        else:
+            description = ''
+            
+        detected_styles = ai.get('detected_styles', [])
+        
+        # Supported styles mapping
+        # Casual, Chic, Bohemian, Sporty, Elegant, Classic, Streetwear, Vintage, Minimalist
+        
+        style = 'casual' # Default
+        occasions = ['casual']
+        
+        # 1. Use BLIP-2 detected styles if available
+        if detected_styles:
+            # Map BLIP-2 styles to our categories
+            style_map = {
+                'casual': 'casual',
+                'formal': 'elegant', # Map formal to elegant
+                'elegant': 'elegant',
+                'modern': 'chic',
+                'vintage': 'vintage',
+                'classic': 'classic',
+                'sporty': 'sporty',
+                'bohemian': 'bohemian',
+                'boho': 'bohemian',
+                'streetwear': 'streetwear',
+                'minimalist': 'minimalist'
+            }
+            
+            for ds in detected_styles:
+                if ds.lower() in style_map:
+                    style = style_map[ds.lower()]
+                    break
+        
+        # 2. Fallback to heuristics if no style detected or default remains
+        if style == 'casual' and not detected_styles:
+            # Keywords for each style
+            keywords = {
+                'sporty': ['sneaker', 'athletic', 'gym', 'legging', 'hoodie', 'sweatshirt', 'tracksuit', 'jogger'],
+                'elegant': ['gown', 'evening', 'suit', 'blazer', 'heels', 'formal', 'silk', 'satin'],
+                'bohemian': ['floral', 'maxi', 'fringe', 'crochet', 'peasant', 'embroidery', 'tunic'],
+                'streetwear': ['oversized', 'graphic', 'hoodie', 'cargo', 'bomber', 'sneaker', 'logo'],
+                'chic': ['blouse', 'tailored', 'trench', 'loafer', 'stylish', 'fashionable'],
+                'vintage': ['retro', 'old school', '90s', '80s', '70s', 'corduroy', 'tweed'],
+                'minimalist': ['solid', 'simple', 'clean', 'neutral', 'basic', 'plain'],
+                'classic': ['button-down', 'polo', 'chino', 'loafer', 'cardigan', 'trench'],
+                'casual': ['t-shirt', 'jeans', 'denim', 'shorts', 'casual']
+            }
+            
+            # Check description and item_type against keywords
+            text_to_check = f"{item_type} {description}"
+            
+            found_style = None
+            for style_name, style_keywords in keywords.items():
+                if any(kw in text_to_check for kw in style_keywords):
+                    found_style = style_name
+                    break
+            
+            if found_style:
+                style = found_style
+
+        # Determine occasions based on style
+        occasion_map = {
+            'casual': ['casual', 'everyday', 'weekend'],
+            'chic': ['work', 'date', 'casual'],
+            'bohemian': ['festival', 'casual', 'vacation'],
+            'sporty': ['gym', 'sports', 'casual'],
+            'elegant': ['formal', 'party', 'wedding', 'date'],
+            'classic': ['work', 'office', 'everyday'],
+            'streetwear': ['casual', 'concert', 'party'],
+            'vintage': ['casual', 'party', 'everyday'],
+            'minimalist': ['work', 'everyday', 'casual']
+        }
+        
+        occasions = occasion_map.get(style, ['casual'])
 
         return {'style': style, 'occasions': occasions}
 

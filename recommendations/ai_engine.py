@@ -36,9 +36,15 @@ class OutfitRecommendationEngine:
     def __init__(self, user):
         self.user = user
         self.style_profile = getattr(user, 'style_profile', None)
+        
+        # Filter wardrobe items: only 'available' AND not needing washing
+        from django.db.models import F
         self.wardrobe_items = ClothingItem.objects.filter(
             user=user,
             status='available'
+        ).exclude(
+            # Exclude items that need washing (wears_since_wash >= max_wears_before_wash)
+            wears_since_wash__gte=F('max_wears_before_wash')
         ).select_related('category')
         
     def generate_daily_recommendations(self, date=None, count=5):
@@ -59,7 +65,7 @@ class OutfitRecommendationEngine:
         # Get user preferences
         preferences = self._analyze_user_preferences()
         
-        # Get available wardrobe items
+        # Get available wardrobe items (excluding items that need washing)
         if not self.wardrobe_items.exists():
             return []
             
@@ -727,6 +733,106 @@ class OutfitRecommendationEngine:
             }
         )
 
+    def get_unavailable_items(self):
+        """
+        Get items that are currently unavailable (washing, loaned, etc.)
+        """
+        unavailable = ClothingItem.objects.filter(
+            user=self.user
+        ).exclude(status='available')
+        
+        # Also check for items that are 'available' but 'dirty' (wears_since_wash >= max)
+        dirty = ClothingItem.objects.filter(
+            user=self.user,
+            status='available',
+            wears_since_wash__gte=models.F('max_wears_before_wash')
+        )
+        
+        return list(unavailable) + list(dirty)
+
+    # ---------------------------------------------------------
+    # VIRTUAL OUTFIT GENERATION (New Feature)
+    # ---------------------------------------------------------
+    def _generate_virtual_outfits(self, count=10):
+        """
+        Generate outfits using virtual items based on style archetypes
+        """
+        archetypes = [
+            {
+                'name': 'Parisian Chic',
+                'style': 'Classic',
+                'items': [
+                    {'name': 'Breton Stripe Tee', 'category': 'Tops', 'color': 'Navy/White', 'image_url': 'https://placehold.co/400x500/navy/white?text=Breton+Stripe'},
+                    {'name': 'Straight Leg Jeans', 'category': 'Bottoms', 'color': 'Medium Wash', 'image_url': 'https://placehold.co/400x500/3b82f6/white?text=Jeans'},
+                    {'name': 'Trench Coat', 'category': 'Outerwear', 'color': 'Beige', 'image_url': 'https://placehold.co/400x500/d2b48c/white?text=Trench'},
+                    {'name': 'Leather Loafers', 'category': 'Shoes', 'color': 'Black', 'image_url': 'https://placehold.co/400x500/000000/white?text=Loafers'}
+                ]
+            },
+            {
+                'name': 'Modern Minimalist',
+                'style': 'Minimalist',
+                'items': [
+                    {'name': 'Oversized White Shirt', 'category': 'Tops', 'color': 'White', 'image_url': 'https://placehold.co/400x500/ffffff/000000?text=White+Shirt'},
+                    {'name': 'Wide Leg Trousers', 'category': 'Bottoms', 'color': 'Black', 'image_url': 'https://placehold.co/400x500/000000/white?text=Trousers'},
+                    {'name': 'Minimalist Sneakers', 'category': 'Shoes', 'color': 'White', 'image_url': 'https://placehold.co/400x500/ffffff/000000?text=Sneakers'}
+                ]
+            },
+            {
+                'name': 'Weekend Casual',
+                'style': 'Casual',
+                'items': [
+                    {'name': 'Grey Hoodie', 'category': 'Tops', 'color': 'Grey', 'image_url': 'https://placehold.co/400x500/808080/white?text=Hoodie'},
+                    {'name': 'Jogger Pants', 'category': 'Bottoms', 'color': 'Black', 'image_url': 'https://placehold.co/400x500/000000/white?text=Joggers'},
+                    {'name': 'Running Shoes', 'category': 'Shoes', 'color': 'White', 'image_url': 'https://placehold.co/400x500/ffffff/000000?text=Runners'},
+                    {'name': 'Baseball Cap', 'category': 'Accessories', 'color': 'Navy', 'image_url': 'https://placehold.co/400x500/000080/white?text=Cap'}
+                ]
+            },
+            {
+                'name': 'Smart Business',
+                'style': 'Formal',
+                'items': [
+                    {'name': 'Satin Blouse', 'category': 'Tops', 'color': 'Cream', 'image_url': 'https://placehold.co/400x500/fffdd0/000000?text=Satin+Blouse'},
+                    {'name': 'Pencil Skirt', 'category': 'Bottoms', 'color': 'Navy', 'image_url': 'https://placehold.co/400x500/000080/white?text=Skirt'},
+                    {'name': 'Classic Blazer', 'category': 'Outerwear', 'color': 'Navy', 'image_url': 'https://placehold.co/400x500/000080/white?text=Blazer'},
+                    {'name': 'Pointed Heels', 'category': 'Shoes', 'color': 'Nude', 'image_url': 'https://placehold.co/400x500/eebbbb/000000?text=Heels'}
+                ]
+            },
+            {
+                'name': 'Summer Breeze',
+                'style': 'Boho',
+                'items': [
+                    {'name': 'Floral Midi Dress', 'category': 'Dresses', 'color': 'Sage Green', 'image_url': 'https://placehold.co/400x500/9dc183/white?text=Floral+Dress'},
+                    {'name': 'Denim Jacket', 'category': 'Outerwear', 'color': 'Light Wash', 'image_url': 'https://placehold.co/400x500/add8e6/000000?text=Denim+Jacket'},
+                    {'name': 'Strappy Sandals', 'category': 'Shoes', 'color': 'Tan', 'image_url': 'https://placehold.co/400x500/d2b48c/white?text=Sandals'}
+                ]
+            },
+            {
+                'name': 'City Slicker',
+                'style': 'Urban',
+                'items': [
+                    {'name': 'Leather Jacket', 'category': 'Outerwear', 'color': 'Black', 'image_url': 'https://placehold.co/400x500/000000/white?text=Leather+Jacket'},
+                    {'name': 'Graphic Tee', 'category': 'Tops', 'color': 'Black', 'image_url': 'https://placehold.co/400x500/000000/white?text=Graphic+Tee'},
+                    {'name': 'Distressed Jeans', 'category': 'Bottoms', 'color': 'Grey', 'image_url': 'https://placehold.co/400x500/808080/white?text=Jeans'},
+                    {'name': 'Combat Boots', 'category': 'Shoes', 'color': 'Black', 'image_url': 'https://placehold.co/400x500/000000/white?text=Boots'}
+                ]
+            }
+        ]
+        
+        # Generate variations from archetypes
+        virtual_outfits = []
+        
+        for _ in range(count):
+            archetype = random.choice(archetypes)
+            # Create a copy to randomize slightly if needed later
+            outfit = {
+                'name': archetype['name'],
+                'style': archetype['style'],
+                'items': archetype['items']
+            }
+            virtual_outfits.append(outfit)
+            
+        return virtual_outfits
+
 
 class StyleCoach:
     """
@@ -790,6 +896,7 @@ class StyleCoach:
         
         # 4. Update Fashion IQ
         self._update_fashion_iq(xp_gain, harmony_score)
+        
         
         return session
 

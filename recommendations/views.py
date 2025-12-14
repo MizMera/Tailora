@@ -27,6 +27,7 @@ def daily_recommendations_view(request):
     today = timezone.now().date()
     
     # Get today's recommendations (weather-aware)
+     # Get today's recommendations (weather-aware)
     recommendations = DailyRecommendation.objects.filter(
         user=user,
         recommendation_date=today
@@ -46,6 +47,35 @@ def daily_recommendations_view(request):
         except Exception as e:
             messages.error(request, f'Could not generate recommendations: {str(e)}')
             recommendations = []
+            
+    # Get unavailable items for sidebar (items excluded from recommendations)
+    unavailable_items = []
+    try:
+        from django.db.models import F
+        
+        # Items with non-available status (washing, loaned, etc.)
+        non_available = ClothingItem.objects.filter(
+            user=user
+        ).exclude(status='available')
+        
+        # Items that are 'available' but need washing
+        needs_washing = ClothingItem.objects.filter(
+            user=user,
+            status='available',
+            wears_since_wash__gte=F('max_wears_before_wash')
+        )
+        
+        # Combine and annotate with reason
+        for item in non_available:
+            item.exclusion_reason = item.get_status_display()
+            unavailable_items.append(item)
+        
+        for item in needs_washing:
+            item.exclusion_reason = f"Needs Washing ({item.wears_since_wash}/{item.max_wears_before_wash} wears)"
+            unavailable_items.append(item)
+            
+    except Exception as e:
+        print(f"Error fetching unavailable items: {e}")
     
     # Get shopping suggestions
     shopping_suggestions = []
@@ -124,6 +154,7 @@ def daily_recommendations_view(request):
         'wardrobe_analysis': wardrobe_analysis,
         'current_weather': current_weather,
         'today': today,
+        'unavailable_items': unavailable_items,
     }
     
     return render(request, 'recommendations/daily.html', context)

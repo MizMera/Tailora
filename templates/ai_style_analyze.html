@@ -290,6 +290,16 @@
             </a>
         </header>
 
+        {% if messages %}
+        <div class="messages" style="margin-bottom: 24px;">
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" style="padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; {% if message.tags == 'error' %}color: #721c24; background-color: #f8d7da; border-color: #f5c6cb;{% elif message.tags == 'success' %}color: #155724; background-color: #d4edda; border-color: #c3e6cb;{% elif message.tags == 'warning' %}color: #856404; background-color: #fff3cd; border-color: #ffeeba;{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% if analyzed %}
         <!-- RESULTS VIEW -->
         <div class="steps-header">

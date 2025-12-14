@@ -225,7 +225,8 @@ class BLIP2FashionCaptioner:
                 attributes['colors'].append(color)
 
         # Basic style detection
-        styles = ['casual', 'formal', 'elegant', 'modern', 'vintage', 'classic', 'sporty']
+        styles = ['casual', 'formal', 'elegant', 'modern', 'vintage', 'classic', 'sporty', 
+                 'bohemian', 'boho', 'streetwear', 'minimalist', 'chic', 'retro', 'urban', 'preppy']
         for style in styles:
             if style in caption_lower:
                 attributes['styles'].append(style)

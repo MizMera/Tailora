@@ -1,0 +1,79 @@
+<div class="items-grid">
+    {% if items %}
+    {% for item in items %}
+    <article class="item-card">
+        <a href="{% url 'wardrobe:wardrobe_detail' item.id %}" class="item-link">
+            <div class="item-image-wrapper">
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy">
+                {% if item.favorite %}
+                <div class="fav-badge" title="Favorite">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-content">
+                <h3 class="item-title">{{ item.name }}</h3>
+                <p class="item-category">{{ item.category.name|default:"Uncategorized" }}</p>
+            </div>
+        </a>
+
+        <div class="card-actions">
+            <a href="{% url 'wardrobe:wardrobe_toggle_favorite' item.id %}"
+                class="action-btn {% if item.favorite %}active{% endif %}" title="Toggle Favorite">
+                <svg width="18" height="18" viewBox="0 0 24 24"
+                    fill="{% if item.favorite %}currentColor{% else %}none{% endif %}" stroke="currentColor"
+                    stroke-width="2">
+                    <path
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                    </path>
+                </svg>
+            </a>
+            <a href="{% url 'wardrobe:wardrobe_edit' item.id %}" class="action-btn" title="Edit">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                    </path>
+                </svg>
+            </a>
+            <form method="post" action="{% url 'wardrobe:wardrobe_delete' item.id %}" style="flex:1; display:flex;"
+                onsubmit="return confirm('Are you sure you want to delete this item?')">
+                {% csrf_token %}
+                <button type="submit" class="action-btn" title="Delete">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                        </path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </article>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+        </div>
+        <h3 class="item-title">No items found</h3>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Start building your digital wardrobe today.</p>
+        <a href="{% url 'wardrobe:wardrobe_upload' %}" class="btn btn-primary">Add New Item</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if items.has_other_pages %}
+<div class="pagination-container" style="display: flex; justify-content: center; gap: 10px; margin-top: 40px;">
+    {% if items.has_previous %}
+    <a href="?page={{ items.previous_page_number }}" class="btn btn-secondary ajax-link">Previous</a>
+    {% endif %}
+    {% if items.has_next %}
+    <a href="?page={{ items.next_page_number }}" class="btn btn-secondary ajax-link">Next</a>
+    {% endif %}
+</div>
+{% endif %}
