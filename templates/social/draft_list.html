@@ -4,381 +4,662 @@
 {% block title %}My Drafts - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/social.css' %}">
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 <style>
-    .draft-header {
+    /* =========================================
+       THEME VARIABLES
+       ========================================= */
+    :root {
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1f1e1e;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
+        --success-bg: #def7ec;
+        --success-text: #03543f;
+        --error-bg: #fde8e8;
+        --error-text: #9b1c1c;
+        --warning-bg: #fdf6b2;
+        --warning-text: #723b13;
+
+        /* Fonts */
+        --font-heading: 'Istok Web', sans-serif;
+        --font-body: 'Inter', sans-serif;
+    }
+
+    /* =========================================
+       LAYOUT
+       ========================================= */
+    .drafts-wrapper {
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        padding: 40px 24px;
+    }
+
+    .drafts-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 32px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 24px;
+    }
+
+    .page-title {
+        font-family: var(--font-heading);
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Buttons */
+    .btn {
+        border-radius: 0;
+        padding: 10px 20px;
+        font-family: var(--font-body);
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .btn-primary {
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
+    }
+
+    .btn-primary:hover {
+        background: #000;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: var(--card-bg);
+        color: var(--text-main);
+        border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--text-main);
+        background: #f9f9f9;
+    }
+
+    .btn-danger {
+        background: #fff;
+        color: var(--error-text);
+        border-color: var(--border-color);
+    }
+
+    .btn-danger:hover {
+        background: var(--error-bg);
+        border-color: var(--error-text);
+    }
+
+    /* =========================================
+       DRAFT CARDS
+       ========================================= */
+    .section-title {
+        font-family: var(--font-heading);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-        gap: 16px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 12px;
     }
+
+    .count-badge {
+        font-family: var(--font-body);
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 400;
+    }
+
+    .draft-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 48px;
+    }
+
     .draft-card {
-        background: white;
-        border: 1px solid #e0e0e0;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         padding: 20px;
-        margin-bottom: 16px;
-        transition: all 0.3s ease;
+        display: flex;
+        gap: 20px;
+        transition: all 0.2s ease;
         position: relative;
     }
+
     .draft-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        border-color: #2c2c2c;
+        border-color: var(--text-main);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
+
+    /* Status Indicators */
     .draft-card.scheduled {
-        border-left: 4px solid #2c2c2c;
+        border-left: 4px solid var(--text-main);
     }
+
     .draft-card.draft {
         border-left: 4px solid #d4b88c;
     }
-    .draft-badge {
+
+    .status-badge {
         position: absolute;
-        top: 16px;
-        right: 16px;
-        padding: 4px 12px;
+        top: 20px;
+        right: 20px;
+        padding: 4px 10px;
+        font-family: var(--font-body);
         font-size: 11px;
-        font-weight: 500;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
+
     .badge-draft {
         background: #f4e9cf;
-        color: #2c2c2c;
+        color: var(--text-main);
     }
+
     .badge-scheduled {
-        background: #2c2c2c;
-        color: white;
+        background: var(--text-main);
+        color: #fff;
     }
+
+    /* Card Content */
+    .draft-image {
+        width: 100px;
+        height: 100px;
+        flex-shrink: 0;
+        background: #f4e9cf;
+        overflow: hidden;
+    }
+
+    .draft-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Outfit preview grid for multiple items */
+    .outfit-preview-grid {
+        width: 100px;
+        height: 100px;
+        flex-shrink: 0;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 2px;
+        background: #f4e9cf;
+        overflow: hidden;
+    }
+
+    .outfit-preview-grid img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .outfit-preview-grid .no-img {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e8dcc0;
+        font-size: 8px;
+        color: #999;
+    }
+
+    .outfit-preview-grid.single-item {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+    }
+
+    .outfit-preview-grid.two-items {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: 1fr;
+    }
+
+    .outfit-preview-grid.three-items img:first-child {
+        grid-column: span 2;
+    }
+
+    .draft-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .draft-title {
+        font-family: var(--font-heading);
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 8px 0;
+    }
+
+    .draft-preview-text {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .draft-meta {
+        display: flex;
+        gap: 16px;
+        font-family: var(--font-body);
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: auto;
+        padding-top: 12px;
+    }
+
+    /* AI Insights Box */
+    .ai-insight {
+        background: #fafafa;
+        border: 1px solid var(--border-color);
+        padding: 10px;
+        margin-bottom: 12px;
+    }
+
+    .ai-header {
+        font-family: var(--font-body);
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .ai-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .ai-tag {
+        background: #f0f0f0;
+        color: var(--text-main);
+        padding: 2px 6px;
+        font-size: 11px;
+        font-family: var(--font-body);
+    }
+
+    /* Actions */
     .draft-actions {
         display: flex;
         gap: 8px;
         margin-top: 16px;
+        border-top: 1px solid #f5f5f5;
+        padding-top: 12px;
     }
-    .draft-preview {
-        font-size: 14px;
-        color: #757575;
-        margin: 8px 0;
-        line-height: 1.4;
-    }
-    .draft-meta {
-        display: flex;
-        gap: 16px;
-        font-size: 12px;
-        color: #757575;
-        margin-top: 12px;
-    }
+
+    /* Empty State */
     .empty-state {
         text-align: center;
-        padding: 60px 40px;
-        background: #fafafa;
-        margin: 40px 0;
+        padding: 80px 40px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
     }
+
     .empty-icon {
-        width: 80px;
-        height: 80px;
+        width: 64px;
+        height: 64px;
         margin: 0 auto 24px;
-        background: #f4e9cf;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        color: var(--text-muted);
     }
-    .ai-insight {
-        background: #fafafa;
-        border: 1px solid #e0e0e0;
-        padding: 12px;
-        margin-top: 12px;
-        font-size: 13px;
+
+    /* Alerts */
+    .alert {
+        padding: 12px 16px;
+        margin-bottom: 24px;
+        font-family: var(--font-body);
+        font-size: 14px;
+        border: 1px solid transparent;
     }
-    .ai-tag {
-        background: #f4e9cf;
-        color: #2c2c2c;
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 11px;
-        margin-right: 4px;
-        display: inline-block;
+
+    .alert-success {
+        background-color: var(--success-bg);
+        color: var(--success-text);
+        border-color: var(--success-text);
+    }
+
+    .alert-error {
+        background-color: var(--error-bg);
+        color: var(--error-text);
+        border-color: var(--error-text);
+    }
+
+    @media (max-width: 600px) {
+        .draft-card {
+            flex-direction: column;
+        }
+        .draft-image {
+            width: 100%;
+            height: 150px;
+        }
+        .outfit-preview-grid {
+            width: 100%;
+            height: 150px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="draft-header">
+<div class="drafts-wrapper">
+    <div class="drafts-container">
+        
+        <!-- Page Header -->
+        <header class="page-header">
+            <div>
+                <h1 class="page-title">My Drafts</h1>
+                <p class="page-subtitle">Manage your saved posts and scheduled publications</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'social:feed' %}" class="btn btn-secondary">Back to Feed</a>
+                <a href="{% url 'social:create_post' %}" class="btn btn-primary">+ New Draft</a>
+            </div>
+        </header>
+
+        <!-- Messages -->
+        {% if messages %}
         <div>
-            <h1 class="page-title">My Drafts</h1>
-            <p class="page-subtitle">Manage your saved posts and scheduled publications</p>
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
         </div>
-        <div style="display: flex; gap: 12px;">
-            <a href="{% url 'social:feed' %}" class="btn btn-secondary">Back to Feed</a>
-            <a href="{% url 'social:create_post' %}" class="btn btn-primary">+ New Draft</a>
-        </div>
-    </div>
-</div>
+        {% endif %}
 
-<!-- Messages -->
-{% if messages %}
-<div style="margin-bottom: 24px;">
-    {% for message in messages %}
-    <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
+        <!-- Scheduled Posts Section -->
+        {% if scheduled_posts %}
+        <div style="margin-bottom: 48px;">
+            <h3 class="section-title">
+                Scheduled Posts
+                <span class="count-badge">{{ scheduled_posts|length }} upcoming</span>
+            </h3>
 
-<div style="max-width: 1200px; margin: 0 auto;">
-<div class="content-section">
+            <div class="draft-list">
+                {% for draft in scheduled_posts %}
+                <div class="draft-card scheduled">
+                    <span class="status-badge badge-scheduled">Scheduled</span>
 
-    <!-- Scheduled Posts Section -->
-    {% if scheduled_posts %}
-    <div style="margin-bottom: 40px;">
-        <h3 class="section-title" style="margin-bottom: 20px;">
-            Scheduled Posts
-            <span style="float: right; font-size: 14px; color: #757575; font-weight: normal;">
-                {{ scheduled_posts|length }} upcoming
-            </span>
-        </h3>
-
-        <div style="display: grid; gap: 16px;">
-            {% for draft in scheduled_posts %}
-            <div class="draft-card scheduled">
-                <span class="draft-badge badge-scheduled">Scheduled</span>
-
-                <div style="display: flex; gap: 20px; align-items: start;">
-                    {% if draft.outfit.image %}
-                    <div style="width: 100px; height: 100px; flex-shrink: 0;">
-                        <img src="{{ draft.outfit.image.url }}"
-                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                    <!-- Outfit Preview Grid -->
+                    {% with outfit_items=draft.outfit.outfit_items.all %}
+                    {% if draft.outfit.outfit_image %}
+                    <div class="draft-image">
+                        <img src="{{ draft.outfit.outfit_image.url }}" alt="{{ draft.outfit.name }}">
+                    </div>
+                    {% elif outfit_items %}
+                    <div class="outfit-preview-grid {% if outfit_items|length == 1 %}single-item{% elif outfit_items|length == 2 %}two-items{% elif outfit_items|length == 3 %}three-items{% endif %}">
+                        {% for item in outfit_items|slice:":4" %}
+                        {% if item.clothing_item.image %}
+                        <img src="{{ item.clothing_item.image.url }}" alt="{{ item.clothing_item.name }}">
+                        {% else %}
+                        <div class="no-img">No IMG</div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="draft-image">
+                        <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#999;">No IMG</div>
                     </div>
                     {% endif %}
+                    {% endwith %}
 
-                    <div style="flex: 1;">
-                        <h4 style="font-size: 16px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">
-                            {{ draft.outfit.name }}
-                        </h4>
+                    <div class="draft-content">
+                        <h4 class="draft-title">{{ draft.outfit.name }}</h4>
 
                         {% if draft.caption %}
-                        <div class="draft-preview">
+                        <div class="draft-preview-text">
                             {{ draft.caption|truncatechars:150 }}
+                        </div>
+                        {% endif %}
+
+                        <!-- AI Insights for Scheduled -->
+                        {% if draft.ai_best_time or draft.ai_optimized_hashtags %}
+                        <div class="ai-insight">
+                            <div class="ai-header">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                                AI Insights
+                            </div>
+                            {% if draft.ai_best_time %}
+                            <div style="font-size: 12px; font-family: var(--font-body);">
+                                Optimal time: <strong>{{ draft.ai_best_time|date:"F j, g:i A" }}</strong>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="draft-meta">
+                            <span>{{ draft.get_visibility_display }}</span>
+                            <span>Created: {{ draft.created_at|date:"M d" }}</span>
+                            <span style="color: var(--text-main); font-weight: 600;">
+                                Due: {{ draft.scheduled_for|date:"M d, g:i A" }}
+                            </span>
+                        </div>
+
+                        <div class="draft-actions">
+                            <a href="{% url 'social:draft_detail' draft.id %}" class="btn btn-secondary btn-sm">Edit</a>
+                            <button onclick="publishNow('{{ draft.id }}')" class="btn btn-primary btn-sm">Publish Now</button>
+                            <button onclick="deleteDraft('{{ draft.id }}')" class="btn btn-danger btn-sm">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Drafts Section -->
+        <div>
+            <h3 class="section-title">
+                Saved Drafts
+                <span class="count-badge">{{ drafts|length }} saved</span>
+            </h3>
+
+            {% if drafts %}
+            <div class="draft-list">
+                {% for draft in drafts %}
+                <div class="draft-card draft">
+                    <span class="status-badge badge-draft">Draft</span>
+
+                    <!-- Outfit Preview Grid -->
+                    {% with outfit_items=draft.outfit.outfit_items.all %}
+                    {% if draft.outfit.outfit_image %}
+                    <div class="draft-image">
+                        <img src="{{ draft.outfit.outfit_image.url }}" alt="{{ draft.outfit.name }}">
+                    </div>
+                    {% elif outfit_items %}
+                    <div class="outfit-preview-grid {% if outfit_items|length == 1 %}single-item{% elif outfit_items|length == 2 %}two-items{% elif outfit_items|length == 3 %}three-items{% endif %}">
+                        {% for item in outfit_items|slice:":4" %}
+                        {% if item.clothing_item.image %}
+                        <img src="{{ item.clothing_item.image.url }}" alt="{{ item.clothing_item.name }}">
+                        {% else %}
+                        <div class="no-img">No IMG</div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="draft-image">
+                        <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#999;">No IMG</div>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    <div class="draft-content">
+                        <h4 class="draft-title">{{ draft.outfit.name }}</h4>
+
+                        {% if draft.caption %}
+                        <div class="draft-preview-text">
+                            {{ draft.caption|truncatechars:150 }}
+                        </div>
+                        {% else %}
+                        <div class="draft-preview-text" style="font-style: italic;">
+                            No caption written yet...
                         </div>
                         {% endif %}
 
                         <!-- AI Insights -->
                         {% if draft.ai_suggested_captions or draft.ai_optimized_hashtags %}
                         <div class="ai-insight">
-                            <div style="font-size: 11px; color: #757575; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
-                                AI Suggestions
+                            <div class="ai-header">
+                                <span>✨ AI Suggestions</span>
                             </div>
                             {% if draft.ai_optimized_hashtags %}
-                            <div style="margin-bottom: 4px;">
+                            <div class="ai-tags">
                                 {% for tag in draft.ai_optimized_hashtags|slice:":5" %}
                                 <span class="ai-tag">{{ tag }}</span>
                                 {% endfor %}
                             </div>
                             {% endif %}
-                            {% if draft.ai_best_time %}
-                            <div style="font-size: 11px; color: #2c2c2c;">
-                                Best time: {{ draft.ai_best_time|date:"F j, g:i A" }}
-                            </div>
-                            {% endif %}
                         </div>
                         {% endif %}
 
                         <div class="draft-meta">
-                            <span>Visibility: {{ draft.get_visibility_display }}</span>
-                            <span>Created: {{ draft.created_at|date:"M d, Y" }}</span>
-                            <span style="color: #2c2c2c; font-weight: 500;">
-                                Scheduled: {{ draft.scheduled_for|date:"F j, Y g:i A" }}
-                            </span>
+                            <span>{{ draft.get_visibility_display }}</span>
+                            <span>Updated: {{ draft.updated_at|date:"M d, Y" }}</span>
+                            <span>{{ draft.outfit.items.count }} items</span>
                         </div>
 
                         <div class="draft-actions">
-                            <a href="{% url 'social:draft_detail' draft.id %}" class="btn btn-primary btn-sm">
-                                Edit
-                            </a>
-                            <button onclick="publishNow('{{ draft.id }}')" class="btn btn-secondary btn-sm">
-                                Publish Now
-                            </button>
-                            <button onclick="deleteDraft('{{ draft.id }}')" class="btn btn-error btn-sm">
-                                Delete
-                            </button>
+                            <a href="{% url 'social:draft_detail' draft.id %}" class="btn btn-primary btn-sm">Continue Editing</a>
+                            <button onclick="deleteDraft('{{ draft.id }}')" class="btn btn-danger btn-sm">Delete</button>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
 
-    <!-- Drafts Section -->
-    <div>
-        <h3 class="section-title" style="margin-bottom: 20px;">
-            Drafts
-            <span style="float: right; font-size: 14px; color: #757575; font-weight: normal;">
-                {{ drafts|length }} saved
-            </span>
-        </h3>
-
-        {% if drafts %}
-        <div style="display: grid; gap: 16px;">
-            {% for draft in drafts %}
-            <div class="draft-card draft">
-                <span class="draft-badge badge-draft">Draft</span>
-
-                <div style="display: flex; gap: 20px; align-items: start;">
-                    {% if draft.outfit.image %}
-                    <div style="width: 100px; height: 100px; flex-shrink: 0;">
-                        <img src="{{ draft.outfit.image.url }}"
-                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
-                    </div>
-                    {% endif %}
-
-                    <div style="flex: 1;">
-                        <h4 style="font-size: 16px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">
-                            {{ draft.outfit.name }}
-                        </h4>
-
-                        {% if draft.caption %}
-                        <div class="draft-preview">
-                            {{ draft.caption|truncatechars:150 }}
-                        </div>
-                        {% else %}
-                        <div class="draft-preview" style="color: #999; font-style: italic;">
-                            No caption yet...
-                        </div>
-                        {% endif %}
-
-                        <!-- Hashtags Preview -->
-                        {% if draft.hashtags %}
-                        <div style="margin: 8px 0;">
-                            {% for tag in draft.hashtags|slice:":8" %}
-                            <span style="font-size: 12px; color: #666; margin-right: 6px;">{{ tag }}</span>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-
-                        <!-- AI Insights -->
-                        {% if draft.ai_suggested_captions or draft.ai_optimized_hashtags %}
-                        <div class="ai-insight">
-                            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
-                                🤖 AI Suggestions Available
-                            </div>
-                            {% if draft.ai_optimized_hashtags %}
-                            <div style="font-size: 11px;">
-                                {{ draft.ai_optimized_hashtags|length }} hashtag suggestions
-                            </div>
-                            {% endif %}
-                            {% if draft.ai_suggested_captions %}
-                            <div style="font-size: 11px;">
-                                {{ draft.ai_suggested_captions|length }} caption ideas
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-
-                        <div class="draft-meta">
-                            <span>Visibility: {{ draft.get_visibility_display }}</span>
-                            <span>Last updated: {{ draft.updated_at|date:"M d, Y" }}</span>
-                            <span>Items: {{ draft.outfit.items.count }}</span>
-                        </div>
-
-                        <div class="draft-actions">
-                            <a href="{% url 'social:draft_detail' draft.id %}" class="btn btn-primary btn-sm">
-                                Edit & Publish
-                            </a>
-
-                            <button onclick="deleteDraft('{{ draft.id }}')" class="btn btn-error btn-sm">
-                                Delete
-                            </button>
-                        </div>
-                    </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                </div>
+                <h3 style="font-family: var(--font-heading); font-size: 20px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">
+                    No Drafts Yet
+                </h3>
+                <p style="font-family: var(--font-body); font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">
+                    Save posts as drafts while creating them, or save existing posts for later editing.
+                </p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <a href="{% url 'social:create_post' %}" class="btn btn-primary">Create New Draft</a>
                 </div>
             </div>
-            {% endfor %}
+            {% endif %}
         </div>
-
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2c2c2c" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                    <polyline points="10 9 9 9 8 9"></polyline>
-                </svg>
-            </div>
-            <h3 style="font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">
-                No Drafts Yet
-            </h3>
-            <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #757575; margin-bottom: 24px; max-width: 400px; margin: 0 auto 24px;">
-                Save posts as drafts while creating them, or save existing posts for later editing.
-            </p>
-            <div style="display: flex; gap: 12px; justify-content: center;">
-                <a href="{% url 'social:create_post' %}" class="btn btn-primary">Create New Draft</a>
-                <a href="{% url 'social:feed' %}" class="btn btn-secondary">Back to Feed</a>
-            </div>
-        </div>
-        {% endif %}
     </div>
-</div>
 </div>
 
 <script>
-function deleteDraft(draftId) {
-    if (confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/social/draft/${draftId}/`;
+    function deleteDraft(draftId) {
+        if (confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            // Post to draft_detail URL with action=delete
+            form.action = `/social/draft/${draftId}/`; 
 
-        const csrf = document.createElement('input');
-        csrf.type = 'hidden';
-        csrf.name = 'csrfmiddlewaretoken';
-        csrf.value = '{{ csrf_token }}';
-        form.appendChild(csrf);
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = 'csrfmiddlewaretoken';
+            csrf.value = '{{ csrf_token }}';
+            form.appendChild(csrf);
 
-        const action = document.createElement('input');
-        action.type = 'hidden';
-        action.name = 'action';
-        action.value = 'delete';
-        form.appendChild(action);
+            const action = document.createElement('input');
+            action.type = 'hidden';
+            action.name = 'action';
+            action.value = 'delete';
+            form.appendChild(action);
 
-        document.body.appendChild(form);
-        form.submit();
+            document.body.appendChild(form);
+            form.submit();
+        }
     }
-}
 
-function publishNow(draftId) {
-    if (confirm('Publish this draft now?')) {
-        fetch(`/social/draft/${draftId}/publish-quick/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                alert('Post published successfully!');
-                window.location.reload();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred');
-        });
+    function publishNow(draftId) {
+        if (confirm('Publish this draft now?')) {
+            fetch(`/social/draft/${draftId}/publish-quick/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Could not publish post'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while publishing');
+            });
+        }
     }
-}
 
-// Auto-refresh for scheduled posts
-setTimeout(function() {
-    window.location.reload();
-}, 60000); // Refresh every minute
+    // Auto-refresh for scheduled posts check every 60s
+    setTimeout(function () {
+        if(document.querySelector('.scheduled')) {
+            window.location.reload();
+        }
+    }, 60000);
 </script>
 {% endblock %}

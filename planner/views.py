@@ -434,10 +434,12 @@ def event_suggest_outfit(request, event_id):
         # Get weather context
         weather = {}
         try:
-            weather = planner_ai.weather_service.get_forecast_for_date(
+            weather_data = planner_ai.weather_service.get_forecast_for_date(
                 event.location or 'Tunis', 
                 event.date
             )
+            if weather_data:
+                weather = weather_data
         except:
             pass
             
@@ -493,8 +495,9 @@ def event_mark_worn(request, event_id):
                 event.location or 'Tunis', 
                 event.date
             )
-            weather_condition = weather.get('condition', '')
-            temperature = weather.get('temperature')
+            if weather:
+                weather_condition = weather.get('condition', '')
+                temperature = weather.get('temperature')
         except:
             pass
 

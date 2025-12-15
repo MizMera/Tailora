@@ -862,12 +862,21 @@ def challenge_detail_view(request, challenge_id):
         user=user, challenge=challenge
     ).first()
     
-    # Get submitted outfits for this challenge
+    # Get submitted outfits for this challenge (user's own submissions)
     submitted_outfits = []
     if participation:
         submitted_outfits = ChallengeOutfit.objects.filter(
             participation=participation
         ).select_related('outfit')
+    
+    # Get ALL submissions for this challenge (from all participants)
+    all_submissions = ChallengeOutfit.objects.filter(
+        participation__challenge=challenge
+    ).select_related('outfit', 'participation__user').order_by('-submitted_at')
+    submissions_count = all_submissions.count()
+    
+    # Get participants count
+    participants_count = ChallengeParticipation.objects.filter(challenge=challenge).count()
     
     # Check if user can join
     can_join = not participation and challenge.is_active()
@@ -880,14 +889,32 @@ def challenge_detail_view(request, challenge_id):
     if challenge.rules and 'required_outfits' in challenge.rules:
         required_outfits = challenge.rules['required_outfits']
     
+    # Calculate user progress
+    user_progress = 0
+    if participation:
+        user_progress = participation.progress_percentage()
+    
+    # Determine status
+    status = 'active'
+    today = timezone.now().date()
+    if challenge.start_date and challenge.start_date > today:
+        status = 'upcoming'
+    elif challenge.end_date and challenge.end_date < today:
+        status = 'completed'
+
     context = {
         'challenge': challenge,
         'participation': participation,
         'submitted_outfits': submitted_outfits,
+        'submissions': all_submissions,
+        'submissions_count': submissions_count,
+        'participants_count': participants_count,
         'can_join': can_join,
         'is_locked': is_locked,
-        'progress': participation.progress_percentage() if participation else 0,
+        'progress': user_progress,
+        'user_progress': user_progress,
         'required_outfits': required_outfits,
+        'status': status,
     }
     
     return render(request, 'challenge_detail.html', context)
@@ -1049,6 +1076,26 @@ def create_challenge_view(request):
         'challenge_types': StyleChallenge.CHALLENGE_TYPES,
     }
     return render(request, 'create_challenge.html', context)
+
+
+@login_required
+def delete_challenge_view(request, challenge_id):
+    """
+    Delete a style challenge
+    """
+    challenge = get_object_or_404(StyleChallenge, id=challenge_id)
+    
+    # Only allow creator to delete
+    if challenge.created_by != request.user:
+        messages.error(request, "You don't have permission to delete this challenge.")
+        return redirect('outfits:challenge_detail', challenge_id=challenge.id)
+    
+    if request.method == 'POST':
+        challenge.delete()
+        messages.success(request, f'Challenge "{challenge.name}" has been deleted.')
+        return redirect('outfits:challenges_list')
+        
+    return redirect('outfits:challenge_detail', challenge_id=challenge.id)
 
 
 @login_required

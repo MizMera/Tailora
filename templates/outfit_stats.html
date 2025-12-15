@@ -360,8 +360,7 @@
                 </div>
                 <div class="outfit-info">
                     <h4 class="outfit-name">{{ outfit.name }}</h4>
-                    <p class="outfit-meta">{{ outfit.get_occasion_display }} - {{ outfit.items.count }} item{{
-                        outfit.items.count|pluralize }}</p>
+                    <p class="outfit-meta">{{ outfit.get_occasion_display }} - {{ outfit.items.count }} item{{ outfit.items.count|pluralize }}</p>
                 </div>
                 <div class="outfit-stat">
                     <div class="outfit-stat-value">{{ outfit.times_worn }}</div>

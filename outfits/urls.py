@@ -29,6 +29,7 @@ urlpatterns = [
     path('challenges/<uuid:challenge_id>/', views.challenge_detail_view, name='challenge_detail'),
     path('challenges/<uuid:challenge_id>/join/', views.join_challenge_view, name='join_challenge'),
     path('challenges/<uuid:challenge_id>/submit/', views.submit_challenge_outfit_view, name='submit_challenge_outfit'),
+    path('challenges/<uuid:challenge_id>/delete/', views.delete_challenge_view, name='delete_challenge'),
     path('badges/', views.badges_view, name='badges'),
     
     # REST API routes

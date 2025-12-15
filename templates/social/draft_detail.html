@@ -4,182 +4,474 @@
 {% block title %}Edit Draft - Tailora{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/social.css' %}">
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 <style>
-    .draft-form-container {
+    /* =========================================
+       THEME VARIABLES
+       ========================================= */
+    :root {
+        --bg-color: #f8f8f8;
+        --card-bg: #ffffff;
+        --text-main: #1f1e1e;
+        --text-muted: #757575;
+        --border-color: #e0e0e0;
+        --accent-color: #2c2c2c;
+        --success-bg: #def7ec;
+        --success-text: #03543f;
+        --error-bg: #fde8e8;
+        --error-text: #9b1c1c;
+
+        /* Fonts */
+        --font-heading: 'Istok Web', sans-serif;
+        --font-body: 'Inter', sans-serif;
+    }
+
+    /* =========================================
+       LAYOUT
+       ========================================= */
+    .draft-wrapper {
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        padding: 40px 24px;
+    }
+
+    .draft-container {
         max-width: 800px;
         margin: 0 auto;
     }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 32px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 24px;
+    }
+
+    .page-title {
+        font-family: var(--font-heading);
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    /* =========================================
+       DRAFT COMPONENTS
+       ========================================= */
     .draft-preview-card {
-        background: white;
-        border: 1px solid #e0e0e0;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         padding: 24px;
         margin-bottom: 32px;
     }
-    .draft-status-badge {
+
+    .status-badge {
         display: inline-block;
-        padding: 6px 16px;
+        padding: 6px 12px;
+        font-family: var(--font-body);
         font-size: 11px;
-        font-weight: 500;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 16px;
     }
+
     .status-draft {
         background: #f4e9cf;
-        color: #2c2c2c;
+        color: var(--text-main);
     }
+
     .status-scheduled {
-        background: #2c2c2c;
-        color: white;
+        background: var(--text-main);
+        color: #fff;
     }
-    .ai-suggestions-panel {
-        background: #2c2c2c;
-        color: white;
-        padding: 20px;
-        margin-bottom: 24px;
+
+    .draft-title {
+        font-family: var(--font-heading);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 12px 0;
     }
-    .ai-suggestion-item {
+
+    .draft-caption {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-main);
+        margin-bottom: 16px;
+        line-height: 1.6;
+        padding: 12px;
+        background: #f9f9f9;
+        border-left: 3px solid var(--border-color);
+    }
+
+    .draft-meta {
+        display: flex;
+        gap: 16px;
+        font-family: var(--font-body);
+        font-size: 12px;
+        color: var(--text-muted);
+        padding-top: 12px;
+        border-top: 1px solid #f5f5f5;
+    }
+
+    /* =========================================
+       AI PANEL
+       ========================================= */
+    .ai-panel {
+        background: var(--text-main);
+        color: #fff;
+        padding: 24px;
+        margin-bottom: 32px;
+        /* No border radius for sharp look */
+    }
+
+    .ai-header {
+        font-family: var(--font-heading);
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        padding-bottom: 12px;
+    }
+
+    .ai-label {
+        font-family: var(--font-body);
+        font-size: 11px;
+        text-transform: uppercase;
+        opacity: 0.7;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .ai-suggestion {
         background: rgba(255, 255, 255, 0.1);
         padding: 12px;
         margin-bottom: 8px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: background 0.2s;
+        font-family: var(--font-body);
+        font-size: 13px;
+        line-height: 1.5;
     }
-    .ai-suggestion-item:hover {
-        background: rgba(255, 255, 255, 0.15);
+
+    .ai-suggestion:hover {
+        background: rgba(255, 255, 255, 0.2);
     }
-    .time-slot {
-        display: inline-block;
-        padding: 8px 16px;
-        margin: 4px;
-        background: rgba(255, 255, 255, 0.1);
+
+    .ai-tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .ai-tag-chip {
+        background: rgba(255,255,255,0.15);
+        padding: 4px 10px;
+        font-family: var(--font-body);
+        font-size: 12px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: background 0.2s;
     }
-    .time-slot:hover, .time-slot.active {
-        background: #f4e9cf;
-        color: #2c2c2c;
+
+    .ai-tag-chip:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    .ai-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: #fff;
+        padding: 8px 16px;
+        font-family: var(--font-body);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 12px;
+        width: 100%;
+        text-align: center;
+        transition: background 0.2s;
+    }
+    
+    .ai-btn:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    /* =========================================
+       FORM STYLES
+       ========================================= */
+    .form-section {
+        margin-bottom: 32px;
+    }
+
+    .section-label {
+        font-family: var(--font-body);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .input-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 0;
+        font-family: var(--font-body);
+        font-size: 14px;
+        background: #fff;
+        color: var(--text-main);
+        box-sizing: border-box;
+    }
+
+    .input-control:focus {
+        outline: none;
+        border-color: var(--text-main);
+    }
+
+    textarea.input-control {
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-main);
+        font-weight: 500;
+    }
+    
+    .checkbox-label input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--text-main);
+    }
+
+    /* Buttons */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 40px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn {
+        border-radius: 0;
+        padding: 12px 24px;
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 1px solid transparent;
+        flex: 1;
+    }
+
+    .btn-primary {
+        background: var(--text-main);
+        color: #fff;
+        border-color: var(--text-main);
+    }
+
+    .btn-primary:hover {
+        background: #000;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: var(--card-bg);
+        color: var(--text-main);
+        border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--text-main);
+        background: #f9f9f9;
+    }
+
+    .btn-danger {
+        background: #fff;
+        color: var(--error-text);
+        border-color: var(--border-color);
+    }
+
+    .btn-danger:hover {
+        background: var(--error-bg);
+        border-color: var(--error-text);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        color: var(--text-muted);
+        border-color: transparent;
+        font-weight: 500;
+    }
+    
+    .btn-outline:hover {
+        color: var(--text-main);
+        text-decoration: underline;
+    }
+
+    /* Alerts */
+    .alert {
+        padding: 12px 16px;
+        margin-bottom: 24px;
+        font-family: var(--font-body);
+        font-size: 14px;
+        border: 1px solid transparent;
+    }
+    
+    .alert-success { background-color: var(--success-bg); color: var(--success-text); border-color: var(--success-text); }
+    .alert-error { background-color: var(--error-bg); color: var(--error-text); border-color: var(--error-text); }
+
+    @media (max-width: 600px) {
+        .form-actions {
+            flex-direction: column;
+        }
+        .btn {
+            width: 100%;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Edit Draft</h1>
-        <p class="page-subtitle">Finalize and publish your post</p>
-    </div>
-</div>
+<div class="draft-wrapper">
+    <div class="draft-container">
 
-{% if messages %}
-{% for message in messages %}
-<div class="alert alert-{{ message.tags }}" style="max-width: 800px; margin: 0 auto 24px;">
-    {{ message }}
-</div>
-{% endfor %}
-{% endif %}
+        <!-- Header -->
+        <header class="page-header">
+            <div>
+                <h1 class="page-title">Edit Draft</h1>
+                <p class="page-subtitle">Finalize details before publishing</p>
+            </div>
+        </header>
 
-<div class="draft-form-container">
-
-    <!-- Draft Status -->
-    <div class="draft-preview-card">
-        <div class="draft-status-badge {% if draft.status == 'scheduled' %}status-scheduled{% else %}status-draft{% endif %}">
-            {% if draft.status == 'scheduled' %}
-            Scheduled for {{ draft.scheduled_for|date:"F j, Y g:i A" }}
-            {% else %}
-            Draft
-            {% endif %}
-        </div>
-
-        <h3 style="font-size: 18px; font-weight: 600; color: #2c2c2c; margin-bottom: 8px;">
-            {{ draft.outfit.name }}
-        </h3>
-
-        {% if draft.caption %}
-        <div style="font-size: 14px; color: #666; margin-bottom: 16px; line-height: 1.5;">
-            {{ draft.caption }}
-        </div>
-        {% endif %}
-
-        <div style="display: flex; gap: 16px; font-size: 13px; color: #757575;">
-            <span>Visibility: {{ draft.get_visibility_display }}</span>
-            <span>Created: {{ draft.created_at|date:"M d, Y" }}</span>
-            <span>Items: {{ draft.outfit.items.count }}</span>
-        </div>
-    </div>
-
-    <!-- AI Suggestions Panel -->
-    {% if ai_hashtags or ai_captions %}
-    <div class="ai-suggestions-panel">
-        <h4 style="margin-bottom: 16px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
-            AI Suggestions
-        </h4>
-
-        {% if ai_captions %}
-        <div style="margin-bottom: 16px;">
-            <div style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">Caption Ideas</div>
-            {% for caption in ai_captions|slice:":3" %}
-            <div class="ai-suggestion-item" data-caption="{{ caption }}">
-                {{ caption }}
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
             </div>
             {% endfor %}
         </div>
         {% endif %}
 
-        {% if ai_hashtags %}
-        <div>
-            <div style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">Suggested Hashtags</div>
-            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                {% for tag in ai_hashtags|slice:":10" %}
-                <span class="ai-tag-suggestion" data-tag="{{ tag }}" style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 12px; font-size: 12px; cursor: pointer;">
-                    {{ tag }}
+        <!-- Preview Card -->
+        <div class="draft-preview-card">
+            <span class="status-badge {% if draft.status == 'scheduled' %}status-scheduled{% else %}status-draft{% endif %}">
+                {% if draft.status == 'scheduled' %}
+                Scheduled for {{ draft.scheduled_for|date:"F j, Y g:i A" }}
+                {% else %}
+                Draft
+                {% endif %}
+            </span>
+
+            <h3 class="draft-title">{{ draft.outfit.name }}</h3>
+
+            {% if draft.caption %}
+            <div class="draft-caption">
+                {{ draft.caption|linebreaks }}
+            </div>
+            {% endif %}
+
+            <div class="draft-meta">
+                <span>Visibility: {{ draft.get_visibility_display }}</span>
+                <span>Created: {{ draft.created_at|date:"M d, Y" }}</span>
+                <span>Items: {{ draft.outfit.items.count }}</span>
+            </div>
+        </div>
+
+        <!-- AI Suggestions Panel -->
+        {% if ai_hashtags or ai_captions %}
+        <div class="ai-panel">
+            <div class="ai-header">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    AI Suggestions
                 </span>
+            </div>
+
+            {% if ai_captions %}
+            <div style="margin-bottom: 24px;">
+                <span class="ai-label">Caption Ideas</span>
+                {% for caption in ai_captions|slice:":3" %}
+                <div class="ai-suggestion" data-caption="{{ caption }}">
+                    {{ caption }}
+                </div>
                 {% endfor %}
             </div>
-            <button type="button" id="applyAllHashtags" style="margin-top: 12px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px;">
-                Apply All Hashtags
-            </button>
+            {% endif %}
+
+            {% if ai_hashtags %}
+            <div>
+                <span class="ai-label">Suggested Hashtags</span>
+                <div class="ai-tags-container">
+                    {% for tag in ai_hashtags|slice:":10" %}
+                    <span class="ai-tag-chip" data-tag="{{ tag }}">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                <button type="button" id="applyAllHashtags" class="ai-btn">
+                    Apply All Hashtags
+                </button>
+            </div>
+            {% endif %}
+
+            {% if best_time %}
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <span class="ai-label">Optimal Posting Time</span>
+                <div style="font-family: var(--font-body); font-size: 15px; font-weight: 500;">
+                    ⏰ {{ best_time|date:"l, F j" }} at {{ best_time|time:"g:i A" }}
+                </div>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
 
-        {% if best_time %}
-        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.2);">
-            <div style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">Best Time to Post</div>
-            <div style="font-size: 16px; font-weight: 500;">
-                ⏰ {{ best_time|date:"l, F j" }} at {{ best_time|time:"g:i A" }}
+        <!-- Edit Form -->
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update">
+
+            <div class="form-section">
+                <label class="section-label">Caption</label>
+                <textarea name="caption" class="input-control" rows="5" placeholder="Write your caption here...">{{ draft.caption }}</textarea>
             </div>
-        </div>
-        {% endif %}
-    </div>
-    {% endif %}
 
-    <!-- Edit Form -->
-    <form method="post" class="social-form">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="update">
-
-        <div class="form-section">
-            <h3 class="section-title">CAPTION</h3>
-            <div class="form-group">
-                <textarea name="caption" class="input-control" rows="4"
-                          placeholder="Write your caption...">{{ draft.caption }}</textarea>
+            <div class="form-section">
+                <label class="section-label">Hashtags</label>
+                <input type="text" name="hashtags" class="input-control" placeholder="#ootd #style #fashion"
+                    value="{% for tag in draft.hashtags %}{{ tag }} {% endfor %}">
             </div>
-        </div>
 
-        <div class="form-section">
-            <h3 class="section-title">HASHTAGS</h3>
-            <div class="form-group">
-                <input type="text" name="hashtags" class="input-control"
-                       placeholder="#ootd #style #fashion"
-                       value="{% for tag in draft.hashtags %}{{ tag }} {% endfor %}">
-            </div>
-        </div>
-
-        <div class="form-section">
-            <h3 class="section-title">VISIBILITY</h3>
-            <div class="form-group">
+            <div class="form-section">
+                <label class="section-label">Visibility</label>
                 <select name="visibility" class="input-control">
                     {% for value, label in visibility_choices %}
                     <option value="{{ value }}" {% if draft.visibility == value %}selected{% endif %}>
@@ -188,140 +480,145 @@
                     {% endfor %}
                 </select>
             </div>
-        </div>
 
-        <div class="form-section">
-            <h3 class="section-title">PUBLICATION OPTIONS</h3>
+            <div class="form-section">
+                <label class="section-label">Publication Schedule</label>
+                
+                <div style="background: #fff; border: 1px solid var(--border-color); padding: 16px;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="schedule_post" id="schedulePost" value="true" 
+                            {% if draft.status == 'scheduled' %}checked{% endif %}>
+                        Schedule for later
+                    </label>
 
-            <div class="form-group">
-                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 16px;">
-                    <input type="checkbox" name="schedule_post" id="schedulePost" value="true"
-                           {% if draft.status == 'scheduled' %}checked{% endif %}>
-                    <span style="font-size: 14px; font-weight: 500;">Schedule for later</span>
-                </label>
-
-                <div id="scheduleTimePicker" style="{% if draft.status != 'scheduled' %}display: none;{% endif %} margin-top: 12px;">
-                    <label class="form-label">Schedule Date & Time</label>
-                    <input type="datetime-local" name="scheduled_time" class="input-control"
-                        id="scheduledTime"
-                        value="{% if scheduled_time_formatted %}{{ scheduled_time_formatted }}{% endif %}"
-                        min="{{ now|date:'Y-m-d\TH:i' }}">
+                    <div id="scheduleTimePicker" style="{% if draft.status != 'scheduled' %}display: none;{% endif %} margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+                        <label class="section-label" style="font-size: 11px;">Select Date & Time</label>
+                        <input type="datetime-local" name="scheduled_time" class="input-control" id="scheduledTime"
+                            value="{% if scheduled_time_formatted %}{{ scheduled_time_formatted }}{% endif %}"
+                            min="{{ now|date:'Y-m-d\TH:i' }}">
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="form-actions" style="display: flex; gap: 12px; margin-top: 32px;">
-            <button type="submit" name="action" value="publish" class="btn btn-primary">
-                Publish Now
-            </button>
-            <button type="submit" class="btn btn-secondary">
-                Save Changes
-            </button>
-            <button type="button" onclick="deleteDraft()" class="btn btn-error">
-                Delete Draft
-            </button>
-            <a href="{% url 'social:draft_list' %}" class="btn btn-outline">
-                Cancel
-            </a>
-        </div>
-    </form>
+            <div class="form-actions">
+                <button type="submit" name="action" value="publish" class="btn btn-primary">
+                    Publish Now
+                </button>
+                <button type="submit" class="btn btn-secondary">
+                    Save Changes
+                </button>
+                <button type="button" onclick="deleteDraft()" class="btn btn-danger">
+                    Delete Draft
+                </button>
+                <a href="{% url 'social:draft_list' %}" class="btn btn-outline">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+    </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const captionTextarea = document.querySelector('textarea[name="caption"]');
-    const hashtagsInput = document.querySelector('input[name="hashtags"]');
-    const scheduleCheckbox = document.getElementById('schedulePost');
-    const schedulePicker = document.getElementById('scheduleTimePicker');
-    const scheduledTime = document.getElementById('scheduledTime');
+    document.addEventListener('DOMContentLoaded', function () {
+        const captionTextarea = document.querySelector('textarea[name="caption"]');
+        const hashtagsInput = document.querySelector('input[name="hashtags"]');
+        const scheduleCheckbox = document.getElementById('schedulePost');
+        const schedulePicker = document.getElementById('scheduleTimePicker');
+        const scheduledTime = document.getElementById('scheduledTime');
 
-    // Apply hashtag suggestions
-    document.querySelectorAll('.ai-tag-suggestion').forEach(tag => {
-        tag.addEventListener('click', function() {
-            const currentHashtags = hashtagsInput.value.trim();
-            const newTag = this.dataset.tag;
+        // Apply hashtag suggestions
+        document.querySelectorAll('.ai-tag-chip').forEach(tag => {
+            tag.addEventListener('click', function () {
+                const currentHashtags = hashtagsInput.value.trim();
+                const newTag = this.dataset.tag;
 
-            if (!currentHashtags.includes(newTag)) {
-                hashtagsInput.value = currentHashtags
-                    ? `${currentHashtags} ${newTag}`
-                    : newTag;
-            }
+                if (!currentHashtags.includes(newTag)) {
+                    hashtagsInput.value = currentHashtags
+                        ? `${currentHashtags} ${newTag}`
+                        : newTag;
+                }
+            });
         });
-    });
 
-    // Apply all hashtags
-    const applyAllBtn = document.getElementById('applyAllHashtags');
-    if (applyAllBtn) {
-        applyAllBtn.addEventListener('click', function() {
-            const allTags = Array.from(document.querySelectorAll('.ai-tag-suggestion'))
-                .map(tag => tag.dataset.tag)
-                .join(' ');
-            hashtagsInput.value = allTags;
-        });
-    }
-
-    // Apply caption suggestions
-    document.querySelectorAll('.ai-suggestion-item').forEach(item => {
-        item.addEventListener('click', function() {
-            captionTextarea.value = this.dataset.caption;
-        });
-    });
-
-    // Schedule toggle
-    scheduleCheckbox.addEventListener('change', function() {
-        schedulePicker.style.display = this.checked ? 'block' : 'none';
-        if (this.checked && !scheduledTime.value) {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(18, 0, 0, 0);
-            const timezoneOffset = tomorrow.getTimezoneOffset() * 60000;
-            const localTime = tomorrow.getTime() - timezoneOffset;
-            const localDate = new Date(localTime);
-            scheduledTime.value = localDate.toISOString().slice(0, 16);
+        // Apply all hashtags
+        const applyAllBtn = document.getElementById('applyAllHashtags');
+        if (applyAllBtn) {
+            applyAllBtn.addEventListener('click', function () {
+                const allTags = Array.from(document.querySelectorAll('.ai-tag-chip'))
+                    .map(tag => tag.dataset.tag)
+                    .join(' ');
+                hashtagsInput.value = allTags;
+            });
         }
-    });
 
-    // Validation
-    scheduledTime.addEventListener('change', function() {
-        if (this.value) {
-            const selectedDate = new Date(this.value);
-            const now = new Date();
+        // Apply caption suggestions
+        document.querySelectorAll('.ai-suggestion').forEach(item => {
+            item.addEventListener('click', function () {
+                captionTextarea.value = this.dataset.caption;
+            });
+        });
 
-            if (selectedDate <= now) {
-                alert('⚠️ Scheduled time must be in the future.');
+        // Helper function to format date for datetime-local input
+        function formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        // Schedule toggle
+        scheduleCheckbox.addEventListener('change', function () {
+            schedulePicker.style.display = this.checked ? 'block' : 'none';
+            if (this.checked && !scheduledTime.value) {
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
-                tomorrow.setHours(18, 0, 0, 0);
-                const timezoneOffset = tomorrow.getTimezoneOffset() * 60000;
-                const localTime = tomorrow.getTime() - timezoneOffset;
-                const localDate = new Date(localTime);
-                this.value = localDate.toISOString().slice(0, 16);
+                tomorrow.setHours(12, 0, 0, 0); // Default to Noon next day
+                
+                // Use local datetime format directly
+                scheduledTime.value = formatDateTimeLocal(tomorrow);
             }
-        }
+        });
+
+        // Future date validation
+        scheduledTime.addEventListener('change', function () {
+            if (this.value) {
+                const selectedDate = new Date(this.value);
+                const now = new Date();
+
+                if (selectedDate <= now) {
+                    alert('⚠️ Scheduled time must be in the future.');
+                    // Reset to +1 hour from now
+                    const future = new Date(now.getTime() + 60 * 60 * 1000);
+                    scheduledTime.value = formatDateTimeLocal(future);
+                }
+            }
+        });
     });
-});
 
-function deleteDraft() {
-    if (confirm('Are you sure you want to delete this draft?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = window.location.href;
+    function deleteDraft() {
+        if (confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = window.location.href;
 
-        const csrf = document.createElement('input');
-        csrf.type = 'hidden';
-        csrf.name = 'csrfmiddlewaretoken';
-        csrf.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        form.appendChild(csrf);
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = 'csrfmiddlewaretoken';
+            csrf.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            form.appendChild(csrf);
 
-        const action = document.createElement('input');
-        action.type = 'hidden';
-        action.name = 'action';
-        action.value = 'delete';
-        form.appendChild(action);
+            const action = document.createElement('input');
+            action.type = 'hidden';
+            action.name = 'action';
+            action.value = 'delete';
+            form.appendChild(action);
 
-        document.body.appendChild(form);
-        form.submit();
+            document.body.appendChild(form);
+            form.submit();
+        }
     }
-}
 </script>
 {% endblock %}

@@ -264,7 +264,7 @@
 <div class="challenge-hero">
     <div class="challenge-type-label">{{ challenge.get_challenge_type_display }}</div>
     
-    <span class="status-badge-large status-{{ challenge.status }}">{{ challenge.status }}</span>
+    <span class="status-badge-large status-{{ status }}">{{ status }}</span>
     
     <h1 class="challenge-title">{{ challenge.name }}</h1>
     <p class="challenge-description">{{ challenge.description }}</p>
@@ -297,9 +297,24 @@
     
     <!-- Action Buttons -->
     <div style="display: flex; justify-content: center; gap: 12px;">
-        {% if challenge.status == 'active' %}
+        {% if can_join %}
+        <form method="post" action="{% url 'outfits:join_challenge' challenge.id %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Join Challenge</button>
+        </form>
+        {% elif participation and status == 'active' %}
         <a href="{% url 'outfits:submit_challenge_outfit' challenge.id %}" class="btn btn-primary">Submit Outfit</a>
+        {% elif is_locked %}
+        <span class="btn btn-secondary" style="opacity: 0.6; cursor: not-allowed;">Challenge Ended</span>
         {% endif %}
+        
+        {% if request.user == challenge.created_by %}
+        <form method="post" action="{% url 'outfits:delete_challenge' challenge.id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this challenge?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary" style="background-color: #dc3545; color: white; border-color: #dc3545;">Delete</button>
+        </form>
+        {% endif %}
+
         <a href="{% url 'outfits:challenges_list' %}" class="btn btn-secondary">Back to Challenges</a>
     </div>
 </div>
@@ -345,15 +360,15 @@
                     {% for submission in submissions %}
                     <a href="{% url 'outfits:outfit_detail' submission.outfit.id %}" class="submission-card" style="text-decoration: none;">
                         <div class="submission-image">
-                            {% if submission.outfit.image %}
-                            <img src="{{ submission.outfit.image.url }}" alt="{{ submission.outfit.name }}">
+                            {% if submission.outfit.outfit_image %}
+                            <img src="{{ submission.outfit.outfit_image.url }}" alt="{{ submission.outfit.name }}">
                             {% elif submission.outfit.items.first.image %}
                             <img src="{{ submission.outfit.items.first.image.url }}" alt="{{ submission.outfit.name }}">
                             {% endif %}
                         </div>
                         <div class="submission-info">
-                            <div class="submission-user">{{ submission.user.first_name }} {{ submission.user.last_name }}</div>
-                            <div class="submission-date">{{ submission.created_at|date:"M d, Y" }}</div>
+                            <div class="submission-user">{{ submission.participation.user.first_name }} {{ submission.participation.user.last_name }}</div>
+                            <div class="submission-date">{{ submission.submitted_at|date:"M d, Y" }}</div>
                         </div>
                     </a>
                     {% endfor %}

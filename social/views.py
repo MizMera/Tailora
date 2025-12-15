@@ -651,7 +651,7 @@ def challenge_detail(request, challenge_id):
     
     context = {
         'challenge': challenge,
-        'submissions': submissions,
+        'posts': submissions,
     }
     
     return render(request, 'social/challenge_detail.html', context)
@@ -970,11 +970,14 @@ def ai_get_suggestions(request):
         captions = ai_optimizer.generate_caption_suggestions(outfit_name)
         best_time = ai_optimizer.analyze_best_time()
         
+        # Convert to local timezone for display
+        local_best_time = timezone.localtime(best_time)
+        
         return JsonResponse({
             'hashtags': hashtags,
             'captions': captions,
-            'best_time': best_time.isoformat(),
-            'best_time_formatted': best_time.strftime('%A, %B %d at %I:%M %p'),
+            'best_time': local_best_time.strftime('%Y-%m-%dT%H:%M'),  # Local datetime format
+            'best_time_formatted': local_best_time.strftime('%A, %B %d at %I:%M %p'),
             'confidence_score': ai_optimizer.calculate_confidence_score({
                 'caption': caption,
                 'hashtags': [],

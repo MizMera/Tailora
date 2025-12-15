@@ -569,8 +569,8 @@
                         <label for="occasion" class="input-label">Occasion</label>
                         <select id="occasion" name="occasion" class="input-control">
                             <option value="">All Occasions</option>
-                            {% for occ in occasions %}
-                            <option value="{{ occ }}" {% if request.GET.occasion == occ %}selected{% endif %}>{{ occ }}
+                            {% for value, label in occasions %}
+                            <option value="{{ value }}" {% if request.GET.occasion == value %}selected{% endif %}>{{ label }}
                             </option>
                             {% endfor %}
                         </select>

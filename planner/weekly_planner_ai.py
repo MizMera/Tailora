@@ -379,6 +379,11 @@ class WeeklyPlannerAI:
     def _score_weather_match(self, outfit: Outfit, weather: Dict) -> float:
         """Score outfit suitability for weather conditions"""
         score = 0.5  # Base score
+        
+        # Handle None or empty weather data
+        if not weather:
+            return score  # Return neutral score if no weather data
+            
         temp = weather.get('temperature', 20)
         condition = weather.get('condition', '').lower()
         
@@ -541,6 +546,10 @@ class WeeklyPlannerAI:
     ) -> str:
         """Generate human-readable reason for outfit selection"""
         reasons = []
+        
+        # Handle None weather
+        if not weather:
+            weather = {}
         
         # Weather reason
         temp = weather.get('temperature', 20)

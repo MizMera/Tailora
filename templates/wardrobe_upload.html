@@ -584,6 +584,181 @@
         animation: spin 1s linear infinite;
         margin-right: 10px;
     }
+
+    /* =========================================
+       COMPRESSION MODAL
+       ========================================= */
+    .compress-modal {
+        display: none;
+        position: fixed;
+        z-index: 10001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.85);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .compress-modal-content {
+        background-color: #fff;
+        margin: 3% auto;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .compress-header {
+        padding: 20px 24px;
+        background: #f57c00;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .compress-header h2 {
+        font-family: var(--font-heading);
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .compress-close-btn {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 28px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        opacity: 0.8;
+    }
+
+    .compress-close-btn:hover {
+        opacity: 1;
+    }
+
+    .compress-body {
+        padding: 24px;
+    }
+
+    .file-size-info {
+        background: #fff3e0;
+        border: 1px solid #ffe0b2;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .file-size-info p {
+        margin: 0 0 8px 0;
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-main);
+    }
+
+    .file-size-info .size-value {
+        font-weight: 700;
+        color: #e65100;
+    }
+
+    .compress-quality {
+        margin-bottom: 20px;
+    }
+
+    .compress-quality label {
+        display: block;
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 8px;
+    }
+
+    .quality-slider {
+        width: 100%;
+        height: 6px;
+        appearance: none;
+        -webkit-appearance: none;
+        background: #e0e0e0;
+        outline: none;
+    }
+
+    .quality-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        background: var(--text-main);
+        cursor: pointer;
+    }
+
+    .quality-value {
+        display: inline-block;
+        font-family: var(--font-body);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-left: 12px;
+    }
+
+    .compress-preview {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-top: 1px solid var(--border-color);
+        margin-top: 12px;
+    }
+
+    .compress-preview span {
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .compress-preview .new-size {
+        font-weight: 600;
+        color: #388e3c;
+    }
+
+    .compress-progress {
+        display: none;
+        margin-top: 16px;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e0e0e0;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #8bc34a);
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+
+    .progress-text {
+        font-family: var(--font-body);
+        font-size: 12px;
+        color: var(--text-muted);
+        text-align: center;
+        margin-top: 8px;
+    }
+
+    .compress-footer {
+        padding: 16px 24px;
+        background: #fafafa;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
 </style>
 {% endblock %}
 
@@ -626,7 +801,7 @@
                             </svg>
                         </div>
                         <p class="upload-title">Click to add an image</p>
-                        <p class="upload-hint">JPG or PNG (max 5 MB)</p>
+                        <p class="upload-hint">JPG or PNG (max 20 MB)</p>
                     </label>
                 </div>
 
@@ -904,6 +1079,48 @@
     </div>
 </div>
 
+<!-- Image Compression Modal -->
+<div id="compressModal" class="compress-modal">
+    <div class="compress-modal-content">
+        <div class="compress-header">
+            <h2>⚠️ Large Image Detected</h2>
+            <button type="button" id="closeCompressModal" class="compress-close-btn">&times;</button>
+        </div>
+        <div class="compress-body">
+            <div class="file-size-info">
+                <p>Your image is <span id="originalFileSize" class="size-value">0 MB</span> which exceeds the 20MB
+                    limit.</p>
+                <p style="margin: 0;">Compress the image to reduce file size before uploading.</p>
+            </div>
+
+            <div class="compress-quality">
+                <label>Compression Quality</label>
+                <div style="display: flex; align-items: center;">
+                    <input type="range" id="qualitySlider" class="quality-slider" min="10" max="100" value="70">
+                    <span id="qualityValue" class="quality-value">70%</span>
+                </div>
+                <span class="input-hint">Lower quality = smaller file size. 70% is recommended.</span>
+            </div>
+
+            <div class="compress-preview">
+                <span>Estimated new size:</span>
+                <span id="estimatedSize" class="new-size">~5 MB</span>
+            </div>
+
+            <div class="compress-progress" id="compressProgress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text" id="progressText">Compressing...</p>
+            </div>
+        </div>
+        <div class="compress-footer">
+            <button type="button" class="btn btn-secondary" id="skipCompress">Cancel</button>
+            <button type="button" class="btn btn-primary" id="compressImage">Compress Image</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -922,6 +1139,284 @@
         let scaleX = 1;
         let scaleY = 1;
         let isInternalChange = false;
+        let pendingFile = null;
+
+        // Compression Modal Elements
+        const compressModal = document.getElementById('compressModal');
+        const originalFileSizeEl = document.getElementById('originalFileSize');
+        const qualitySlider = document.getElementById('qualitySlider');
+        const qualityValue = document.getElementById('qualityValue');
+        const estimatedSizeEl = document.getElementById('estimatedSize');
+        const compressProgress = document.getElementById('compressProgress');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+
+        const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB in bytes
+
+        // Format file size for display
+        function formatFileSize(bytes) {
+            if (bytes >= 1024 * 1024) {
+                return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+            } else if (bytes >= 1024) {
+                return (bytes / 1024).toFixed(1) + ' KB';
+            }
+            return bytes + ' bytes';
+        }
+
+        // Update estimated size based on quality
+        function updateEstimatedSize() {
+            if (!pendingFile) return;
+            const quality = qualitySlider.value / 100;
+            qualityValue.textContent = qualitySlider.value + '%';
+            // Rough estimation: compressed size ~ original * quality^2
+            const estimatedBytes = pendingFile.size * Math.pow(quality, 1.5);
+            estimatedSizeEl.textContent = '~' + formatFileSize(estimatedBytes);
+        }
+
+        // Compress image using canvas (using createObjectURL for memory efficiency)
+        function compressImage(file, quality) {
+            return new Promise((resolve, reject) => {
+                console.log('Starting compression. File:', file.name, 'Size:', formatFileSize(file.size), 'Quality:', quality);
+
+                const img = new Image();
+                const objectUrl = URL.createObjectURL(file);
+
+                // Add timeout to catch hangs
+                const timeout = setTimeout(() => {
+                    URL.revokeObjectURL(objectUrl);
+                    console.error('Image load timeout');
+                    reject(new Error('Image load timeout'));
+                }, 60000); // 60 second timeout for very large files
+
+                img.onload = () => {
+                    clearTimeout(timeout);
+                    console.log('Image loaded. Original dimensions:', img.width, 'x', img.height);
+
+                    try {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // More aggressive resize for very large images
+                        const maxDimension = 1600;
+                        if (width > maxDimension || height > maxDimension) {
+                            if (width > height) {
+                                height = Math.round((height / width) * maxDimension);
+                                width = maxDimension;
+                            } else {
+                                width = Math.round((width / height) * maxDimension);
+                                height = maxDimension;
+                            }
+                        }
+
+                        console.log('Resized dimensions:', width, 'x', height);
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) {
+                            URL.revokeObjectURL(objectUrl);
+                            reject(new Error('Could not get canvas context'));
+                            return;
+                        }
+
+                        ctx.drawImage(img, 0, 0, width, height);
+                        console.log('Image drawn to canvas. Converting to blob...');
+
+                        canvas.toBlob((blob) => {
+                            URL.revokeObjectURL(objectUrl);
+
+                            if (blob) {
+                                console.log('Blob created. Size:', formatFileSize(blob.size));
+                                const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+                                    type: 'image/jpeg',
+                                    lastModified: Date.now(),
+                                });
+                                console.log('Compression complete:', formatFileSize(compressedFile.size));
+                                resolve(compressedFile);
+                            } else {
+                                console.error('toBlob returned null');
+                                reject(new Error('Failed to create compressed image'));
+                            }
+                        }, 'image/jpeg', quality);
+                    } catch (error) {
+                        URL.revokeObjectURL(objectUrl);
+                        console.error('Canvas error:', error);
+                        reject(error);
+                    }
+                };
+
+                img.onerror = (error) => {
+                    clearTimeout(timeout);
+                    URL.revokeObjectURL(objectUrl);
+                    console.error('Image load error:', error);
+                    reject(new Error('Failed to load image'));
+                };
+
+                img.src = objectUrl;
+            });
+        }
+
+        // Process file (show compression modal if needed or go to crop)
+        function processFile(file) {
+            console.log('Processing file:', file.name, 'Size:', file.size, 'Max:', MAX_FILE_SIZE);
+            console.log('File size in MB:', (file.size / (1024 * 1024)).toFixed(2));
+            console.log('File type:', file.type);
+
+            // Check for supported image formats (browsers can't handle TIF, HEIC, RAW, etc.)
+            const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/bmp'];
+            const fileExt = file.name.toLowerCase().split('.').pop();
+            const unsupportedExts = ['tif', 'tiff', 'heic', 'heif', 'raw', 'cr2', 'nef', 'arw', 'dng'];
+
+            if (unsupportedExts.includes(fileExt) || (!supportedTypes.includes(file.type) && file.type !== '')) {
+                alert('Unsupported file format: .' + fileExt + '\n\nPlease use JPG, PNG, WebP, or GIF format.\n\nTIP: Convert your ' + fileExt.toUpperCase() + ' file to JPG before uploading.');
+                fileInput.value = '';
+                return;
+            }
+
+            if (file.size >= MAX_FILE_SIZE) {
+                // Show compression modal
+                console.log('File exceeds 20MB, showing compression modal');
+
+                if (!compressModal) {
+                    console.error('Compress modal element not found!');
+                    alert('Large file detected (' + formatFileSize(file.size) + '). Proceeding with original file.');
+                    proceedToCrop(file);
+                    return;
+                }
+
+                pendingFile = file;
+                originalFileSizeEl.textContent = formatFileSize(file.size);
+                updateEstimatedSize();
+                compressModal.style.display = 'flex';
+                console.log('Compress modal display set to:', compressModal.style.display);
+            } else {
+                // File is under 20MB, proceed directly to crop
+                console.log('File under 20MB (' + formatFileSize(file.size) + '), proceeding to crop');
+                proceedToCrop(file);
+            }
+        }
+
+        // Proceed to crop modal
+        function proceedToCrop(file) {
+            originalFile = file;
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                cropImage.src = event.target.result;
+                cropModal.style.display = 'flex';
+
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                cropper = new Cropper(cropImage, {
+                    aspectRatio: NaN,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    guides: true,
+                    center: true,
+                    highlight: true,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                });
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        // Quality slider event
+        qualitySlider.addEventListener('input', updateEstimatedSize);
+
+        // Compress button
+        document.getElementById('compressImage').addEventListener('click', async function () {
+            if (!pendingFile) return;
+
+            const quality = qualitySlider.value / 100;
+
+            // Check estimated size BEFORE compression
+            const estimatedBytes = pendingFile.size * Math.pow(quality, 1.5);
+            if (estimatedBytes >= MAX_FILE_SIZE) {
+                // Show error in modal UI
+                compressProgress.style.display = 'block';
+                progressFill.style.width = '100%';
+                progressFill.style.background = '#f44336';
+                progressText.innerHTML = '<strong style="color:#c62828;">❌ Estimated size (' + formatFileSize(estimatedBytes) + ') is still over 20MB!</strong><br>Please lower the quality slider.';
+
+                // Reset after 3 seconds
+                setTimeout(() => {
+                    progressFill.style.background = 'linear-gradient(90deg, #4caf50, #8bc34a)';
+                    compressProgress.style.display = 'none';
+                }, 3000);
+                return;
+            }
+
+            // Show progress
+            compressProgress.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = 'Compressing...';
+
+            try {
+                // Animate progress
+                progressFill.style.width = '30%';
+                await new Promise(r => setTimeout(r, 100));
+
+                const compressedFile = await compressImage(pendingFile, quality);
+
+                progressFill.style.width = '100%';
+
+                // Check if compressed file is still too large
+                if (compressedFile.size >= MAX_FILE_SIZE) {
+                    progressFill.style.background = '#f44336';
+                    progressText.textContent = 'Error: Compressed file is still ' + formatFileSize(compressedFile.size) + ' (must be under 20MB)';
+                    alert('Compression failed!\n\nCompressed size: ' + formatFileSize(compressedFile.size) + '\nRequired: Under 20MB\n\nPlease lower the quality slider or use a smaller original image.');
+
+                    // Reset progress bar color for next attempt
+                    setTimeout(() => {
+                        progressFill.style.background = 'linear-gradient(90deg, #4caf50, #8bc34a)';
+                        compressProgress.style.display = 'none';
+                    }, 2000);
+                    return;
+                }
+
+                progressText.textContent = 'Done! Compressed to ' + formatFileSize(compressedFile.size);
+
+                await new Promise(r => setTimeout(r, 500));
+
+                // Close modal and proceed to crop
+                compressModal.style.display = 'none';
+                compressProgress.style.display = 'none';
+                proceedToCrop(compressedFile);
+
+            } catch (error) {
+                console.error('Compression error:', error);
+                progressText.textContent = 'Error compressing image. Please try again.';
+                progressFill.style.background = '#f44336';
+            }
+
+            pendingFile = null;
+        });
+
+        // Skip compression button - show error, don't allow uncompressed large files
+        document.getElementById('skipCompress').addEventListener('click', function () {
+            if (pendingFile) {
+                // Show error - file is too large
+                alert('Error: File is too large (' + formatFileSize(pendingFile.size) + ').\n\nPlease compress the image or upload a smaller file (under 20MB).');
+                compressModal.style.display = 'none';
+                pendingFile = null;
+                fileInput.value = '';
+            }
+        });
+
+        // Close compression modal
+        document.getElementById('closeCompressModal').addEventListener('click', function () {
+            compressModal.style.display = 'none';
+            pendingFile = null;
+            fileInput.value = '';
+        });
 
         // File Selection Handler
         fileInput.addEventListener('change', function (e) {
@@ -931,32 +1426,7 @@
             }
 
             if (this.files && this.files[0]) {
-                originalFile = this.files[0];
-                const reader = new FileReader();
-
-                reader.onload = (event) => {
-                    cropImage.src = event.target.result;
-                    cropModal.style.display = 'flex';
-
-                    if (cropper) {
-                        cropper.destroy();
-                    }
-
-                    cropper = new Cropper(cropImage, {
-                        aspectRatio: NaN,
-                        viewMode: 1,
-                        autoCropArea: 0.8,
-                        responsive: true,
-                        guides: true,
-                        center: true,
-                        highlight: true,
-                        cropBoxMovable: true,
-                        cropBoxResizable: true,
-                        toggleDragModeOnDblclick: false,
-                    });
-                };
-
-                reader.readAsDataURL(this.files[0]);
+                processFile(this.files[0]);
             }
         });
 
@@ -1308,9 +1778,9 @@
             }
             for (const word of accessories) {
                 // Check specific accessory types that have their own categories
-                if (itemTypeLower.includes('bag') || itemTypeLower.includes('purse') || 
+                if (itemTypeLower.includes('bag') || itemTypeLower.includes('purse') ||
                     itemTypeLower.includes('handbag') || itemTypeLower.includes('backpack')) return 'Bag';
-                if (itemTypeLower.includes('hat') || itemTypeLower.includes('cap') || 
+                if (itemTypeLower.includes('hat') || itemTypeLower.includes('cap') ||
                     itemTypeLower.includes('beanie')) return 'Hat';
                 if (itemTypeLower.includes('scarf')) return 'Scarf';
                 if (itemTypeLower.includes('belt')) return 'Belt';
@@ -1337,13 +1807,13 @@
         function extractColorFromDescription(description) {
             if (!description) return null;
             const descLower = description.toLowerCase();
-            
+
             // Common colors to look for in description
-            const colors = ['black', 'white', 'grey', 'gray', 'navy', 'blue', 'red', 'green', 
-                           'yellow', 'orange', 'purple', 'pink', 'brown', 'beige', 'tan', 
-                           'cream', 'burgundy', 'maroon', 'olive', 'teal', 'coral', 'gold',
-                           'silver', 'charcoal', 'khaki', 'denim', 'indigo'];
-            
+            const colors = ['black', 'white', 'grey', 'gray', 'navy', 'blue', 'red', 'green',
+                'yellow', 'orange', 'purple', 'pink', 'brown', 'beige', 'tan',
+                'cream', 'burgundy', 'maroon', 'olive', 'teal', 'coral', 'gold',
+                'silver', 'charcoal', 'khaki', 'denim', 'indigo'];
+
             for (const color of colors) {
                 if (descLower.includes(color)) {
                     // Capitalize first letter
@@ -1360,7 +1830,7 @@
                 // Try to get color from description first (more accurate for product photos)
                 const descriptionColor = extractColorFromDescription(currentAnalysis.description);
                 const bestColor = descriptionColor || currentAnalysis.color || '';
-                
+
                 if (currentAnalysis.item_type) {
                     const colorPart = bestColor ? `${bestColor} ` : '';
                     document.getElementById('name').value = `${colorPart}${currentAnalysis.item_type}`;
@@ -1404,9 +1874,9 @@
                 // Use description-extracted color if available (more accurate for product photos)
                 const descriptionColor = extractColorFromDescription(currentAnalysis.description);
                 const bestColor = descriptionColor || currentAnalysis.color;
-                
+
                 if (bestColor) document.getElementById('color').value = bestColor;
-                
+
                 // For hex, use the analyzed hex or map common colors to hex
                 if (currentAnalysis.color_hex && !descriptionColor) {
                     document.getElementById('color_hex').value = currentAnalysis.color_hex;
