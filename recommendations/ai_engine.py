@@ -100,22 +100,29 @@ class OutfitRecommendationEngine:
             suggested_name = self._generate_creative_outfit_name(outfit_items)
             
             # Create recommendation without creating an outfit
-            recommendation = DailyRecommendation.objects.create(
-                user=self.user,
-                outfit=None,  # No outfit created yet - user must confirm
-                recommendation_date=date,
-                priority=i,
-                reason=score_data['reason'],
-                confidence_score=score_data['total_score'],
-                style_match_score=score_data['style_score'],
-                occasion_match=score_data.get('occasion', 'casual'),
-                weather_factor={
-                    'suggested_items': items_data,
-                    'suggested_name': suggested_name,
-                    'item_ids': [str(item.id) for item in outfit_items],
-                }
-            )
-            recommendations.append(recommendation)
+            # Use get_or_create to avoid duplicates, or handle IntegrityError
+            try:
+                from django.db import IntegrityError
+                recommendation = DailyRecommendation.objects.create(
+                    user=self.user,
+                    outfit=None,  # No outfit created yet - user must confirm
+                    recommendation_date=date,
+                    priority=i,
+                    reason=score_data['reason'],
+                    confidence_score=score_data['total_score'],
+                    style_match_score=score_data['style_score'],
+                    occasion_match=score_data.get('occasion', 'casual'),
+                    weather_factor={
+                        'suggested_items': items_data,
+                        'suggested_name': suggested_name,
+                        'item_ids': [str(item.id) for item in outfit_items],
+                    }
+                )
+                recommendations.append(recommendation)
+                print(f"✅ Created recommendation: {suggested_name}")
+            except IntegrityError as e:
+                print(f"⚠️ Skipped duplicate recommendation: {suggested_name} - {e}")
+                continue
             
         return recommendations
     
@@ -904,65 +911,107 @@ class StyleCoach:
         """
         Check color harmony using color theory rules.
         Returns: (score, reason)
+        
+        Scoring:
+        - 1.0: Monochromatic (all same color) - Perfect
+        - 0.95: All neutrals or classic combos - Excellent  
+        - 0.9: Neutrals + 1 accent - Great
+        - 0.7: Default acceptable
+        - 0.3-0.35: Clashing colors
         """
         if len(colors) < 2:
-            return 1.0, ""  # Monochromatic/Single item is safe
+            return 1.0, ""  # Single item is always fine
             
         # Normalize to base colors
         colors = [self._get_base_color(c) for c in colors]
         unique_colors = set(colors)
         
-        # Define color relationships
-        NEUTRALS = {'black', 'white', 'grey', 'beige', 'navy'}
+        # 1. MONOCHROMATIC: All items same color = Perfect harmony
+        if len(unique_colors) == 1:
+            return 1.0, ""  # Perfect monochromatic look
         
-        # Good combinations (Analogous, Classic, Safe)
+        # Define color categories
+        NEUTRALS = {'black', 'white', 'grey', 'beige', 'navy', 'cream', 'ivory', 'tan', 'nude'}
+        WARM_COLORS = {'red', 'orange', 'yellow', 'coral', 'burgundy', 'rust', 'terracotta', 'brown'}
+        COOL_COLORS = {'blue', 'green', 'purple', 'teal', 'cyan', 'mint', 'lavender'}
+        
+        # 2. ALL NEUTRALS: Black, white, grey, beige, navy = Excellent
+        if unique_colors.issubset(NEUTRALS):
+            # Check for problematic neutral combos first
+            if {'black', 'brown'}.issubset(unique_colors):
+                return 0.5, "Black and Brown together can be tricky - try breaking it with white."
+            if {'black', 'navy'}.issubset(unique_colors):
+                return 0.5, "Black and Navy can look mismatched in poor lighting."
+            return 0.95, ""  # All neutrals = Excellent coordination
+        
+        # Classic good combinations (well-known complementary/analogous pairs)
         GOOD_COMBOS = [
-            {'navy', 'white'},        # Classic
+            {'navy', 'white'},        # Classic nautical
             {'black', 'white'},       # Timeless
-            {'navy', 'beige'},        # Nautical
-            {'grey', 'pink'},         # Soft contrast
-            {'blue', 'white'},        # Fresh
+            {'navy', 'beige'},        # Sophisticated
+            {'grey', 'pink'},         # Soft modern
+            {'blue', 'white'},        # Fresh and clean
             {'brown', 'beige'},       # Earth tones
             {'green', 'brown'},       # Natural
             {'blue', 'grey'},         # Cool tones
+            {'black', 'red'},         # Bold classic
+            {'white', 'blue'},        # Crisp
+            {'navy', 'red'},          # Preppy
+            {'grey', 'blue'},         # Professional
+            {'black', 'grey'},        # Sleek
+            {'white', 'beige'},       # Soft elegance
+            {'navy', 'grey'},         # Understated
+            {'brown', 'cream'},       # Warm neutral
+            {'olive', 'beige'},       # Safari
+            {'burgundy', 'beige'},    # Rich warmth
         ]
         
-        # Risky combinations (Complementary/Clashing)
-        CLASH_COMBOS = [
-            ({'black', 'brown'}, "Mixing Black and Brown is difficult to pull off."),
-            ({'black', 'navy'}, "Black and Navy can look mismatched."),
-            ({'red', 'pink'}, "Red and Pink are risky together."),
-            ({'red', 'green'}, "Red and Green can look too festive."),
-            ({'purple', 'orange'}, "Purple and Orange clash."),
-            ({'red', 'orange'}, "Red and Orange compete for attention."),
-            ({'blue', 'green'}, "Blue and Green require careful balance."),
-        ]
-        
-        # 1. Check for GOOD combinations first
+        # Matching warm or cool color families = Good analogous
         non_neutrals = unique_colors - NEUTRALS
-        if len(non_neutrals) <= 1:
-            # Neutral + 1 accent = Usually good
-            return 0.9, ""
-            
+        all_warm = non_neutrals.issubset(WARM_COLORS)
+        all_cool = non_neutrals.issubset(COOL_COLORS)
+        
+        # 3. Check for known GOOD combinations
         for good_combo in GOOD_COMBOS:
             if good_combo.issubset(unique_colors):
                 return 0.95, ""  # Known good combo
         
-        # 2. Check for "Busy" (Too many colors)
-        if len(unique_colors) > 3:
-            return 0.35, "This outfit looks busy. Try reducing the number of colors."
+        # 4. NEUTRALS + 1 ACCENT: Very good
+        if len(non_neutrals) <= 1:
+            return 0.9, ""  # Neutrals with one pop of color
+        
+        # 5. Same temperature (all warm or all cool) = Good analogous harmony
+        if all_warm and len(non_neutrals) <= 2:
+            return 0.85, ""  # Warm color family
+        if all_cool and len(non_neutrals) <= 2:
+            return 0.85, ""  # Cool color family
             
-        # 3. Check for CLASHES
+        # 6. Check for problematic CLASHES
+        CLASH_COMBOS = [
+            ({'red', 'pink'}, "Red and Pink can compete - try softer pink tones."),
+            ({'red', 'green'}, "Red and Green together looks too festive."),
+            ({'purple', 'orange'}, "Purple and Orange clash intensely."),
+            ({'red', 'orange'}, "Red and Orange compete for attention."),
+            ({'pink', 'orange'}, "Pink and Orange is a bold mix."),
+        ]
+        
         for clash_set, warning in CLASH_COMBOS:
             if clash_set.issubset(unique_colors):
-                return 0.3, warning
-                
-        # 4. Check for "Neutral Chaos" (Black + Brown + Grey)
-        dark_neutrals = unique_colors & {'black', 'brown', 'grey', 'navy'}
-        if len(dark_neutrals) >= 3:
-            return 0.35, "Too many dark neutrals competing."
+                return 0.35, warning
+        
+        # 7. Too many colors = Busy
+        if len(unique_colors) > 4:
+            return 0.3, "This outfit looks busy. Try limiting to 3 colors max."
+        if len(unique_colors) > 3:
+            return 0.5, "Consider reducing colors for a more cohesive look."
+            
+        # 8. Mixed temperatures (warm + cool non-neutrals)
+        has_warm = bool(non_neutrals & WARM_COLORS)
+        has_cool = bool(non_neutrals & COOL_COLORS)
+        if has_warm and has_cool and len(non_neutrals) >= 2:
+            return 0.6, "Mixing warm and cool colors - add a neutral to balance."
 
-        # Default: Acceptable but not exceptional
+        # Default: Acceptable
         return 0.7, ""
 
     def _get_base_color(self, color_name: str) -> str:
@@ -990,7 +1039,13 @@ class StyleCoach:
     def _check_patterns(self, items) -> List[str]:
         """
         Detect patterns and return list of patterned items.
+        Only returns items if there are more than 2 patterned items (too busy).
+        Solid/plain items are NOT counted as patterns.
         """
+        # Keywords that indicate non-patterned (solid) items
+        SOLID_KEYWORDS = ['solid', 'plain', 'uni', 'none', '']
+        
+        # Pattern keywords to detect in name/tags if pattern field is empty
         PATTERN_KEYWORDS = [
             'stripe', 'striped', 'pinstripe', 'breton',
             'floral', 'flower', 'botanical',
@@ -998,15 +1053,31 @@ class StyleCoach:
             'polka', 'dot', 'spotted', 'dotted',
             'leopard', 'zebra', 'snake', 'animal', 'tiger',
             'geometric', 'abstract', 'graphic',
-            'paisley', 'print', 'pattern',
+            'paisley', 'print', 'patterned',
         ]
         
         patterned_items = []
         for item in items:
-            text = (item.name + " " + " ".join(item.tags or [])).lower()
-            if any(kw in text for kw in PATTERN_KEYWORDS):
+            has_pattern = False
+            
+            # 1. First check the item's pattern field (primary source of truth)
+            item_pattern = (getattr(item, 'pattern', '') or '').lower().strip()
+            
+            if item_pattern:
+                # Item has a pattern field set - check if it's NOT a solid pattern
+                if item_pattern not in SOLID_KEYWORDS:
+                    # It's a real pattern
+                    has_pattern = True
+            else:
+                # 2. Fallback: check name and tags for pattern keywords
+                text = (item.name + " " + " ".join(item.tags or [])).lower()
+                if any(kw in text for kw in PATTERN_KEYWORDS):
+                    has_pattern = True
+            
+            if has_pattern:
                 patterned_items.append(item.name)
         
+        # Only warn if there are MORE than 2 patterned items
         return patterned_items if len(patterned_items) > 2 else []
 
     def _update_fashion_iq(self, xp, style_score):

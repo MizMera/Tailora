@@ -155,6 +155,27 @@
         object-fit: contain;
     }
 
+    /* AI Enhancement Filter Styles */
+    .slide img.ai-filter-auto {
+        filter: contrast(1.2) saturate(1.2);
+    }
+
+    .slide img.ai-filter-vibrant {
+        filter: saturate(1.6) contrast(1.2);
+    }
+
+    .slide img.ai-filter-elegant {
+        filter: sepia(0.2) contrast(1.1);
+    }
+
+    .slide img.ai-filter-vintage {
+        filter: sepia(0.6) contrast(1.2) brightness(0.9);
+    }
+
+    .slide img.ai-filter-bright {
+        filter: brightness(1.2) contrast(1.1) saturate(1.1);
+    }
+
     /* Slider Controls */
     .slider-btn {
         position: absolute;
@@ -596,15 +617,15 @@
 
             <div class="pd-badge-overlay">
                 {% if post.likes_count >= 200 %}
-                <span class="pd-badge iconic">Iconic</span>
+                <span class="pd-badge iconic">🔥 Iconic</span>
                 {% elif post.likes_count >= 100 %}
-                <span class="pd-badge star">Star</span>
+                <span class="pd-badge star">⭐ Star</span>
                 {% elif post.likes_count >= 50 %}
-                <span class="pd-badge viral">Viral</span>
+                <span class="pd-badge viral">🚀 Viral</span>
                 {% endif %}
 
-                {% if post.enhanced_images %}
-                <span class="pd-badge ai">AI Enhanced</span>
+                {% if post.enhanced_images or post.enhancement_style %}
+                <span class="pd-badge ai">✨ AI Enhanced</span>
                 {% endif %}
             </div>
 
@@ -618,9 +639,11 @@
                 {% for item in items %}
                 <div class="slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
                     {% if post.enhanced_images and item.id|stringformat:"s" in post.enhanced_images %}
-                    <img src="/media/{{ post.enhanced_images|get_item:item.id|stringformat:'s' }}" alt="AI Enhanced">
+                    <img src="/media/{{ post.enhanced_images|get_item:item.id|stringformat:'s' }}" alt="AI Enhanced"
+                        class="{% if post.enhancement_style %}ai-filter-{{ post.enhancement_style }}{% endif %}">
                     {% elif item.image %}
-                    <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}"
+                        class="{% if post.enhancement_style %}ai-filter-{{ post.enhancement_style }}{% endif %}">
                     {% else %}
                     <div style="color: #fff; padding: 20px;">No Image</div>
                     {% endif %}

@@ -47,7 +47,8 @@ class DailyRecommendation(models.Model):
     class Meta:
         db_table = 'daily_recommendations'
         ordering = ['recommendation_date', 'priority']
-        unique_together = [['user', 'recommendation_date', 'outfit']]
+        # Removed unique_together to allow multiple suggestions per day
+        # Old: unique_together = [['user', 'recommendation_date', 'outfit']]
         verbose_name = 'Daily Recommendation'
         verbose_name_plural = 'Daily Recommendations'
         indexes = [

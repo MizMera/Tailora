@@ -45,6 +45,8 @@ class LookbookPost(models.Model):
     # AI Enhanced Images
     # Dictionary mapping outfit item IDs to enhanced image paths: { "item_id": "path/to/image.jpg" }
     enhanced_images = models.JSONField(default=dict, blank=True)
+    # Enhancement style used: auto, vibrant, elegant, vintage, bright
+    enhancement_style = models.CharField(max_length=20, blank=True, default='')
     
     # Visibility
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')

@@ -142,6 +142,7 @@ def create_post(request):
         save_as_draft = request.POST.get('save_as_draft') == 'true'
         schedule_post = request.POST.get('schedule_post') == 'true'
         scheduled_time_str = request.POST.get('scheduled_time') or request.POST.get('scheduled_time_custom')
+        enhancement_style = request.POST.get('photo_style', '') if request.POST.get('enhance_photos') == 'true' else ''
         
         # Detect if user selected an AI "Best Time to Post"
         ai_time_selected = bool(request.POST.get('scheduled_time'))
@@ -287,6 +288,7 @@ def create_post(request):
                 caption=caption,
                 hashtags=hashtags,
                 enhanced_images=enhanced_images,
+                enhancement_style=enhancement_style,
                 visibility=visibility
             )
             
@@ -665,7 +667,14 @@ def ai_preview(request, outfit_id):
         return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
         
     outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
-    style = request.POST.get('style', 'auto')
+    
+    # Parse JSON body from frontend (sent via fetch with JSON.stringify)
+    try:
+        data = json.loads(request.body)
+        style = data.get('style', 'auto')
+    except (json.JSONDecodeError, ValueError):
+        # Fallback to POST data if JSON parsing fails
+        style = request.POST.get('style', 'auto')
     
     # Mock AI enhancement - in production this would call an AI service
     enhanced_images = {}

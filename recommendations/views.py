@@ -325,16 +325,18 @@ def recommendation_history_view(request):
 def generate_new_recommendations_view(request):
     """
     Manually trigger generation of new recommendations
+    Only keeps saved (accepted/worn) recommendations, deletes all others
     """
     user = request.user
     today = timezone.now().date()
     
-    # Delete existing pending recommendations for today
+    # Delete all NON-SAVED recommendations for today
+    # Keep only 'accepted' and 'worn' (these are saved)
+    # Delete 'pending', 'viewed', 'rejected' (not saved)
     existing = DailyRecommendation.objects.filter(
         user=user,
-        recommendation_date=today,
-        status='pending'  # Only delete pending ones, keep accepted/rejected
-    )
+        recommendation_date=today
+    ).exclude(status__in=['accepted', 'worn'])  # Keep saved ones
     
     deleted_count = existing.count()
     existing.delete()
@@ -407,6 +409,9 @@ class RecommendationViewSet(viewsets.ModelViewSet):
         """
         Generate new recommendations for today
         POST /api/recommendations/generate/
+        
+        With force=True, deletes all non-saved recommendations and generates fresh ones.
+        Saved (accepted/worn) recommendations are always kept.
         """
         user = request.user
         today = timezone.now().date()
@@ -424,9 +429,11 @@ class RecommendationViewSet(viewsets.ModelViewSet):
                 'recommendations': serializer.data
             })
         
-        # Delete existing if force=True
+        # Delete all NON-SAVED recommendations if force=True
+        # Keep 'accepted' and 'worn' (these are saved by user)
         if existing.exists():
-            existing.delete()
+            non_saved = existing.exclude(status__in=['accepted', 'worn'])
+            non_saved.delete()
         
         try:
             engine = OutfitRecommendationEngine(user)
