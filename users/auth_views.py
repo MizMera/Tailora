@@ -690,10 +690,108 @@ def confirm_account_deletion_view(request):
             if user.deletion_code_expires_at > timezone.now():
                 # Correct code and not expired, delete account
                 user_email = user.email  # Save for message
-                auth_logout(request)
-                user.delete()
-                messages.success(request, f'Account for {user_email} has been successfully deleted.')
-                return redirect('login')
+                
+                # Manually delete all related objects to handle database constraints
+                try:
+                    # Import all related models
+                    from wardrobe.models import ClothingItem, ClothingCategory, LaundryAlert
+                    from outfits.models import Outfit, OutfitItem, StyleChallenge, ChallengeParticipation, ChallengeOutfit, UserBadge
+                    from social.models import UserFollow, LookbookPost, PostLike, PostComment, PostSave, PostDraft, UserBadge as SocialUserBadge
+                    from planner.models import Event, OutfitPlanning, TravelPlan, WearHistory, WeeklyPlan, DailyPlanSlot
+                    from recommendations.models import DailyRecommendation, UserPreferenceSignal, ShoppingRecommendation
+                    from users.models import Notification, StyleCritiqueSession, StyleProfile, FashionIQ
+                    
+                    # Delete in order of dependencies (most dependent first)
+                    
+                    # 1. Delete laundry alerts first (depends on DailyPlanSlot and ClothingItem)
+                    LaundryAlert.objects.filter(user=user).delete()
+                    
+                    # 2. Delete social interactions (likes, comments, saves, follows)
+                    PostLike.objects.filter(user=user).delete()
+                    PostComment.objects.filter(user=user).delete()
+                    PostSave.objects.filter(user=user).delete()
+                    UserFollow.objects.filter(follower=user).delete()
+                    UserFollow.objects.filter(following=user).delete()
+                    
+                    # 3. Delete AI engagement data related to user's posts  
+                    from social.models import AIEngagementData
+                    AIEngagementData.objects.filter(post__user=user).delete()
+                    AIEngagementData.objects.filter(draft__user=user).delete()
+                    
+                    # 4. Delete social badges earned by user
+                    SocialUserBadge.objects.filter(user=user).delete()
+                    
+                    # 5. Delete post drafts
+                    PostDraft.objects.filter(user=user).delete()
+                    
+                    # 6. Delete lookbook posts (user's published posts)
+                    # First delete likes/comments/saves on user's posts by others
+                    PostLike.objects.filter(post__user=user).delete()
+                    PostComment.objects.filter(post__user=user).delete()
+                    PostSave.objects.filter(post__user=user).delete()
+                    LookbookPost.objects.filter(user=user).delete()
+                    
+                    # 7. Delete planner data
+                    DailyPlanSlot.objects.filter(weekly_plan__user=user).delete()
+                    WeeklyPlan.objects.filter(user=user).delete()
+                    WearHistory.objects.filter(user=user).delete()
+                    TravelPlan.objects.filter(user=user).delete()
+                    OutfitPlanning.objects.filter(user=user).delete()
+                    Event.objects.filter(user=user).delete()
+                    
+                    # 8. Delete challenge data
+                    ChallengeOutfit.objects.filter(participation__user=user).delete()
+                    ChallengeParticipation.objects.filter(user=user).delete()
+                    # Delete challenges created by user
+                    StyleChallenge.objects.filter(created_by=user).delete()
+                    UserBadge.objects.filter(user=user).delete()
+                    
+                    # 9. Delete recommendation data
+                    DailyRecommendation.objects.filter(user=user).delete()
+                    UserPreferenceSignal.objects.filter(user=user).delete()
+                    ShoppingRecommendation.objects.filter(user=user).delete()
+                    
+                    # 10. Delete outfit items first (M2M through model)
+                    OutfitItem.objects.filter(outfit__user=user).delete()
+                    
+                    # 11. Delete outfits
+                    Outfit.objects.filter(user=user).delete()
+                    
+                    # 12. Delete wardrobe items
+                    ClothingItem.objects.filter(user=user).delete()
+                    
+                    # 13. Delete custom clothing categories
+                    ClothingCategory.objects.filter(user=user).delete()
+                    
+                    # 14. Delete user-related models (style critiques, notifications)
+                    StyleCritiqueSession.objects.filter(user=user).delete()
+                    Notification.objects.filter(user=user).delete()
+                    
+                    # 15. Delete style profile and fashion IQ (OneToOne - should cascade but just in case)
+                    try:
+                        user.style_profile.delete()
+                    except StyleProfile.DoesNotExist:
+                        pass
+                    try:
+                        user.fashion_iq.delete()
+                    except FashionIQ.DoesNotExist:
+                        pass
+                    
+                    # Logout user before final deletion
+                    auth_logout(request)
+                    
+                    # 16. Finally delete the user
+                    user.delete()
+                    
+                    messages.success(request, f'Account for {user_email} has been successfully deleted.')
+                    return redirect('login')
+                    
+                except Exception as e:
+                    print(f"Error deleting user account: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    messages.error(request, f'An error occurred while deleting your account. Please contact support. Error: {str(e)}')
+                    return render(request, 'delete_account_confirm.html')
             else:
                 messages.error(request, 'The deletion code has expired. Please request a new one.')
         else:
